@@ -18,11 +18,17 @@ const { width } = Dimensions.get('window');
 
 export default function OnBoardingScreen(props) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  
+  const { completeOnboarding: completeOnboardingAuth } = useAuth();
+
   const completeOnboarding = async () => {
     try {
-      await AsyncStorage.setItem('onboardingCompleted', 'true');
-      props.navigation.navigate('LoginScreen');
+      const result = await completeOnboardingAuth();
+      if (result.success) {
+        props.navigation.navigate('LoginScreen');
+      } else {
+        console.error('Error completing onboarding:', result.error);
+        props.navigation.navigate('LoginScreen');
+      }
     } catch (error) {
       console.error('Error saving onboarding completion:', error);
       props.navigation.navigate('LoginScreen');
