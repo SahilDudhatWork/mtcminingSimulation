@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/Home/HomeScreen';
 import MiningScreen from '../screens/MiningScreen/MiningScreen';
 import RaferScreen from '../screens/RaferScreen/RaferScreen';
+import RewardScreen from '../screens/Reward/RewardScreen';
 import { horizontalScale, verticalScale } from '../constants/helper';
 import { Images } from '../assets/images';
 import { Colors } from '../constants/colors';
@@ -86,7 +87,7 @@ const Bottom = ({ state, descriptors, navigation }) => {
 export default function BottomTab() {
     return (
         <Tab.Navigator initialRouteName={"MiningScreen"} screenOptions={{ headerShown: false }} tabBar={props => <Bottom {...props} />} >
-            <Tab.Screen name="Rewards" component={HomeScreen} />
+            <Tab.Screen name="Rewards" component={RewardScreen} />
             <Tab.Screen name="MiningScreen" component={MiningScreen} />
             <Tab.Screen name="Rafers" component={RaferScreen} />
         </Tab.Navigator>
