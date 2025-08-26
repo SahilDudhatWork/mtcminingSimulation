@@ -32,6 +32,7 @@ export default function AppNavigator() {
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
         <Stack.Screen name="ConvertCoinScreen" component={ConvertCoinScreen} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        <Stack.Screen name="RaferScreen" component={RaferScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
