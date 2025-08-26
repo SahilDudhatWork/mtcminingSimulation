@@ -10,15 +10,17 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { styles } from './styles';
+import React, {useState, useEffect} from 'react';
+import {styles} from './styles';
 import Carousel from 'react-native-snap-carousel';
-import { Colors } from '../../constants/colors';
-import { Images } from '../../assets/images';
-import { horizontalScale, verticalScale } from '../../constants/helper';
+import {Colors} from '../../constants/colors';
+import {Images} from '../../assets/images';
+import {horizontalScale, verticalScale} from '../../constants/helper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Popup from '../../components/Popup';
-import { useNavigation } from '@react-navigation/native';
+import MysteryBoxModal from '../../components/MysteryBoxModal';
+import BoostGhsModal from '../../components/BoostGhsModal';
+import {useNavigation} from '@react-navigation/native';
 
 const MiningScreen = props => {
   const navigation = useNavigation();
@@ -39,6 +41,13 @@ const MiningScreen = props => {
   const [giftIntervalId, setGiftIntervalId] = useState(null);
   const [giftAmt, setGiftAmt] = useState(0);
   const [masterCoin, setMasterCoin] = useState(0);
+
+  // for boost modals
+  const [showMysteryBoxModal, setShowMysteryBoxModal] = useState(false);
+  const [showBoostGhsModal, setShowBoostGhsModal] = useState(false);
+  const [showTimeBoostModal, setShowTimeBoostModal] = useState(false);
+  const [currentGhs, setCurrentGhs] = useState(30);
+  const [maxGhs] = useState(100);
   const GIFT_DURATION_MS = 1 * 60 * 1000; // 1 minutes in milliseconds
 
   const OptionIcon = [
@@ -288,7 +297,7 @@ const MiningScreen = props => {
     if (!isGiftMining) {
       const randomAmount = await getRandomInt(10, 200);
       setGiftAmt(randomAmount);
-      setIsVisible(true);
+      setShowMysteryBoxModal(true);
       const now = new Date().getTime();
       await AsyncStorage.setItem('giftSessionStart', now.toString());
       setIsGiftMining(true);
@@ -301,7 +310,7 @@ const MiningScreen = props => {
   };
 
   const claimReward = async () => {
-    setIsVisible(false);
+    setShowMysteryBoxModal(false);
     console.log('giftAmty', giftAmt);
 
     setMasterCoin(prev => {
@@ -309,6 +318,30 @@ const MiningScreen = props => {
       AsyncStorage.setItem('masterCoin', totalMasterCoin.toString());
       return totalMasterCoin;
     });
+  };
+
+  const handleWatchAd = () => {
+    // Implement ad watching logic here
+    console.log('Watch ad clicked');
+    // After watching ad, could give bonus rewards
+    claimReward();
+  };
+
+  const handleTimeBoost = () => {
+    setShowTimeBoostModal(true);
+  };
+
+  const handleGhsBoost = () => {
+    setShowBoostGhsModal(true);
+  };
+
+  const handleBoostConfirm = () => {
+    if (currentGhs < maxGhs) {
+      setCurrentGhs(prev => Math.min(prev + 10, maxGhs));
+      setShowBoostGhsModal(false);
+      // Could implement boost logic here
+      console.log('Boost applied');
+    }
   };
 
   return (
@@ -358,7 +391,7 @@ const MiningScreen = props => {
                   marginHorizontal: 10,
                 }}>
                 <Image
-                  style={{ flex: 1, resizeMode: 'center' }}
+                  style={{flex: 1, resizeMode: 'center'}}
                   source={Images.Question}
                 />
               </Pressable>
@@ -375,12 +408,12 @@ const MiningScreen = props => {
                   padding: 6,
                 }}>
                 <Image
-                  style={{ flex: 1, resizeMode: 'center' }}
+                  style={{flex: 1, resizeMode: 'center'}}
                   source={Images.happinessIcon}
                 />
               </Pressable>
             </View>
-            <View style={{ padding: 20 }}>
+            <View style={{padding: 20}}>
               <View
                 style={{
                   backgroundColor: Colors.white,
@@ -399,7 +432,7 @@ const MiningScreen = props => {
                   }}
                   resizeMode="contain">
                   <Image
-                    style={{ resizeMode: 'contain', height: 25, width: 25 }}
+                    style={{resizeMode: 'contain', height: 25, width: 25}}
                     resizeMode="center"
                     source={Images.TLogo}
                   />
@@ -436,9 +469,9 @@ const MiningScreen = props => {
                     0.0056/min
                   </Text>
                 </View>
-                <Image source={Images.Info} style={{ height: 15, width: 15 }} />
+                <Image source={Images.Info} style={{height: 15, width: 15}} />
               </View>
-              <View style={{ flexDirection: 'row', gap: 15 }}>
+              <View style={{flexDirection: 'row', gap: 15}}>
                 <View
                   style={{
                     backgroundColor: Colors.secondaryColor,
@@ -448,7 +481,7 @@ const MiningScreen = props => {
                     marginTop: 15,
                     flex: 0.65,
                   }}>
-                  <View style={{ flex: 1 }}>
+                  <View style={{flex: 1}}>
                     <Text
                       style={{
                         color: Colors.white,
@@ -478,7 +511,7 @@ const MiningScreen = props => {
                   </View>
                   <Image
                     source={Images.Info}
-                    style={{ height: 15, width: 15, tintColor: Colors.white }}
+                    style={{height: 15, width: 15, tintColor: Colors.white}}
                   />
                 </View>
                 <View
@@ -490,7 +523,7 @@ const MiningScreen = props => {
                     marginTop: 15,
                     flex: 0.35,
                   }}>
-                  <View style={{ flex: 1 }}>
+                  <View style={{flex: 1}}>
                     <Text
                       style={{
                         color: Colors.white,
@@ -507,13 +540,13 @@ const MiningScreen = props => {
                         fontWeight: '600',
                         marginVertical: 5,
                       }}>
-                      1 <Text style={{ fontSize: 12 }}>/10 Lavels</Text>
+                      1 <Text style={{fontSize: 12}}>/10 Lavels</Text>
                     </Text>
-                    <Text style={{ color: Colors.main }}>-</Text>
+                    <Text style={{color: Colors.main}}>-</Text>
                   </View>
                   <Image
                     source={Images.Info}
-                    style={{ height: 15, width: 15, tintColor: Colors.white }}
+                    style={{height: 15, width: 15, tintColor: Colors.white}}
                   />
                 </View>
               </View>
@@ -551,10 +584,10 @@ const MiningScreen = props => {
                     source={Images.multipleUsersIcon}
                   />
                 </View>
-                <View style={{ marginLeft: horizontalScale(10) }}>
-                  <Text style={{ color: Colors.white }}>Invite Friends</Text>
+                <View style={{marginLeft: horizontalScale(10)}}>
+                  <Text style={{color: Colors.white}}>Invite Friends</Text>
                   <Text
-                    style={{ color: Colors.white, fontSize: verticalScale(11) }}>
+                    style={{color: Colors.white, fontSize: verticalScale(11)}}>
                     Earn extra by inviting your friends
                   </Text>
                 </View>
@@ -568,8 +601,9 @@ const MiningScreen = props => {
                 borderRadius: 30,
               }}>
               <View
-                style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View
+                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <TouchableOpacity
+                  onPress={handleTimeBoost}
                   style={{
                     height: 60,
                     width: 60,
@@ -598,9 +632,10 @@ const MiningScreen = props => {
                       right: 0,
                     }}
                   />
-                </View>
+                </TouchableOpacity>
 
-                <View
+                <TouchableOpacity
+                  onPress={handleGhsBoost}
                   style={{
                     height: 60,
                     width: 60,
@@ -629,7 +664,7 @@ const MiningScreen = props => {
                       right: 0,
                     }}
                   />
-                </View>
+                </TouchableOpacity>
               </View>
               <View
                 style={{
@@ -720,7 +755,7 @@ const MiningScreen = props => {
                         textAlign: 'center',
                         letterSpacing: 2,
                       }}>
-                      {isMining && '30 GH/S'}
+                      {isMining && `${currentGhs} GH/S`}
                     </Text>
                   </Pressable>
                   {/* </View> */}
@@ -728,7 +763,7 @@ const MiningScreen = props => {
               </View>
               <Carousel
                 data={OptionIcon}
-                renderItem={({ item, index }) => {
+                renderItem={({item, index}) => {
                   return (
                     <View
                       style={{
@@ -758,7 +793,7 @@ const MiningScreen = props => {
                           source={item.image}
                         />
                       </ImageBackground>
-                      <View style={{ marginLeft: 10, flex: 1 }}>
+                      <View style={{marginLeft: 10, flex: 1}}>
                         <View
                           style={{
                             flexDirection: 'row',
@@ -798,7 +833,7 @@ const MiningScreen = props => {
                             marginVertical: 5,
                           }}>
                           {item.disc}{' '}
-                          <Text style={{ fontWeight: '600', color: '#778497' }}>
+                          <Text style={{fontWeight: '600', color: '#778497'}}>
                             {item.subDisc}
                           </Text>
                         </Text>
@@ -822,9 +857,9 @@ const MiningScreen = props => {
               />
               <FlatList
                 data={OptionIcon}
-                style={{ marginTop: 10, alignSelf: 'center' }}
+                style={{marginTop: 10, alignSelf: 'center'}}
                 horizontal
-                renderItem={({ item, index }) => (
+                renderItem={({item, index}) => (
                   <View
                     style={{
                       padding: 3,
@@ -868,17 +903,33 @@ const MiningScreen = props => {
           </ImageBackground>
         </TouchableOpacity>
       </SafeAreaView>
-      <Popup
-        visible={isVisible}
-        onClose={() => setIsVisible(false)}
-        btnText={'Claim Your Reward'}
-        image={Images.presentIcon}
-        text1={'Congratulations!'}
-        text2={
-          'Super coins are yours! Get ready for your next challenge. Reopen the gift box in 1 hour for more surprises.'
-        }
-        text3={`You win ${giftAmt} super coins`}
-        onPress={claimReward}
+      <MysteryBoxModal
+        visible={showMysteryBoxModal}
+        onClose={() => setShowMysteryBoxModal(false)}
+        rewardAmount={giftAmt}
+        onWatchAd={handleWatchAd}
+        onOpenDirect={claimReward}
+      />
+
+      <BoostGhsModal
+        visible={showBoostGhsModal}
+        onClose={() => setShowBoostGhsModal(false)}
+        currentGhs={currentGhs}
+        maxGhs={maxGhs}
+        hasReachedLimit={currentGhs >= maxGhs}
+        onBoost={handleBoostConfirm}
+      />
+
+      <BoostGhsModal
+        visible={showTimeBoostModal}
+        onClose={() => setShowTimeBoostModal(false)}
+        currentGhs={currentGhs}
+        maxGhs={maxGhs}
+        hasReachedLimit={false}
+        onBoost={() => {
+          setShowTimeBoostModal(false);
+          console.log('Time boost applied');
+        }}
       />
     </View>
   );
