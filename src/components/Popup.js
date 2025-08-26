@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   popupImage: {
     zIndex: 1111,
-    top: verticalScale(-120),
+    top: verticalScale(-90),
     height: verticalScale(150),
     width: verticalScale(150),
     resizeMode: 'contain',

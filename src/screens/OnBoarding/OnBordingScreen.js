@@ -155,7 +155,18 @@ export default function OnBoardingScreen(props) {
               />
             </TouchableOpacity>
           </Animatable.View>
-
+          {currentIndex === 3 ? (
+            <Animatable.View
+              animation="bounceIn"
+              delay={800}
+              style={styles.getStartedContainer}>
+              <TouchableOpacity
+                style={styles.getStartedButton}
+                onPress={completeOnboarding}>
+                <Text style={styles.getStartedText}>Get Started</Text>
+              </TouchableOpacity>
+            </Animatable.View>
+          ): (
           <Animatable.View
             animation="bounceIn"
             delay={800}
@@ -175,21 +186,11 @@ export default function OnBoardingScreen(props) {
               />
             </TouchableOpacity>
           </Animatable.View>
+          )}
         </View>
 
         {/* Get Started Button for last slide */}
-        {currentIndex === 3 && (
-          <Animatable.View
-            animation="slideInUp"
-            delay={1000}
-            style={styles.getStartedContainer}>
-            <TouchableOpacity
-              style={styles.getStartedButton}
-              onPress={completeOnboarding}>
-              <Text style={styles.getStartedText}>Get Started</Text>
-            </TouchableOpacity>
-          </Animatable.View>
-        )}
+        
       </View>
     );
   };
@@ -311,17 +312,18 @@ const styles = StyleSheet.create({
     transform: [{rotate: '180deg'}],
   },
   getStartedContainer: {
-    position: 'absolute',
-    bottom: verticalScale(120),
-    left: 0,
-    right: 0,
-    paddingHorizontal: horizontalScale(30),
+    // position: 'absolute',
+    // bottom: verticalScale(120),
+    // left: 0,
+    // right: 0,
+    // paddingHorizontal: horizontalScale(30),
   },
   getStartedButton: {
     backgroundColor: Colors.secondaryColor,
     paddingVertical: verticalScale(15),
     borderRadius: verticalScale(25),
     alignItems: 'center',
+    width: width - horizontalScale(150),
   },
   getStartedText: {
     color: Colors.white,

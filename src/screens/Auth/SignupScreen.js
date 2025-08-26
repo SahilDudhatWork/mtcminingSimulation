@@ -61,18 +61,7 @@ export default function SignupScreen({navigation}) {
     }));
   };
 
-  const validateForm = () => {
-    // First Name validation
-    if (!formData.firstName.trim()) {
-      Alert.alert('Error', 'Please enter your first name');
-      return false;
-    }
-
-    // Last Name validation
-    if (!formData.lastName.trim()) {
-      Alert.alert('Error', 'Please enter your last name');
-      return false;
-    }
+  const validateForm = () => {  
 
     // Username validation
     if (!formData.username.trim()) {
@@ -97,17 +86,6 @@ export default function SignupScreen({navigation}) {
       return false;
     }
 
-    // Mobile validation
-    if (!formData.mobile.trim()) {
-      Alert.alert('Error', 'Please enter your mobile number');
-      return false;
-    }
-
-    if (formData.mobile.length < 10) {
-      Alert.alert('Error', 'Please enter a valid mobile number');
-      return false;
-    }
-
     // Password validation
     if (!formData.password.trim()) {
       Alert.alert('Error', 'Please enter a password');
@@ -119,21 +97,11 @@ export default function SignupScreen({navigation}) {
       return false;
     }
 
-    // Confirm Password validation
-    if (!formData.confirmPassword.trim()) {
-      Alert.alert('Error', 'Please confirm your password');
-      return false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return false;
-    }
-
     return true;
   };
 
   const handleSignup = async () => {
+    
     if (!validateForm()) return;
 
     setLoading(true);
@@ -205,29 +173,6 @@ export default function SignupScreen({navigation}) {
             delay={300}
             duration={1000}
             style={styles.formContainer}>
-            {/* Name Fields */}
-            <View style={styles.rowContainer}>
-              <View style={[styles.inputContainer, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>First Name *</Text>
-                <InputField
-                  placeholder="First name"
-                  value={formData.firstName}
-                  onChangeText={value => handleInputChange('firstName', value)}
-                  autoCapitalize="words"
-                />
-              </View>
-
-              <View style={[styles.inputContainer, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>Last Name *</Text>
-                <InputField
-                  placeholder="Last name"
-                  value={formData.lastName}
-                  onChangeText={value => handleInputChange('lastName', value)}
-                  autoCapitalize="words"
-                />
-              </View>
-            </View>
-
             {/* Username */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Username *</Text>
@@ -251,33 +196,7 @@ export default function SignupScreen({navigation}) {
                 autoCapitalize="none"
                 autoCorrect={false}
               />
-            </View>
-
-            {/* Mobile Number */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Mobile Number *</Text>
-              <View style={styles.phoneContainer}>
-                <TouchableOpacity
-                  style={styles.countryCodeButton}
-                  onPress={() => setShowCountryModal(true)}>
-                  <Text style={styles.countryCodeFlag}>
-                    {selectedCountryCode.flag}
-                  </Text>
-                  <Text style={styles.countryCodeText}>
-                    {selectedCountryCode.code}
-                  </Text>
-                </TouchableOpacity>
-                <View style={styles.phoneInputContainer}>
-                  <InputField
-                    placeholder="Mobile number"
-                    value={formData.mobile}
-                    onChangeText={value => handleInputChange('mobile', value)}
-                    keyboardType="phone-pad"
-                    style={styles.phoneInput}
-                  />
-                </View>
-              </View>
-            </View>
+            </View>            
 
             {/* Password */}
             <View style={styles.inputContainer}>
@@ -294,9 +213,9 @@ export default function SignupScreen({navigation}) {
 
             {/* Confirm Password */}
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Confirm Password *</Text>
+              <Text style={styles.inputLabel}>Referral Code </Text>
               <InputField
-                placeholder="Confirm your password"
+                placeholder="Enter your referral code (optional)"
                 value={formData.confirmPassword}
                 onChangeText={value =>
                   handleInputChange('confirmPassword', value)
@@ -325,6 +244,14 @@ export default function SignupScreen({navigation}) {
                 onPress={handleSignup}
                 loading={loading}
                 disabled={loading}
+                style={{
+                  backgroundColor: loading
+                    ? Colors.primaryColor + '80'
+                    : Colors.primaryColor,
+                  paddingVertical: verticalScale(15),
+                  borderRadius: verticalScale(30),
+                  alignItems: 'center',
+                }}
               />
             </View>
 
@@ -405,16 +332,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   inputContainer: {
-    marginBottom: verticalScale(20),
+    // marginBottom: verticalScale(20),
   },
   halfWidth: {
     width: '48%',
+    // marginBottom: verticalScale(20),
   },
   inputLabel: {
     fontSize: verticalScale(16),
     fontWeight: '600',
     color: Colors.black,
-    marginBottom: verticalScale(8),
+    // marginBottom: verticalScale(8),
   },
   phoneContainer: {
     flexDirection: 'row',

@@ -21,7 +21,7 @@ export default function SplashScreen() {
   const {isLoading, getInitialRoute} = useAuth();
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // Create animated values for each bubble
+  // Bubble animations
   const bubbleAnimations = useRef(
     [...Array(30)].map(() => ({
       translateX: new Animated.Value(Math.random() * width),
@@ -31,38 +31,32 @@ export default function SplashScreen() {
     })),
   ).current;
 
-  // Progress bar animation
+  // Animations
   const progressWidth = useRef(new Animated.Value(0)).current;
   const logoRotation = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.5)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const initializeApp = () => {
-      // Start loading progress animation
-      const progressInterval = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(progressInterval);
+    // ✅ Progress bar will reach 100% in exactly 4 seconds
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 2.5; // 40 steps → 100% in 4s
+      setLoadingProgress(progress);
+      if (progress >= 100) clearInterval(interval);
+    }, 100);
 
-            // Navigate after loading is complete and auth context is ready
-            setTimeout(() => {
-              if (!isLoading) {
-                const initialRoute = getInitialRoute();
-                navigation.navigate(initialRoute);
-              }
-            }, 500);
+    // ✅ Navigation after max 4 seconds
+    const timer = setTimeout(() => {
+      const initialRoute = getInitialRoute();
+      if (!isLoading) {
+        navigation.replace(initialRoute);
+      } else {
+        navigation.replace('OnBoardingScreen');
+      }
+    }, 4000);
 
-            return 100;
-          }
-          return prev + 2;
-        });
-      }, 50);
-    };
-
-    initializeApp();
-
-    // Start logo animations
+    // Logo animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -83,8 +77,8 @@ export default function SplashScreen() {
       ),
     ]).start();
 
-    // Start bubble animations with improved physics
-    const animations = bubbleAnimations.map((anim, index) =>
+    // Bubble animations
+    const animations = bubbleAnimations.map(anim =>
       Animated.loop(
         Animated.sequence([
           Animated.parallel([
@@ -112,10 +106,11 @@ export default function SplashScreen() {
         ]),
       ),
     );
-
     animations.forEach(anim => anim.start());
 
     return () => {
+      clearInterval(interval);
+      clearTimeout(timer);
       animations.forEach(anim => anim.stop());
     };
   }, []);
@@ -158,7 +153,6 @@ export default function SplashScreen() {
 
       {/* Main Content */}
       <Animated.View style={[styles.mainContent, {opacity: fadeAnim}]}>
-        {/* Logo with enhanced animations */}
         <Animated.View style={styles.logoContainer}>
           <Animated.Image
             source={Images.mainLogo}
@@ -173,7 +167,6 @@ export default function SplashScreen() {
           <View style={styles.logoGlow} />
         </Animated.View>
 
-        {/* Title with typewriter effect */}
         <Animatable.Text
           animation="fadeInUp"
           delay={1000}

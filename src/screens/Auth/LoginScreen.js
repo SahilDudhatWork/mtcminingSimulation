@@ -57,6 +57,7 @@ export default function LoginScreen({navigation}) {
   };
 
   const handleLogin = async () => {
+    navigation.navigate('BottomTab');
     if (!validateForm()) return;
 
     setLoading(true);
@@ -159,6 +160,14 @@ export default function LoginScreen({navigation}) {
                 onPress={handleLogin}
                 loading={loading}
                 disabled={loading}
+                style={{
+                  backgroundColor: loading
+                    ? Colors.primaryColor + '80'
+                    : Colors.primaryColor,
+                  paddingVertical: verticalScale(15),
+                  borderRadius: verticalScale(30),
+                  alignItems: 'center',
+                }}
               />
             </View>
 
@@ -230,13 +239,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputContainer: {
-    marginBottom: verticalScale(20),
+    // marginBottom: verticalScale(20),
   },
   inputLabel: {
     fontSize: verticalScale(16),
     fontWeight: '600',
     color: Colors.black,
-    marginBottom: verticalScale(8),
   },
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
