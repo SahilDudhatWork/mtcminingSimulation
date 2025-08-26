@@ -1,66 +1,116 @@
-import { View, Text, StyleSheet, Image, Dimensions, Animated } from 'react-native';
-import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Dimensions,
+  Animated,
+} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
 import * as Animatable from 'react-native-animatable';
-import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors } from '../../constants/colors';
-import { Images } from '../../assets/images';
-import { verticalScale } from '../../constants/helper';
+import {useNavigation} from '@react-navigation/native';
+import {useAuth} from '../../context/AuthContext';
+import {Colors} from '../../constants/colors';
+import {Images} from '../../assets/images';
+import {verticalScale} from '../../constants/helper';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 export default function SplashScreen() {
   const navigation = useNavigation();
+  const {isLoading, getInitialRoute} = useAuth();
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
   // Create animated values for each bubble
   const bubbleAnimations = useRef(
-    [...Array(40)].map(() => ({
+    [...Array(30)].map(() => ({
       translateX: new Animated.Value(Math.random() * width),
       translateY: new Animated.Value(Math.random() * height),
-      scale: new Animated.Value(0.5 + Math.random() * 0.5),
-    }))
+      scale: new Animated.Value(0.3 + Math.random() * 0.7),
+      opacity: new Animated.Value(0.3 + Math.random() * 0.4),
+    })),
   ).current;
 
+  // Progress bar animation
+  const progressWidth = useRef(new Animated.Value(0)).current;
+  const logoRotation = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.5)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const userDataString = await AsyncStorage.getItem('userData');
-        setTimeout(() => {
-          if (userDataString) {
-            navigation.navigate('BottomTab');
-          } else {
-            navigation.navigate('OnBoardingScreen');
+    const initializeApp = () => {
+      // Start loading progress animation
+      const progressInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
+
+            // Navigate after loading is complete and auth context is ready
+            setTimeout(() => {
+              if (!isLoading) {
+                const initialRoute = getInitialRoute();
+                navigation.navigate(initialRoute);
+              }
+            }, 500);
+
+            return 100;
           }
-        }, 5000);
-      } catch (error) {
-        console.error('Error retrieving user data:', error);
-      }
+          return prev + 2;
+        });
+      }, 50);
     };
 
-    fetchData();
+    initializeApp();
 
-    // Start bubble animations
+    // Start logo animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoScale, {
+        toValue: 1,
+        duration: 1500,
+        useNativeDriver: true,
+      }),
+      Animated.loop(
+        Animated.timing(logoRotation, {
+          toValue: 1,
+          duration: 8000,
+          useNativeDriver: true,
+        }),
+      ),
+    ]).start();
+
+    // Start bubble animations with improved physics
     const animations = bubbleAnimations.map((anim, index) =>
       Animated.loop(
         Animated.sequence([
           Animated.parallel([
             Animated.timing(anim.translateX, {
               toValue: Math.random() * width,
-              duration: 3000 + Math.random() * 2000,
+              duration: 4000 + Math.random() * 3000,
               useNativeDriver: true,
             }),
             Animated.timing(anim.translateY, {
               toValue: Math.random() * height,
-              duration: 3000 + Math.random() * 2000,
+              duration: 4000 + Math.random() * 3000,
               useNativeDriver: true,
             }),
             Animated.timing(anim.scale, {
-              toValue: 0.5 + Math.random() * 0.5,
-              duration: 1500 + Math.random() * 1000,
+              toValue: 0.2 + Math.random() * 0.8,
+              duration: 2000 + Math.random() * 2000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(anim.opacity, {
+              toValue: 0.1 + Math.random() * 0.6,
+              duration: 1500 + Math.random() * 1500,
               useNativeDriver: true,
             }),
           ]),
-        ])
-      )
+        ]),
+      ),
     );
 
     animations.forEach(anim => anim.start());
@@ -69,6 +119,20 @@ export default function SplashScreen() {
       animations.forEach(anim => anim.stop());
     };
   }, []);
+
+  // Animate progress bar
+  useEffect(() => {
+    Animated.timing(progressWidth, {
+      toValue: loadingProgress,
+      duration: 100,
+      useNativeDriver: false,
+    }).start();
+  }, [loadingProgress]);
+
+  const spin = logoRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <View style={styles.container}>
@@ -81,33 +145,74 @@ export default function SplashScreen() {
               styles.circle,
               {
                 transform: [
-                  { translateX: anim.translateX },
-                  { translateY: anim.translateY },
-                  { scale: anim.scale },
+                  {translateX: anim.translateX},
+                  {translateY: anim.translateY},
+                  {scale: anim.scale},
                 ],
+                opacity: anim.opacity,
               },
             ]}
           />
         ))}
       </View>
 
-      {/* Logo Animation */}
-      <Animatable.Image
-        animation="bounceIn"
-        duration={1500}
-        source={Images.mainLogo}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+      {/* Main Content */}
+      <Animated.View style={[styles.mainContent, {opacity: fadeAnim}]}>
+        {/* Logo with enhanced animations */}
+        <Animated.View style={styles.logoContainer}>
+          <Animated.Image
+            source={Images.mainLogo}
+            style={[
+              styles.logo,
+              {
+                transform: [{scale: logoScale}, {rotate: spin}],
+              },
+            ]}
+            resizeMode="contain"
+          />
+          <View style={styles.logoGlow} />
+        </Animated.View>
 
-      {/* Text Animation */}
-      <Animatable.Text
+        {/* Title with typewriter effect */}
+        <Animatable.Text
+          animation="fadeInUp"
+          delay={1000}
+          duration={1500}
+          style={styles.title}>
+          MTC USDT Mining
+        </Animatable.Text>
+
+        <Animatable.Text
+          animation="fadeInUp"
+          delay={1500}
+          duration={1000}
+          style={styles.subtitle}>
+          Your Gateway to Digital Mining
+        </Animatable.Text>
+      </Animated.View>
+
+      {/* Loading Progress */}
+      <Animated.View
+        style={[styles.loadingContainer, {opacity: fadeAnim}]}
         animation="fadeInUp"
-        delay={500}
-        style={styles.title}
-      >
-        MTC USDT Mining 
-      </Animatable.Text>
+        delay={2000}>
+        <View style={styles.progressBarContainer}>
+          <Animated.View
+            style={[
+              styles.progressBar,
+              {
+                width: progressWidth.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: ['0%', '100%'],
+                }),
+              },
+            ]}
+          />
+        </View>
+        <Text style={styles.loadingText}>
+          Loading... {Math.round(loadingProgress)}%
+        </Text>
+      </Animated.View>
     </View>
   );
 }
@@ -124,23 +229,76 @@ const styles = StyleSheet.create({
   },
   circle: {
     position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: Colors.borderLight,
   },
+  mainContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  logoContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
   logo: {
-    height: verticalScale(120),
-    width: verticalScale(120),
+    height: verticalScale(140),
+    width: verticalScale(140),
     tintColor: Colors.primaryColor,
+    zIndex: 2,
+  },
+  logoGlow: {
+    position: 'absolute',
+    height: verticalScale(160),
+    width: verticalScale(160),
+    borderRadius: verticalScale(80),
+    backgroundColor: Colors.primaryColor,
+    opacity: 0.1,
+    zIndex: 1,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     color: Colors.primaryColor,
     fontWeight: 'bold',
-    marginTop: 20,
+    textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 2, height: 2 },
+    textShadowOffset: {width: 2, height: 2},
     textShadowRadius: 4,
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: Colors.shadeGrey,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    bottom: 100,
+    width: '80%',
+    alignItems: 'center',
+  },
+  progressBarContainer: {
+    width: '100%',
+    height: 4,
+    backgroundColor: Colors.borderLight,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: Colors.primaryColor,
+    borderRadius: 2,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.shadeGrey,
+    marginTop: 15,
+    fontWeight: '500',
   },
 });

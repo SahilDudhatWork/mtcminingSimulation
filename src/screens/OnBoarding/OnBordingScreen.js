@@ -4,60 +4,84 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import * as Animatable from 'react-native-animatable';
-import { Colors } from '../../constants/colors';
+import {useAuth} from '../../context/AuthContext';
+import {Colors} from '../../constants/colors';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import { horizontalScale, verticalScale } from '../../constants/helper';
-import { Images } from '../../assets/images';
+import {horizontalScale, verticalScale} from '../../constants/helper';
+import {Images} from '../../assets/images';
+
+const {width} = Dimensions.get('window');
 
 export default function OnBoardingScreen(props) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const {completeOnboarding: completeOnboardingAuth} = useAuth();
+
+  const completeOnboarding = async () => {
+    try {
+      const result = await completeOnboardingAuth();
+      if (result.success) {
+        props.navigation.navigate('LoginScreen');
+      } else {
+        console.error('Error completing onboarding:', result.error);
+        props.navigation.navigate('LoginScreen');
+      }
+    } catch (error) {
+      console.error('Error saving onboarding completion:', error);
+      props.navigation.navigate('LoginScreen');
+    }
+  };
+
+  const skipOnboarding = async () => {
+    await completeOnboarding();
+  };
+
   const list = [
     {
       image: Images.onboardScreen1,
       title1: '',
-      title2: 'Hey!',
-      title3: 'Welcome',
-      desc: '“ We provide you the best mining experience with our simulation app ”',
+      title2: 'Welcome to',
+      title3: 'MTC Mining',
+      desc: 'Experience the future of digital mining with our advanced simulation platform. Start your journey to financial freedom today.',
     },
     {
       image: Images.onboardScreen2,
-      title1: 'Refer',
-      title2: 'Friends',
-      title3: '',
-      desc: '“ Join the exclusive league of wealth builders! Refer friends to our platform and watch as your Master Coins multiply ”',
+      title1: 'Refer &',
+      title2: 'Earn',
+      title3: 'Together',
+      desc: 'Invite your friends and grow your network. Every referral brings you closer to building your digital empire.',
     },
     {
       image: Images.onboardScreen3,
-      title1: '',
-      title2: 'Build Your',
+      title1: 'Build Your',
+      title2: 'Digital',
       title3: 'Fortune',
-      desc: `“ Your network is your greatest asset – let's grow together on this rewarding journey ”`,
+      desc: 'Transform your mining dreams into reality. Our platform provides the tools you need to succeed.',
     },
     {
       image: Images.onboardScreen4,
-      title1: 'Mine Your',
-      title2: 'Dreams',
-      title3: '',
-      desc: '“ Learn and practice the art of mining with our top-notch simulation app ”',
+      title1: 'Start',
+      title2: 'Mining',
+      title3: 'Today',
+      desc: 'Join thousands of users who are already mining their way to success. Your digital future starts now.',
     },
   ];
 
   const Slider = () => {
     return (
-      <>
+      <View style={styles.container}>
         <Animatable.Text
           animation="fadeInRight"
           duration={1000}
           style={styles.skipText}
           key={`skip-${currentIndex}`}
-          onPress={() => {
-            props.navigation.navigate('BottomTab');
-          }}>
+          onPress={skipOnboarding}>
           Skip
         </Animatable.Text>
+
         <View style={styles.sliderContainer}>
           <Animatable.Image
             animation="slideInUp"
@@ -66,28 +90,49 @@ export default function OnBoardingScreen(props) {
             source={list[currentIndex].image}
             key={`image-${currentIndex}`}
           />
-          <Animatable.Text
-            animation="fadeInUp"
-            delay={200}
-            style={styles.sliderText1}
-            key={`title-${currentIndex}`}>
-            {list[currentIndex].title1}
-            <Text style={{ color: Colors.black }}>
-              {' '}{list[currentIndex].title2}
-            </Text>
-            <Text style={{ color: Colors.secondaryColor }}>
-              {list[currentIndex].title3}
-            </Text>
-          </Animatable.Text>
-          <Animatable.Text
-            animation="fadeInUp"
-            delay={400}
-            style={styles.descText1}
-            key={`desc-${currentIndex}`}>
-            {list[currentIndex].desc}
-          </Animatable.Text>
+
+          <View style={styles.textContainer}>
+            <Animatable.Text
+              animation="fadeInUp"
+              delay={200}
+              style={styles.sliderText1}
+              key={`title-${currentIndex}`}>
+              <Text style={{color: Colors.primaryColor}}>
+                {list[currentIndex].title1}
+              </Text>
+              <Text style={{color: Colors.black}}>
+                {' '}
+                {list[currentIndex].title2}{' '}
+              </Text>
+              <Text style={{color: Colors.secondaryColor}}>
+                {list[currentIndex].title3}
+              </Text>
+            </Animatable.Text>
+
+            <Animatable.Text
+              animation="fadeInUp"
+              delay={400}
+              style={styles.descText1}
+              key={`desc-${currentIndex}`}>
+              {list[currentIndex].desc}
+            </Animatable.Text>
+          </View>
+
+          {/* Pagination dots */}
+          <View style={styles.paginationContainer}>
+            {list.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  index === currentIndex && styles.paginationDotActive,
+                ]}
+              />
+            ))}
+          </View>
         </View>
-        <View style={styles.rowCentered}>
+
+        <View style={styles.navigationContainer}>
           <Animatable.View
             animation="bounceIn"
             delay={600}
@@ -97,13 +142,20 @@ export default function OnBoardingScreen(props) {
                 setCurrentIndex(currentIndex - 1);
               }}
               disabled={currentIndex < 1}
-              style={styles.smallLessThanImageContainer}>
+              style={[
+                styles.navigationButton,
+                currentIndex < 1 && styles.navigationButtonDisabled,
+              ]}>
               <Image
-                style={styles.smallLessThanImage}
+                style={[
+                  styles.navigationIcon,
+                  currentIndex < 1 && styles.navigationIconDisabled,
+                ]}
                 source={Images.lessThanIcon}
               />
             </TouchableOpacity>
           </Animatable.View>
+
           <Animatable.View
             animation="bounceIn"
             delay={800}
@@ -113,100 +165,167 @@ export default function OnBoardingScreen(props) {
                 if (currentIndex < 3) {
                   setCurrentIndex(currentIndex + 1);
                 } else {
-                  props.navigation.navigate('BottomTab');
+                  completeOnboarding();
                 }
               }}
-              style={styles.lessThanIconContainer}>
-              <Image style={styles.lessThanImage} source={Images.lessThanIcon} />
+              style={styles.navigationButtonPrimary}>
+              <Image
+                style={styles.navigationIconPrimary}
+                source={Images.lessThanIcon}
+              />
             </TouchableOpacity>
           </Animatable.View>
         </View>
-      </>
+
+        {/* Get Started Button for last slide */}
+        {currentIndex === 3 && (
+          <Animatable.View
+            animation="slideInUp"
+            delay={1000}
+            style={styles.getStartedContainer}>
+            <TouchableOpacity
+              style={styles.getStartedButton}
+              onPress={completeOnboarding}>
+              <Text style={styles.getStartedText}>Get Started</Text>
+            </TouchableOpacity>
+          </Animatable.View>
+        )}
+      </View>
     );
   };
 
   return (
     <>
-      <CustomStatusBar dark backgroundColor={Colors.secondaryColor} />
+      <CustomStatusBar dark backgroundColor={Colors.white} />
       {Slider()}
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
   sliderText1: {
-    fontSize: verticalScale(30),
-    fontWeight: '500',
-    marginTop: verticalScale(15),
-    color: Colors.primaryColor,
+    fontSize: verticalScale(28),
+    fontWeight: '600',
     textAlign: 'center',
+    lineHeight: verticalScale(36),
   },
   descText1: {
     textAlign: 'center',
     color: Colors.shadeGrey,
-    marginTop: verticalScale(6),
-    width: '80%',
-    fontSize: verticalScale(14),
+    marginTop: verticalScale(15),
+    fontSize: verticalScale(16),
+    lineHeight: verticalScale(24),
+    paddingHorizontal: horizontalScale(20),
   },
   skipText: {
     textAlign: 'center',
-    marginRight: horizontalScale(10),
-    marginTop: verticalScale(10),
-    position: 'relative',
-    color: Colors.black,
-    borderWidth: 1,
-    borderColor: Colors.black,
-    paddingHorizontal: horizontalScale(10),
-    paddingVertical: verticalScale(5),
+    marginRight: horizontalScale(20),
+    marginTop: verticalScale(50),
+    color: Colors.primaryColor,
+    backgroundColor: Colors.borderLight,
+    paddingHorizontal: horizontalScale(20),
+    paddingVertical: verticalScale(8),
     borderRadius: verticalScale(20),
     overflow: 'hidden',
-    width: horizontalScale(70),
-    fontSize: verticalScale(12),
+    fontSize: verticalScale(14),
     alignSelf: 'flex-end',
+    fontWeight: '500',
   },
   sliderImage: {
-    height: verticalScale(350),
-    width: verticalScale(350),
+    height: verticalScale(300),
+    width: verticalScale(300),
     resizeMode: 'contain',
+    alignSelf: 'center',
   },
   sliderContainer: {
-    height: '90%',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: horizontalScale(20),
   },
-  rowCentered: {
+  textContainer: {
+    marginTop: verticalScale(30),
+    alignItems: 'center',
+  },
+  paginationContainer: {
     flexDirection: 'row',
-    alignSelf: 'center',
+    justifyContent: 'center',
+    marginTop: verticalScale(40),
+    marginBottom: verticalScale(20),
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.borderLight,
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: Colors.primaryColor,
+    width: 24,
+  },
+  navigationContainer: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '90%',
+    paddingHorizontal: horizontalScale(30),
+    paddingBottom: verticalScale(50),
   },
-  smallLessThanImageContainer: {
-    height: verticalScale(40),
-    width: verticalScale(40),
-    backgroundColor: Colors.secondaryColor,
-    borderRadius: verticalScale(20),
+  navigationButton: {
+    height: verticalScale(50),
+    width: verticalScale(50),
+    backgroundColor: Colors.borderLight,
+    borderRadius: verticalScale(25),
     justifyContent: 'center',
     alignItems: 'center',
   },
-  smallLessThanImage: {
+  navigationButtonDisabled: {
+    backgroundColor: Colors.borderLight,
+    opacity: 0.5,
+  },
+  navigationButtonPrimary: {
+    height: verticalScale(50),
+    width: verticalScale(50),
+    backgroundColor: Colors.primaryColor,
+    borderRadius: verticalScale(25),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  navigationIcon: {
+    height: verticalScale(20),
+    width: verticalScale(20),
+    resizeMode: 'contain',
+    tintColor: Colors.shadeGrey,
+  },
+  navigationIconDisabled: {
+    tintColor: Colors.borderLight,
+  },
+  navigationIconPrimary: {
     height: verticalScale(20),
     width: verticalScale(20),
     resizeMode: 'contain',
     tintColor: Colors.white,
+    transform: [{rotate: '180deg'}],
   },
-  lessThanIconContainer: {
-    height: verticalScale(40),
-    width: verticalScale(40),
+  getStartedContainer: {
+    position: 'absolute',
+    bottom: verticalScale(120),
+    left: 0,
+    right: 0,
+    paddingHorizontal: horizontalScale(30),
+  },
+  getStartedButton: {
     backgroundColor: Colors.secondaryColor,
-    borderRadius: verticalScale(20),
-    justifyContent: 'center',
+    paddingVertical: verticalScale(15),
+    borderRadius: verticalScale(25),
     alignItems: 'center',
   },
-  lessThanImage: {
-    height: verticalScale(20),
-    width: verticalScale(20),
-    resizeMode: 'contain',
-    tintColor: Colors.white,
-    transform: [{ rotate: '180deg' }],
+  getStartedText: {
+    color: Colors.white,
+    fontSize: verticalScale(18),
+    fontWeight: '600',
   },
 });
