@@ -18,6 +18,8 @@ import { Images } from '../../assets/images';
 import { horizontalScale, verticalScale } from '../../constants/helper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Popup from '../../components/Popup';
+import MysteryBoxModal from '../../components/MysteryBoxModal';
+import BoostGhsModal from '../../components/BoostGhsModal';
 import { useNavigation } from '@react-navigation/native';
 
 const MiningScreen = props => {
@@ -39,6 +41,13 @@ const MiningScreen = props => {
   const [giftIntervalId, setGiftIntervalId] = useState(null);
   const [giftAmt, setGiftAmt] = useState(0);
   const [masterCoin, setMasterCoin] = useState(0);
+
+  // for boost modals
+  const [showMysteryBoxModal, setShowMysteryBoxModal] = useState(false);
+  const [showBoostGhsModal, setShowBoostGhsModal] = useState(false);
+  const [showTimeBoostModal, setShowTimeBoostModal] = useState(false);
+  const [currentGhs, setCurrentGhs] = useState(30);
+  const [maxGhs] = useState(100);
   const GIFT_DURATION_MS = 1 * 60 * 1000; // 1 minutes in milliseconds
 
   const OptionIcon = [
@@ -288,7 +297,7 @@ const MiningScreen = props => {
     if (!isGiftMining) {
       const randomAmount = await getRandomInt(10, 200);
       setGiftAmt(randomAmount);
-      setIsVisible(true);
+      setShowMysteryBoxModal(true);
       const now = new Date().getTime();
       await AsyncStorage.setItem('giftSessionStart', now.toString());
       setIsGiftMining(true);
@@ -301,7 +310,7 @@ const MiningScreen = props => {
   };
 
   const claimReward = async () => {
-    setIsVisible(false);
+    setShowMysteryBoxModal(false);
     console.log('giftAmty', giftAmt);
 
     setMasterCoin(prev => {
@@ -309,6 +318,30 @@ const MiningScreen = props => {
       AsyncStorage.setItem('masterCoin', totalMasterCoin.toString());
       return totalMasterCoin;
     });
+  };
+
+  const handleWatchAd = () => {
+    // Implement ad watching logic here
+    console.log('Watch ad clicked');
+    // After watching ad, could give bonus rewards
+    claimReward();
+  };
+
+  const handleTimeBoost = () => {
+    setShowTimeBoostModal(true);
+  };
+
+  const handleGhsBoost = () => {
+    setShowBoostGhsModal(true);
+  };
+
+  const handleBoostConfirm = () => {
+    if (currentGhs < maxGhs) {
+      setCurrentGhs(prev => Math.min(prev + 10, maxGhs));
+      setShowBoostGhsModal(false);
+      // Could implement boost logic here
+      console.log('Boost applied');
+    }
   };
 
   return (
@@ -569,7 +602,8 @@ const MiningScreen = props => {
               }}>
               <View
                 style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View
+                <TouchableOpacity
+                  onPress={handleTimeBoost}
                   style={{
                     height: 60,
                     width: 60,
@@ -598,9 +632,10 @@ const MiningScreen = props => {
                       right: 0,
                     }}
                   />
-                </View>
+                </TouchableOpacity>
 
-                <View
+                <TouchableOpacity
+                  onPress={handleGhsBoost}
                   style={{
                     height: 60,
                     width: 60,
@@ -629,7 +664,7 @@ const MiningScreen = props => {
                       right: 0,
                     }}
                   />
-                </View>
+                </TouchableOpacity>
               </View>
               <View
                 style={{
@@ -720,7 +755,7 @@ const MiningScreen = props => {
                         textAlign: 'center',
                         letterSpacing: 2,
                       }}>
-                      {isMining && '30 GH/S'}
+                      {isMining && `${currentGhs} GH/S`}
                     </Text>
                   </Pressable>
                   {/* </View> */}
@@ -868,17 +903,33 @@ const MiningScreen = props => {
           </ImageBackground>
         </TouchableOpacity>
       </SafeAreaView>
-      <Popup
-        visible={isVisible}
-        onClose={() => setIsVisible(false)}
-        btnText={'Claim Your Reward'}
-        image={Images.presentIcon}
-        text1={'Congratulations!'}
-        text2={
-          'Super coins are yours! Get ready for your next challenge. Reopen the gift box in 1 hour for more surprises.'
-        }
-        text3={`You win ${giftAmt} super coins`}
-        onPress={claimReward}
+      <MysteryBoxModal
+        visible={showMysteryBoxModal}
+        onClose={() => setShowMysteryBoxModal(false)}
+        rewardAmount={giftAmt}
+        onWatchAd={handleWatchAd}
+        onOpenDirect={claimReward}
+      />
+
+      <BoostGhsModal
+        visible={showBoostGhsModal}
+        onClose={() => setShowBoostGhsModal(false)}
+        currentGhs={currentGhs}
+        maxGhs={maxGhs}
+        hasReachedLimit={currentGhs >= maxGhs}
+        onBoost={handleBoostConfirm}
+      />
+
+      <BoostGhsModal
+        visible={showTimeBoostModal}
+        onClose={() => setShowTimeBoostModal(false)}
+        currentGhs={currentGhs}
+        maxGhs={maxGhs}
+        hasReachedLimit={false}
+        onBoost={() => {
+          setShowTimeBoostModal(false);
+          console.log('Time boost applied');
+        }}
       />
     </View>
   );
