@@ -11,6 +11,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function SplashScreen() {
   const navigation = useNavigation();
+  const { isLoading, getInitialRoute } = useAuth();
   const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Create animated values for each bubble
@@ -30,39 +31,29 @@ export default function SplashScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Check both userData and onboarding completion
-        const userDataString = await AsyncStorage.getItem('userData');
-        const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
+    const initializeApp = () => {
+      // Start loading progress animation
+      const progressInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
 
-        // Start loading progress animation
-        const progressInterval = setInterval(() => {
-          setLoadingProgress(prev => {
-            if (prev >= 100) {
-              clearInterval(progressInterval);
-              setTimeout(() => {
-                if (userDataString) {
-                  navigation.navigate('BottomTab');
-                } else if (onboardingCompleted === 'true') {
-                  navigation.navigate('LoginScreen');
-                } else {
-                  navigation.navigate('OnBoardingScreen');
-                }
-              }, 500);
-              return 100;
-            }
-            return prev + 2;
-          });
-        }, 50);
+            // Navigate after loading is complete and auth context is ready
+            setTimeout(() => {
+              if (!isLoading) {
+                const initialRoute = getInitialRoute();
+                navigation.navigate(initialRoute);
+              }
+            }, 500);
 
-      } catch (error) {
-        console.error('Error retrieving user data:', error);
-        setTimeout(() => navigation.navigate('OnBoardingScreen'), 3000);
-      }
+            return 100;
+          }
+          return prev + 2;
+        });
+      }, 50);
     };
 
-    fetchData();
+    initializeApp();
 
     // Start logo animations
     Animated.parallel([
