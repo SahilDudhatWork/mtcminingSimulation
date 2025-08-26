@@ -10,6 +10,7 @@ import BottomTab from './BottomTab';
 import HelpScreen from '../screens/Help/HelpScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import ConvertCoinScreen from '../screens/ConvertCoin/ConvertCoinScreen';
+import HomeScreen from '../screens/Home/HomeScreen';
 
 const Stack = createNativeStackNavigator();
 
