@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import * as Animatable from 'react-native-animatable';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../context/AuthContext';
 import { Colors } from '../../constants/colors';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
