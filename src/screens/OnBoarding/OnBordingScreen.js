@@ -4,13 +4,17 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import React, { useState } from 'react';
 import * as Animatable from 'react-native-animatable';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../../constants/colors';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { horizontalScale, verticalScale } from '../../constants/helper';
 import { Images } from '../../assets/images';
+
+const { width } = Dimensions.get('window');
 
 export default function OnBoardingScreen(props) {
   const [currentIndex, setCurrentIndex] = useState(0);
