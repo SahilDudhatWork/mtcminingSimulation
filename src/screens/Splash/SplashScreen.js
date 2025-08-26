@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Image, Dimensions, Animated } from 'react-nativ
 import React, { useEffect, useRef, useState } from 'react';
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../../context/AuthContext';
 import { Colors } from '../../constants/colors';
 import { Images } from '../../assets/images';
 import { verticalScale } from '../../constants/helper';
