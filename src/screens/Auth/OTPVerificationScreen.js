@@ -18,6 +18,7 @@ import { horizontalScale, verticalScale } from '../../constants/helper';
 
 export default function OTPVerificationScreen({ navigation, route }) {
   const { type, email, mobile, verificationType, userData } = route.params;
+  const { login, signup } = useAuth();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
