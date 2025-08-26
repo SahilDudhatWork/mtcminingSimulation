@@ -10,33 +10,33 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import * as Animatable from 'react-native-animatable';
-import { Colors } from '../../constants/colors';
+import {Colors} from '../../constants/colors';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import InputField from '../../components/InputField';
 import Button from '../../components/Button';
-import { horizontalScale, verticalScale } from '../../constants/helper';
+import {horizontalScale, verticalScale} from '../../constants/helper';
 
 // Sample country codes - in a real app, you'd have a more comprehensive list
 const countryCodes = [
-  { code: '+1', country: 'US', flag: '🇺🇸' },
-  { code: '+44', country: 'UK', flag: '🇬🇧' },
-  { code: '+91', country: 'IN', flag: '🇮🇳' },
-  { code: '+86', country: 'CN', flag: '🇨🇳' },
-  { code: '+81', country: 'JP', flag: '🇯🇵' },
-  { code: '+49', country: 'DE', flag: '🇩🇪' },
-  { code: '+33', country: 'FR', flag: '🇫🇷' },
-  { code: '+39', country: 'IT', flag: '🇮🇹' },
-  { code: '+34', country: 'ES', flag: '🇪🇸' },
-  { code: '+7', country: 'RU', flag: '🇷🇺' },
-  { code: '+55', country: 'BR', flag: '🇧🇷' },
-  { code: '+52', country: 'MX', flag: '🇲🇽' },
-  { code: '+61', country: 'AU', flag: '🇦🇺' },
-  { code: '+27', country: 'ZA', flag: '🇿🇦' },
+  {code: '+1', country: 'US', flag: '🇺🇸'},
+  {code: '+44', country: 'UK', flag: '🇬🇧'},
+  {code: '+91', country: 'IN', flag: '🇮🇳'},
+  {code: '+86', country: 'CN', flag: '🇨🇳'},
+  {code: '+81', country: 'JP', flag: '🇯🇵'},
+  {code: '+49', country: 'DE', flag: '🇩🇪'},
+  {code: '+33', country: 'FR', flag: '🇫🇷'},
+  {code: '+39', country: 'IT', flag: '🇮🇹'},
+  {code: '+34', country: 'ES', flag: '🇪🇸'},
+  {code: '+7', country: 'RU', flag: '🇷🇺'},
+  {code: '+55', country: 'BR', flag: '🇧🇷'},
+  {code: '+52', country: 'MX', flag: '🇲🇽'},
+  {code: '+61', country: 'AU', flag: '🇦🇺'},
+  {code: '+27', country: 'ZA', flag: '🇿🇦'},
 ];
 
-export default function SignupScreen({ navigation }) {
+export default function SignupScreen({navigation}) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -46,7 +46,9 @@ export default function SignupScreen({ navigation }) {
     confirmPassword: '',
     mobile: '',
   });
-  const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodes[0]);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(
+    countryCodes[0],
+  );
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -65,81 +67,81 @@ export default function SignupScreen({ navigation }) {
       Alert.alert('Error', 'Please enter your first name');
       return false;
     }
-    
+
     // Last Name validation
     if (!formData.lastName.trim()) {
       Alert.alert('Error', 'Please enter your last name');
       return false;
     }
-    
+
     // Username validation
     if (!formData.username.trim()) {
       Alert.alert('Error', 'Please enter a username');
       return false;
     }
-    
+
     if (formData.username.length < 3) {
       Alert.alert('Error', 'Username must be at least 3 characters long');
       return false;
     }
-    
+
     // Email validation
     if (!formData.email.trim()) {
       Alert.alert('Error', 'Please enter your email address');
       return false;
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       Alert.alert('Error', 'Please enter a valid email address');
       return false;
     }
-    
+
     // Mobile validation
     if (!formData.mobile.trim()) {
       Alert.alert('Error', 'Please enter your mobile number');
       return false;
     }
-    
+
     if (formData.mobile.length < 10) {
       Alert.alert('Error', 'Please enter a valid mobile number');
       return false;
     }
-    
+
     // Password validation
     if (!formData.password.trim()) {
       Alert.alert('Error', 'Please enter a password');
       return false;
     }
-    
+
     if (formData.password.length < 8) {
       Alert.alert('Error', 'Password must be at least 8 characters long');
       return false;
     }
-    
+
     // Confirm Password validation
     if (!formData.confirmPassword.trim()) {
       Alert.alert('Error', 'Please confirm your password');
       return false;
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
       return false;
     }
-    
+
     return true;
   };
 
   const handleSignup = async () => {
     if (!validateForm()) return;
-    
+
     setLoading(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Navigate to OTP verification for mobile first
       navigation.navigate('OTPVerificationScreen', {
         type: 'signup',
@@ -151,7 +153,6 @@ export default function SignupScreen({ navigation }) {
           countryCode: selectedCountryCode.code,
         },
       });
-      
     } catch (error) {
       Alert.alert('Error', 'Signup failed. Please try again.');
     } finally {
@@ -163,16 +164,15 @@ export default function SignupScreen({ navigation }) {
     navigation.navigate('LoginScreen');
   };
 
-  const selectCountryCode = (country) => {
+  const selectCountryCode = country => {
     setSelectedCountryCode(country);
     setShowCountryModal(false);
   };
 
-  const renderCountryItem = ({ item }) => (
+  const renderCountryItem = ({item}) => (
     <TouchableOpacity
       style={styles.countryItem}
-      onPress={() => selectCountryCode(item)}
-    >
+      onPress={() => selectCountryCode(item)}>
       <Text style={styles.countryFlag}>{item.flag}</Text>
       <Text style={styles.countryCode}>{item.code}</Text>
       <Text style={styles.countryName}>{item.country}</Text>
@@ -182,20 +182,17 @@ export default function SignupScreen({ navigation }) {
   return (
     <>
       <CustomStatusBar dark backgroundColor={Colors.white} />
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+          showsVerticalScrollIndicator={false}>
           {/* Header */}
-          <Animatable.View 
-            animation="fadeInDown" 
+          <Animatable.View
+            animation="fadeInDown"
             duration={1000}
-            style={styles.headerContainer}
-          >
+            style={styles.headerContainer}>
             <Text style={styles.welcomeText}>Create Account</Text>
             <Text style={styles.subtitleText}>
               Join the mining revolution today
@@ -203,12 +200,11 @@ export default function SignupScreen({ navigation }) {
           </Animatable.View>
 
           {/* Form Container */}
-          <Animatable.View 
-            animation="fadeInUp" 
+          <Animatable.View
+            animation="fadeInUp"
             delay={300}
             duration={1000}
-            style={styles.formContainer}
-          >
+            style={styles.formContainer}>
             {/* Name Fields */}
             <View style={styles.rowContainer}>
               <View style={[styles.inputContainer, styles.halfWidth]}>
@@ -216,17 +212,17 @@ export default function SignupScreen({ navigation }) {
                 <InputField
                   placeholder="First name"
                   value={formData.firstName}
-                  onChangeText={(value) => handleInputChange('firstName', value)}
+                  onChangeText={value => handleInputChange('firstName', value)}
                   autoCapitalize="words"
                 />
               </View>
-              
+
               <View style={[styles.inputContainer, styles.halfWidth]}>
                 <Text style={styles.inputLabel}>Last Name *</Text>
                 <InputField
                   placeholder="Last name"
                   value={formData.lastName}
-                  onChangeText={(value) => handleInputChange('lastName', value)}
+                  onChangeText={value => handleInputChange('lastName', value)}
                   autoCapitalize="words"
                 />
               </View>
@@ -238,7 +234,7 @@ export default function SignupScreen({ navigation }) {
               <InputField
                 placeholder="Choose a username"
                 value={formData.username}
-                onChangeText={(value) => handleInputChange('username', value)}
+                onChangeText={value => handleInputChange('username', value)}
                 autoCapitalize="none"
                 autoCorrect={false}
               />
@@ -250,7 +246,7 @@ export default function SignupScreen({ navigation }) {
               <InputField
                 placeholder="Enter your email"
                 value={formData.email}
-                onChangeText={(value) => handleInputChange('email', value)}
+                onChangeText={value => handleInputChange('email', value)}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -263,16 +259,19 @@ export default function SignupScreen({ navigation }) {
               <View style={styles.phoneContainer}>
                 <TouchableOpacity
                   style={styles.countryCodeButton}
-                  onPress={() => setShowCountryModal(true)}
-                >
-                  <Text style={styles.countryCodeFlag}>{selectedCountryCode.flag}</Text>
-                  <Text style={styles.countryCodeText}>{selectedCountryCode.code}</Text>
+                  onPress={() => setShowCountryModal(true)}>
+                  <Text style={styles.countryCodeFlag}>
+                    {selectedCountryCode.flag}
+                  </Text>
+                  <Text style={styles.countryCodeText}>
+                    {selectedCountryCode.code}
+                  </Text>
                 </TouchableOpacity>
                 <View style={styles.phoneInputContainer}>
                   <InputField
                     placeholder="Mobile number"
                     value={formData.mobile}
-                    onChangeText={(value) => handleInputChange('mobile', value)}
+                    onChangeText={value => handleInputChange('mobile', value)}
                     keyboardType="phone-pad"
                     style={styles.phoneInput}
                   />
@@ -286,7 +285,7 @@ export default function SignupScreen({ navigation }) {
               <InputField
                 placeholder="Create a password"
                 value={formData.password}
-                onChangeText={(value) => handleInputChange('password', value)}
+                onChangeText={value => handleInputChange('password', value)}
                 secureTextEntry={!showPassword}
                 rightIcon={showPassword ? 'eye-off' : 'eye'}
                 onRightIconPress={() => setShowPassword(!showPassword)}
@@ -299,10 +298,14 @@ export default function SignupScreen({ navigation }) {
               <InputField
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
-                onChangeText={(value) => handleInputChange('confirmPassword', value)}
+                onChangeText={value =>
+                  handleInputChange('confirmPassword', value)
+                }
                 secureTextEntry={!showConfirmPassword}
                 rightIcon={showConfirmPassword ? 'eye-off' : 'eye'}
-                onRightIconPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                onRightIconPress={() =>
+                  setShowConfirmPassword(!showConfirmPassword)
+                }
               />
             </View>
 
@@ -310,8 +313,7 @@ export default function SignupScreen({ navigation }) {
             <View style={styles.termsContainer}>
               <Text style={styles.termsText}>
                 By signing up, you agree to our{' '}
-                <Text style={styles.termsLink}>Terms of Service</Text>
-                {' '}and{' '}
+                <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
                 <Text style={styles.termsLink}>Privacy Policy</Text>
               </Text>
             </View>
@@ -327,11 +329,10 @@ export default function SignupScreen({ navigation }) {
             </View>
 
             {/* Login Link */}
-            <Animatable.View 
-              animation="fadeInUp" 
+            <Animatable.View
+              animation="fadeInUp"
               delay={600}
-              style={styles.loginContainer}
-            >
+              style={styles.loginContainer}>
               <Text style={styles.loginText}>
                 Already have an account?{' '}
                 <Text style={styles.loginLink} onPress={navigateToLogin}>
@@ -346,22 +347,20 @@ export default function SignupScreen({ navigation }) {
         <Modal
           visible={showCountryModal}
           animationType="slide"
-          presentationStyle="pageSheet"
-        >
+          presentationStyle="pageSheet">
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Country</Text>
               <TouchableOpacity
                 style={styles.modalCloseButton}
-                onPress={() => setShowCountryModal(false)}
-              >
+                onPress={() => setShowCountryModal(false)}>
                 <Text style={styles.modalCloseText}>Close</Text>
               </TouchableOpacity>
             </View>
             <FlatList
               data={countryCodes}
               renderItem={renderCountryItem}
-              keyExtractor={(item) => item.code}
+              keyExtractor={item => item.code}
               style={styles.countryList}
             />
           </View>

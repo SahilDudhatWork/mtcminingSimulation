@@ -8,23 +8,23 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import * as Animatable from 'react-native-animatable';
-import { useAuth } from '../../context/AuthContext';
-import { Colors } from '../../constants/colors';
+import {useAuth} from '../../context/AuthContext';
+import {Colors} from '../../constants/colors';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
-import { horizontalScale, verticalScale } from '../../constants/helper';
+import {horizontalScale, verticalScale} from '../../constants/helper';
 
-export default function OTPVerificationScreen({ navigation, route }) {
-  const { type, email, mobile, verificationType, userData } = route.params;
-  const { login, signup } = useAuth();
+export default function OTPVerificationScreen({navigation, route}) {
+  const {type, email, mobile, verificationType, userData} = route.params;
+  const {login, signup} = useAuth();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
-  
+
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function OTPVerificationScreen({ navigation, route }) {
 
   const handleOtpChange = (value, index) => {
     if (value.length > 1) return; // Prevent multiple characters
-    
+
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -72,15 +72,15 @@ export default function OTPVerificationScreen({ navigation, route }) {
 
   const handleVerifyOTP = async () => {
     if (!validateOTP()) return;
-    
+
     setLoading(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       const otpString = otp.join('');
-      
+
       if (type === 'signup') {
         if (verificationType === 'mobile') {
           // After mobile verification, verify email
@@ -99,7 +99,6 @@ export default function OTPVerificationScreen({ navigation, route }) {
         // Login verification complete
         await completeLogin();
       }
-      
     } catch (error) {
       Alert.alert('Error', 'OTP verification failed. Please try again.');
     } finally {
@@ -118,18 +117,17 @@ export default function OTPVerificationScreen({ navigation, route }) {
       const result = await signup(userDataToSave);
 
       if (result.success) {
-        Alert.alert(
-          'Success!',
-          'Your account has been created successfully.',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('BottomTab'),
-            },
-          ]
-        );
+        Alert.alert('Success!', 'Your account has been created successfully.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('BottomTab'),
+          },
+        ]);
       } else {
-        Alert.alert('Error', result.error || 'Failed to complete signup. Please try again.');
+        Alert.alert(
+          'Error',
+          result.error || 'Failed to complete signup. Please try again.',
+        );
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to complete signup. Please try again.');
@@ -145,18 +143,17 @@ export default function OTPVerificationScreen({ navigation, route }) {
       const result = await login(loginData);
 
       if (result.success) {
-        Alert.alert(
-          'Welcome Back!',
-          'You have been logged in successfully.',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('BottomTab'),
-            },
-          ]
-        );
+        Alert.alert('Welcome Back!', 'You have been logged in successfully.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('BottomTab'),
+          },
+        ]);
       } else {
-        Alert.alert('Error', result.error || 'Failed to complete login. Please try again.');
+        Alert.alert(
+          'Error',
+          result.error || 'Failed to complete login. Please try again.',
+        );
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to complete login. Please try again.');
@@ -165,17 +162,16 @@ export default function OTPVerificationScreen({ navigation, route }) {
 
   const handleResendOTP = async () => {
     setResendLoading(true);
-    
+
     try {
       // Simulate API call to resend OTP
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setTimer(60);
       setCanResend(false);
       setOtp(['', '', '', '', '', '']);
-      
+
       Alert.alert('Success', 'OTP has been resent successfully');
-      
     } catch (error) {
       Alert.alert('Error', 'Failed to resend OTP. Please try again.');
     } finally {
@@ -186,13 +182,15 @@ export default function OTPVerificationScreen({ navigation, route }) {
   const getVerificationMessage = () => {
     const target = verificationType === 'mobile' ? mobile : email;
     const method = verificationType === 'mobile' ? 'SMS' : 'email';
-    
+
     return `We've sent a 6-digit verification code via ${method} to ${target}`;
   };
 
   const getHeaderTitle = () => {
     if (type === 'signup') {
-      return verificationType === 'mobile' ? 'Verify Mobile Number' : 'Verify Email Address';
+      return verificationType === 'mobile'
+        ? 'Verify Mobile Number'
+        : 'Verify Email Address';
     }
     return 'Verify Your Identity';
   };
@@ -200,41 +198,35 @@ export default function OTPVerificationScreen({ navigation, route }) {
   return (
     <>
       <CustomStatusBar dark backgroundColor={Colors.white} />
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         {/* Header */}
-        <Animatable.View 
-          animation="fadeInDown" 
+        <Animatable.View
+          animation="fadeInDown"
           duration={1000}
-          style={styles.headerContainer}
-        >
+          style={styles.headerContainer}>
           <Text style={styles.title}>{getHeaderTitle()}</Text>
-          <Text style={styles.subtitle}>
-            {getVerificationMessage()}
-          </Text>
+          <Text style={styles.subtitle}>{getVerificationMessage()}</Text>
         </Animatable.View>
 
         {/* OTP Input Container */}
-        <Animatable.View 
-          animation="fadeInUp" 
+        <Animatable.View
+          animation="fadeInUp"
           delay={300}
           duration={1000}
-          style={styles.otpContainer}
-        >
+          style={styles.otpContainer}>
           <View style={styles.otpInputContainer}>
             {otp.map((digit, index) => (
               <TextInput
                 key={index}
-                ref={ref => inputRefs.current[index] = ref}
-                style={[
-                  styles.otpInput,
-                  digit ? styles.otpInputFilled : {},
-                ]}
+                ref={ref => (inputRefs.current[index] = ref)}
+                style={[styles.otpInput, digit ? styles.otpInputFilled : {}]}
                 value={digit}
-                onChangeText={(value) => handleOtpChange(value, index)}
-                onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
+                onChangeText={value => handleOtpChange(value, index)}
+                onKeyPress={({nativeEvent}) =>
+                  handleKeyPress(nativeEvent.key, index)
+                }
                 keyboardType="numeric"
                 maxLength={1}
                 selectTextOnFocus
@@ -245,15 +237,12 @@ export default function OTPVerificationScreen({ navigation, route }) {
           {/* Timer and Resend */}
           <View style={styles.resendContainer}>
             {!canResend ? (
-              <Text style={styles.timerText}>
-                Resend OTP in {timer}s
-              </Text>
+              <Text style={styles.timerText}>Resend OTP in {timer}s</Text>
             ) : (
               <TouchableOpacity
                 onPress={handleResendOTP}
                 disabled={resendLoading}
-                style={styles.resendButton}
-              >
+                style={styles.resendButton}>
                 <Text style={styles.resendText}>
                   {resendLoading ? 'Sending...' : 'Resend OTP'}
                 </Text>
@@ -272,11 +261,10 @@ export default function OTPVerificationScreen({ navigation, route }) {
           </View>
 
           {/* Help Text */}
-          <Animatable.View 
-            animation="fadeInUp" 
+          <Animatable.View
+            animation="fadeInUp"
             delay={600}
-            style={styles.helpContainer}
-          >
+            style={styles.helpContainer}>
             <Text style={styles.helpText}>
               Didn't receive the code?{'\n'}
               Check your spam folder or contact support
@@ -286,37 +274,48 @@ export default function OTPVerificationScreen({ navigation, route }) {
           {/* Change Contact Info */}
           <TouchableOpacity
             style={styles.changeContactButton}
-            onPress={() => navigation.goBack()}
-          >
+            onPress={() => navigation.goBack()}>
             <Text style={styles.changeContactText}>
-              Change {verificationType === 'mobile' ? 'mobile number' : 'email address'}
+              Change{' '}
+              {verificationType === 'mobile'
+                ? 'mobile number'
+                : 'email address'}
             </Text>
           </TouchableOpacity>
         </Animatable.View>
 
         {/* Progress Indicator for Signup */}
         {type === 'signup' && (
-          <Animatable.View 
-            animation="fadeInUp" 
+          <Animatable.View
+            animation="fadeInUp"
             delay={800}
-            style={styles.progressContainer}
-          >
+            style={styles.progressContainer}>
             <View style={styles.progressSteps}>
               <View style={[styles.progressStep, styles.progressStepCompleted]}>
                 <Text style={styles.progressStepText}>1</Text>
               </View>
-              <View style={[
-                styles.progressLine, 
-                verificationType === 'email' && styles.progressLineCompleted
-              ]} />
-              <View style={[
-                styles.progressStep,
-                verificationType === 'email' ? styles.progressStepActive : styles.progressStepInactive
-              ]}>
-                <Text style={[
-                  styles.progressStepText,
-                  verificationType === 'email' ? styles.progressStepTextActive : styles.progressStepTextInactive
-                ]}>2</Text>
+              <View
+                style={[
+                  styles.progressLine,
+                  verificationType === 'email' && styles.progressLineCompleted,
+                ]}
+              />
+              <View
+                style={[
+                  styles.progressStep,
+                  verificationType === 'email'
+                    ? styles.progressStepActive
+                    : styles.progressStepInactive,
+                ]}>
+                <Text
+                  style={[
+                    styles.progressStepText,
+                    verificationType === 'email'
+                      ? styles.progressStepTextActive
+                      : styles.progressStepTextInactive,
+                  ]}>
+                  2
+                </Text>
               </View>
             </View>
             <View style={styles.progressLabels}>

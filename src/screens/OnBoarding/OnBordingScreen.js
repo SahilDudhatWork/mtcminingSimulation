@@ -6,19 +6,19 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import * as Animatable from 'react-native-animatable';
-import { useAuth } from '../../context/AuthContext';
-import { Colors } from '../../constants/colors';
+import {useAuth} from '../../context/AuthContext';
+import {Colors} from '../../constants/colors';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import { horizontalScale, verticalScale } from '../../constants/helper';
-import { Images } from '../../assets/images';
+import {horizontalScale, verticalScale} from '../../constants/helper';
+import {Images} from '../../assets/images';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 export default function OnBoardingScreen(props) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { completeOnboarding: completeOnboardingAuth } = useAuth();
+  const {completeOnboarding: completeOnboardingAuth} = useAuth();
 
   const completeOnboarding = async () => {
     try {
@@ -81,7 +81,7 @@ export default function OnBoardingScreen(props) {
           onPress={skipOnboarding}>
           Skip
         </Animatable.Text>
-        
+
         <View style={styles.sliderContainer}>
           <Animatable.Image
             animation="slideInUp"
@@ -90,24 +90,25 @@ export default function OnBoardingScreen(props) {
             source={list[currentIndex].image}
             key={`image-${currentIndex}`}
           />
-          
+
           <View style={styles.textContainer}>
             <Animatable.Text
               animation="fadeInUp"
               delay={200}
               style={styles.sliderText1}
               key={`title-${currentIndex}`}>
-              <Text style={{ color: Colors.primaryColor }}>
+              <Text style={{color: Colors.primaryColor}}>
                 {list[currentIndex].title1}
               </Text>
-              <Text style={{ color: Colors.black }}>
-                {' '}{list[currentIndex].title2}{' '}
+              <Text style={{color: Colors.black}}>
+                {' '}
+                {list[currentIndex].title2}{' '}
               </Text>
-              <Text style={{ color: Colors.secondaryColor }}>
+              <Text style={{color: Colors.secondaryColor}}>
                 {list[currentIndex].title3}
               </Text>
             </Animatable.Text>
-            
+
             <Animatable.Text
               animation="fadeInUp"
               delay={400}
@@ -116,7 +117,7 @@ export default function OnBoardingScreen(props) {
               {list[currentIndex].desc}
             </Animatable.Text>
           </View>
-          
+
           {/* Pagination dots */}
           <View style={styles.paginationContainer}>
             {list.map((_, index) => (
@@ -130,7 +131,7 @@ export default function OnBoardingScreen(props) {
             ))}
           </View>
         </View>
-        
+
         <View style={styles.navigationContainer}>
           <Animatable.View
             animation="bounceIn"
@@ -154,7 +155,7 @@ export default function OnBoardingScreen(props) {
               />
             </TouchableOpacity>
           </Animatable.View>
-          
+
           <Animatable.View
             animation="bounceIn"
             delay={800}
@@ -168,14 +169,14 @@ export default function OnBoardingScreen(props) {
                 }
               }}
               style={styles.navigationButtonPrimary}>
-              <Image 
-                style={styles.navigationIconPrimary} 
-                source={Images.lessThanIcon} 
+              <Image
+                style={styles.navigationIconPrimary}
+                source={Images.lessThanIcon}
               />
             </TouchableOpacity>
           </Animatable.View>
         </View>
-        
+
         {/* Get Started Button for last slide */}
         {currentIndex === 3 && (
           <Animatable.View
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
     width: verticalScale(20),
     resizeMode: 'contain',
     tintColor: Colors.white,
-    transform: [{ rotate: '180deg' }],
+    transform: [{rotate: '180deg'}],
   },
   getStartedContainer: {
     position: 'absolute',

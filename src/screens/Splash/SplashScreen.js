@@ -1,17 +1,24 @@
-import { View, Text, StyleSheet, Image, Dimensions, Animated } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Dimensions,
+  Animated,
+} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
 import * as Animatable from 'react-native-animatable';
-import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../../context/AuthContext';
-import { Colors } from '../../constants/colors';
-import { Images } from '../../assets/images';
-import { verticalScale } from '../../constants/helper';
+import {useNavigation} from '@react-navigation/native';
+import {useAuth} from '../../context/AuthContext';
+import {Colors} from '../../constants/colors';
+import {Images} from '../../assets/images';
+import {verticalScale} from '../../constants/helper';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
 export default function SplashScreen() {
   const navigation = useNavigation();
-  const { isLoading, getInitialRoute } = useAuth();
+  const {isLoading, getInitialRoute} = useAuth();
   const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Create animated values for each bubble
@@ -21,7 +28,7 @@ export default function SplashScreen() {
       translateY: new Animated.Value(Math.random() * height),
       scale: new Animated.Value(0.3 + Math.random() * 0.7),
       opacity: new Animated.Value(0.3 + Math.random() * 0.4),
-    }))
+    })),
   ).current;
 
   // Progress bar animation
@@ -72,7 +79,7 @@ export default function SplashScreen() {
           toValue: 1,
           duration: 8000,
           useNativeDriver: true,
-        })
+        }),
       ),
     ]).start();
 
@@ -102,8 +109,8 @@ export default function SplashScreen() {
               useNativeDriver: true,
             }),
           ]),
-        ])
-      )
+        ]),
+      ),
     );
 
     animations.forEach(anim => anim.start());
@@ -138,9 +145,9 @@ export default function SplashScreen() {
               styles.circle,
               {
                 transform: [
-                  { translateX: anim.translateX },
-                  { translateY: anim.translateY },
-                  { scale: anim.scale },
+                  {translateX: anim.translateX},
+                  {translateY: anim.translateY},
+                  {scale: anim.scale},
                 ],
                 opacity: anim.opacity,
               },
@@ -150,7 +157,7 @@ export default function SplashScreen() {
       </View>
 
       {/* Main Content */}
-      <Animated.View style={[styles.mainContent, { opacity: fadeAnim }]}>
+      <Animated.View style={[styles.mainContent, {opacity: fadeAnim}]}>
         {/* Logo with enhanced animations */}
         <Animated.View style={styles.logoContainer}>
           <Animated.Image
@@ -158,10 +165,7 @@ export default function SplashScreen() {
             style={[
               styles.logo,
               {
-                transform: [
-                  { scale: logoScale },
-                  { rotate: spin },
-                ],
+                transform: [{scale: logoScale}, {rotate: spin}],
               },
             ]}
             resizeMode="contain"
@@ -174,8 +178,7 @@ export default function SplashScreen() {
           animation="fadeInUp"
           delay={1000}
           duration={1500}
-          style={styles.title}
-        >
+          style={styles.title}>
           MTC USDT Mining
         </Animatable.Text>
 
@@ -183,18 +186,16 @@ export default function SplashScreen() {
           animation="fadeInUp"
           delay={1500}
           duration={1000}
-          style={styles.subtitle}
-        >
+          style={styles.subtitle}>
           Your Gateway to Digital Mining
         </Animatable.Text>
       </Animated.View>
 
       {/* Loading Progress */}
       <Animated.View
-        style={[styles.loadingContainer, { opacity: fadeAnim }]}
+        style={[styles.loadingContainer, {opacity: fadeAnim}]}
         animation="fadeInUp"
-        delay={2000}
-      >
+        delay={2000}>
         <View style={styles.progressBarContainer}>
           <Animated.View
             style={[
@@ -208,7 +209,9 @@ export default function SplashScreen() {
             ]}
           />
         </View>
-        <Text style={styles.loadingText}>Loading... {Math.round(loadingProgress)}%</Text>
+        <Text style={styles.loadingText}>
+          Loading... {Math.round(loadingProgress)}%
+        </Text>
       </Animated.View>
     </View>
   );
@@ -263,7 +266,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 2, height: 2 },
+    textShadowOffset: {width: 2, height: 2},
     textShadowRadius: 4,
     marginBottom: 10,
   },

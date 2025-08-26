@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {createContext, useContext, useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext({});
@@ -11,7 +11,7 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      
+
       // Check if user is logged in
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
@@ -33,11 +33,12 @@ export const AuthProvider = ({ children }) => {
         setUser(parsedUserData);
         setIsLoggedIn(true);
       }
-      
+
       // Check if onboarding is completed
-      const onboardingStatus = await AsyncStorage.getItem('onboardingCompleted');
+      const onboardingStatus = await AsyncStorage.getItem(
+        'onboardingCompleted',
+      );
       setOnboardingCompleted(onboardingStatus === 'true');
-      
     } catch (error) {
       console.error('Error checking auth status:', error);
     } finally {
@@ -45,26 +46,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (userData) => {
+  const login = async userData => {
     try {
       const userDataToStore = {
         ...userData,
         isLoggedIn: true,
         loginTime: new Date().toISOString(),
       };
-      
+
       await AsyncStorage.setItem('userData', JSON.stringify(userDataToStore));
       setUser(userDataToStore);
       setIsLoggedIn(true);
-      
-      return { success: true };
+
+      return {success: true};
     } catch (error) {
       console.error('Error during login:', error);
-      return { success: false, error: 'Failed to save login data' };
+      return {success: false, error: 'Failed to save login data'};
     }
   };
 
-  const signup = async (userData) => {
+  const signup = async userData => {
     try {
       const userDataToStore = {
         ...userData,
@@ -73,15 +74,15 @@ export const AuthProvider = ({ children }) => {
         verifiedMobile: true,
         verifiedEmail: true,
       };
-      
+
       await AsyncStorage.setItem('userData', JSON.stringify(userDataToStore));
       setUser(userDataToStore);
       setIsLoggedIn(true);
-      
-      return { success: true };
+
+      return {success: true};
     } catch (error) {
       console.error('Error during signup:', error);
-      return { success: false, error: 'Failed to save signup data' };
+      return {success: false, error: 'Failed to save signup data'};
     }
   };
 
@@ -90,11 +91,11 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.removeItem('userData');
       setUser(null);
       setIsLoggedIn(false);
-      
-      return { success: true };
+
+      return {success: true};
     } catch (error) {
       console.error('Error during logout:', error);
-      return { success: false, error: 'Failed to logout' };
+      return {success: false, error: 'Failed to logout'};
     }
   };
 
@@ -102,11 +103,11 @@ export const AuthProvider = ({ children }) => {
     try {
       await AsyncStorage.setItem('onboardingCompleted', 'true');
       setOnboardingCompleted(true);
-      
-      return { success: true };
+
+      return {success: true};
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      return { success: false, error: 'Failed to complete onboarding' };
+      return {success: false, error: 'Failed to complete onboarding'};
     }
   };
 
@@ -114,30 +115,30 @@ export const AuthProvider = ({ children }) => {
     try {
       await AsyncStorage.removeItem('onboardingCompleted');
       setOnboardingCompleted(false);
-      
-      return { success: true };
+
+      return {success: true};
     } catch (error) {
       console.error('Error resetting onboarding:', error);
-      return { success: false, error: 'Failed to reset onboarding' };
+      return {success: false, error: 'Failed to reset onboarding'};
     }
   };
 
-  const updateUser = async (updatedData) => {
+  const updateUser = async updatedData => {
     try {
       const currentUserData = await AsyncStorage.getItem('userData');
       if (currentUserData) {
         const parsedUserData = JSON.parse(currentUserData);
-        const newUserData = { ...parsedUserData, ...updatedData };
-        
+        const newUserData = {...parsedUserData, ...updatedData};
+
         await AsyncStorage.setItem('userData', JSON.stringify(newUserData));
         setUser(newUserData);
-        
-        return { success: true };
+
+        return {success: true};
       }
-      return { success: false, error: 'No user data found' };
+      return {success: false, error: 'No user data found'};
     } catch (error) {
       console.error('Error updating user:', error);
-      return { success: false, error: 'Failed to update user data' };
+      return {success: false, error: 'Failed to update user data'};
     }
   };
 
@@ -147,11 +148,11 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setIsLoggedIn(false);
       setOnboardingCompleted(false);
-      
-      return { success: true };
+
+      return {success: true};
     } catch (error) {
       console.error('Error clearing all data:', error);
-      return { success: false, error: 'Failed to clear data' };
+      return {success: false, error: 'Failed to clear data'};
     }
   };
 
@@ -172,15 +173,15 @@ export const AuthProvider = ({ children }) => {
     if (isLoading) {
       return 'SplashScreen';
     }
-    
+
     if (!onboardingCompleted) {
       return 'OnBoardingScreen';
     }
-    
+
     if (!isLoggedIn) {
       return 'LoginScreen';
     }
-    
+
     return 'BottomTab';
   };
 
@@ -190,7 +191,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     isLoggedIn,
     onboardingCompleted,
-    
+
     // Auth methods
     login,
     signup,
@@ -200,7 +201,7 @@ export const AuthProvider = ({ children }) => {
     updateUser,
     clearAllData,
     checkAuthStatus,
-    
+
     // Helper methods
     isAuthenticated,
     isFirstTime,
@@ -208,11 +209,7 @@ export const AuthProvider = ({ children }) => {
     getInitialRoute,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

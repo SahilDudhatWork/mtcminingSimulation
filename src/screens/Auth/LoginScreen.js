@@ -8,15 +8,15 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import * as Animatable from 'react-native-animatable';
-import { Colors } from '../../constants/colors';
+import {Colors} from '../../constants/colors';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import InputField from '../../components/InputField';
 import Button from '../../components/Button';
-import { horizontalScale, verticalScale } from '../../constants/helper';
+import {horizontalScale, verticalScale} from '../../constants/helper';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({navigation}) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -36,45 +36,44 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Error', 'Please enter your email address');
       return false;
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       Alert.alert('Error', 'Please enter a valid email address');
       return false;
     }
-    
+
     if (!formData.password.trim()) {
       Alert.alert('Error', 'Please enter your password');
       return false;
     }
-    
+
     if (formData.password.length < 6) {
       Alert.alert('Error', 'Password must be at least 6 characters long');
       return false;
     }
-    
+
     return true;
   };
 
   const handleLogin = async () => {
     if (!validateForm()) return;
-    
+
     setLoading(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // For demo purposes, any valid email/password combination will work
       // In a real app, you would make an actual API call here
-      
+
       // Navigate to OTP verification for email
       navigation.navigate('OTPVerificationScreen', {
         type: 'login',
         email: formData.email,
         verificationType: 'email',
       });
-      
     } catch (error) {
       Alert.alert('Error', 'Login failed. Please try again.');
     } finally {
@@ -90,27 +89,24 @@ export default function LoginScreen({ navigation }) {
     Alert.alert(
       'Forgot Password',
       'Password reset functionality will be implemented here.',
-      [{ text: 'OK' }]
+      [{text: 'OK'}],
     );
   };
 
   return (
     <>
       <CustomStatusBar dark backgroundColor={Colors.white} />
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+          showsVerticalScrollIndicator={false}>
           {/* Header */}
-          <Animatable.View 
-            animation="fadeInDown" 
+          <Animatable.View
+            animation="fadeInDown"
             duration={1000}
-            style={styles.headerContainer}
-          >
+            style={styles.headerContainer}>
             <Text style={styles.welcomeText}>Welcome Back!</Text>
             <Text style={styles.subtitleText}>
               Sign in to continue your mining journey
@@ -118,19 +114,18 @@ export default function LoginScreen({ navigation }) {
           </Animatable.View>
 
           {/* Form Container */}
-          <Animatable.View 
-            animation="fadeInUp" 
+          <Animatable.View
+            animation="fadeInUp"
             delay={300}
             duration={1000}
-            style={styles.formContainer}
-          >
+            style={styles.formContainer}>
             {/* Email Input */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Email Address</Text>
               <InputField
                 placeholder="Enter your email"
                 value={formData.email}
-                onChangeText={(value) => handleInputChange('email', value)}
+                onChangeText={value => handleInputChange('email', value)}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -143,7 +138,7 @@ export default function LoginScreen({ navigation }) {
               <InputField
                 placeholder="Enter your password"
                 value={formData.password}
-                onChangeText={(value) => handleInputChange('password', value)}
+                onChangeText={value => handleInputChange('password', value)}
                 secureTextEntry={!showPassword}
                 rightIcon={showPassword ? 'eye-off' : 'eye'}
                 onRightIconPress={() => setShowPassword(!showPassword)}
@@ -151,10 +146,9 @@ export default function LoginScreen({ navigation }) {
             </View>
 
             {/* Forgot Password */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.forgotPasswordContainer}
-              onPress={handleForgotPassword}
-            >
+              onPress={handleForgotPassword}>
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
 
@@ -176,11 +170,10 @@ export default function LoginScreen({ navigation }) {
             </View>
 
             {/* Social Login Options */}
-            <Animatable.View 
-              animation="fadeInUp" 
+            <Animatable.View
+              animation="fadeInUp"
               delay={600}
-              style={styles.socialContainer}
-            >
+              style={styles.socialContainer}>
               <Text style={styles.socialText}>
                 Continue with social accounts
               </Text>
@@ -188,11 +181,10 @@ export default function LoginScreen({ navigation }) {
             </Animatable.View>
 
             {/* Sign Up Link */}
-            <Animatable.View 
-              animation="fadeInUp" 
+            <Animatable.View
+              animation="fadeInUp"
               delay={800}
-              style={styles.signupContainer}
-            >
+              style={styles.signupContainer}>
               <Text style={styles.signupText}>
                 Don't have an account?{' '}
                 <Text style={styles.signupLink} onPress={navigateToSignup}>

@@ -21,7 +21,10 @@ export default function AppNavigator() {
         <Stack.Screen name="OnBoardingScreen" component={OnBordingScreen} />
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name="SignupScreen" component={SignupScreen} />
-        <Stack.Screen name="OTPVerificationScreen" component={OTPVerificationScreen} />
+        <Stack.Screen
+          name="OTPVerificationScreen"
+          component={OTPVerificationScreen}
+        />
         <Stack.Screen name="BottomTab" component={BottomTab} />
         <Stack.Screen name="HelpScreen" component={HelpScreen} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
