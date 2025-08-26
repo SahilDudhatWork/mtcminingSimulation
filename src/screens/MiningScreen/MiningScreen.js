@@ -10,17 +10,17 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { styles } from './styles';
+import React, {useState, useEffect} from 'react';
+import {styles} from './styles';
 import Carousel from 'react-native-snap-carousel';
-import { Colors } from '../../constants/colors';
-import { Images } from '../../assets/images';
-import { horizontalScale, verticalScale } from '../../constants/helper';
+import {Colors} from '../../constants/colors';
+import {Images} from '../../assets/images';
+import {horizontalScale, verticalScale} from '../../constants/helper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Popup from '../../components/Popup';
 import MysteryBoxModal from '../../components/MysteryBoxModal';
 import BoostGhsModal from '../../components/BoostGhsModal';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 const MiningScreen = props => {
   const navigation = useNavigation();
@@ -391,7 +391,7 @@ const MiningScreen = props => {
                   marginHorizontal: 10,
                 }}>
                 <Image
-                  style={{ flex: 1, resizeMode: 'center' }}
+                  style={{flex: 1, resizeMode: 'center'}}
                   source={Images.Question}
                 />
               </Pressable>
@@ -408,12 +408,12 @@ const MiningScreen = props => {
                   padding: 6,
                 }}>
                 <Image
-                  style={{ flex: 1, resizeMode: 'center' }}
+                  style={{flex: 1, resizeMode: 'center'}}
                   source={Images.happinessIcon}
                 />
               </Pressable>
             </View>
-            <View style={{ padding: 20 }}>
+            <View style={{padding: 20}}>
               <View
                 style={{
                   backgroundColor: Colors.white,
@@ -432,7 +432,7 @@ const MiningScreen = props => {
                   }}
                   resizeMode="contain">
                   <Image
-                    style={{ resizeMode: 'contain', height: 25, width: 25 }}
+                    style={{resizeMode: 'contain', height: 25, width: 25}}
                     resizeMode="center"
                     source={Images.TLogo}
                   />
@@ -469,9 +469,9 @@ const MiningScreen = props => {
                     0.0056/min
                   </Text>
                 </View>
-                <Image source={Images.Info} style={{ height: 15, width: 15 }} />
+                <Image source={Images.Info} style={{height: 15, width: 15}} />
               </View>
-              <View style={{ flexDirection: 'row', gap: 15 }}>
+              <View style={{flexDirection: 'row', gap: 15}}>
                 <View
                   style={{
                     backgroundColor: Colors.secondaryColor,
@@ -481,7 +481,7 @@ const MiningScreen = props => {
                     marginTop: 15,
                     flex: 0.65,
                   }}>
-                  <View style={{ flex: 1 }}>
+                  <View style={{flex: 1}}>
                     <Text
                       style={{
                         color: Colors.white,
@@ -511,7 +511,7 @@ const MiningScreen = props => {
                   </View>
                   <Image
                     source={Images.Info}
-                    style={{ height: 15, width: 15, tintColor: Colors.white }}
+                    style={{height: 15, width: 15, tintColor: Colors.white}}
                   />
                 </View>
                 <View
@@ -523,7 +523,7 @@ const MiningScreen = props => {
                     marginTop: 15,
                     flex: 0.35,
                   }}>
-                  <View style={{ flex: 1 }}>
+                  <View style={{flex: 1}}>
                     <Text
                       style={{
                         color: Colors.white,
@@ -540,13 +540,13 @@ const MiningScreen = props => {
                         fontWeight: '600',
                         marginVertical: 5,
                       }}>
-                      1 <Text style={{ fontSize: 12 }}>/10 Lavels</Text>
+                      1 <Text style={{fontSize: 12}}>/10 Lavels</Text>
                     </Text>
-                    <Text style={{ color: Colors.main }}>-</Text>
+                    <Text style={{color: Colors.main}}>-</Text>
                   </View>
                   <Image
                     source={Images.Info}
-                    style={{ height: 15, width: 15, tintColor: Colors.white }}
+                    style={{height: 15, width: 15, tintColor: Colors.white}}
                   />
                 </View>
               </View>
@@ -584,10 +584,10 @@ const MiningScreen = props => {
                     source={Images.multipleUsersIcon}
                   />
                 </View>
-                <View style={{ marginLeft: horizontalScale(10) }}>
-                  <Text style={{ color: Colors.white }}>Invite Friends</Text>
+                <View style={{marginLeft: horizontalScale(10)}}>
+                  <Text style={{color: Colors.white}}>Invite Friends</Text>
                   <Text
-                    style={{ color: Colors.white, fontSize: verticalScale(11) }}>
+                    style={{color: Colors.white, fontSize: verticalScale(11)}}>
                     Earn extra by inviting your friends
                   </Text>
                 </View>
@@ -601,7 +601,7 @@ const MiningScreen = props => {
                 borderRadius: 30,
               }}>
               <View
-                style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                 <TouchableOpacity
                   onPress={handleTimeBoost}
                   style={{
@@ -763,7 +763,7 @@ const MiningScreen = props => {
               </View>
               <Carousel
                 data={OptionIcon}
-                renderItem={({ item, index }) => {
+                renderItem={({item, index}) => {
                   return (
                     <View
                       style={{
@@ -793,7 +793,7 @@ const MiningScreen = props => {
                           source={item.image}
                         />
                       </ImageBackground>
-                      <View style={{ marginLeft: 10, flex: 1 }}>
+                      <View style={{marginLeft: 10, flex: 1}}>
                         <View
                           style={{
                             flexDirection: 'row',
@@ -833,7 +833,7 @@ const MiningScreen = props => {
                             marginVertical: 5,
                           }}>
                           {item.disc}{' '}
-                          <Text style={{ fontWeight: '600', color: '#778497' }}>
+                          <Text style={{fontWeight: '600', color: '#778497'}}>
                             {item.subDisc}
                           </Text>
                         </Text>
@@ -857,9 +857,9 @@ const MiningScreen = props => {
               />
               <FlatList
                 data={OptionIcon}
-                style={{ marginTop: 10, alignSelf: 'center' }}
+                style={{marginTop: 10, alignSelf: 'center'}}
                 horizontal
-                renderItem={({ item, index }) => (
+                renderItem={({item, index}) => (
                   <View
                     style={{
                       padding: 3,

@@ -40,11 +40,11 @@ export default function RaferScreen() {
     try {
       const totalMasterCoin = await AsyncStorage.getItem('masterCoin');
       const userDataString = await AsyncStorage.getItem('userData');
-      
+
       if (totalMasterCoin) {
         setMasterCoin(parseFloat(totalMasterCoin) || 0);
       }
-      
+
       if (userDataString) {
         const data = JSON.parse(userDataString);
         setUserData(data);
@@ -93,14 +93,16 @@ export default function RaferScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Referral Program" ishelp={true} />
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
         {/* Header Section */}
         <View style={styles.headerSection}>
           <Image style={styles.headerImage} source={Images.handShakeIcon} />
           <Text style={styles.headerTitle}>Invite Friends & Earn!</Text>
           <Text style={styles.headerDescription}>
-            Invite friends to join MTC Mining and earn rewards together. The more
-            friends you invite, the more you earn!
+            Invite friends to join MTC Mining and earn rewards together. The
+            more friends you invite, the more you earn!
           </Text>
         </View>
 
@@ -127,11 +129,15 @@ export default function RaferScreen() {
             <View style={styles.codeDisplay}>
               <Text style={styles.codeText}>{userData.refer_code}</Text>
             </View>
-            <TouchableOpacity style={styles.copyButton} onPress={copyReferralCode}>
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={copyReferralCode}>
               <Text style={styles.copyButtonText}>Copy</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.shareButton} onPress={shareReferralCode}>
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={shareReferralCode}>
             <Image source={Images.rePostIcon} style={styles.shareIcon} />
             <Text style={styles.shareButtonText}>Share Referral Link</Text>
           </TouchableOpacity>
@@ -180,7 +186,9 @@ export default function RaferScreen() {
         {/* Invited Users Section */}
         {invitedUsers.length > 0 && (
           <View style={styles.invitedUsersSection}>
-            <Text style={styles.sectionTitle}>Your Invites ({totalInvites})</Text>
+            <Text style={styles.sectionTitle}>
+              Your Invites ({totalInvites})
+            </Text>
             <View style={styles.usersContainer}>
               <FlatList
                 data={invitedUsers}
@@ -197,7 +205,8 @@ export default function RaferScreen() {
         <View style={styles.termsSection}>
           <Text style={styles.termsTitle}>Terms & Conditions</Text>
           <Text style={styles.termsText}>
-            • Referral rewards are credited after your friend completes registration
+            • Referral rewards are credited after your friend completes
+            registration
             {'\n'}• Maximum 50 referrals per user
             {'\n'}• Rewards may take up to 24 hours to process
             {'\n'}• Fake accounts or abuse will result in account suspension

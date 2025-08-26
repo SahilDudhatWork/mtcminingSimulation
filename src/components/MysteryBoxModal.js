@@ -37,11 +37,20 @@ const MysteryBoxModal = ({
               <View style={[styles.giftBoxTop, {backgroundColor: '#4ECDC4'}]}>
                 <View style={styles.ribbon} />
               </View>
-              <View style={[styles.giftBoxBottom, {backgroundColor: '#45B7AF'}]} />
+              <View
+                style={[styles.giftBoxBottom, {backgroundColor: '#45B7AF'}]}
+              />
               <View style={styles.giftContent}>
                 <View style={styles.coin} />
-                <View style={[styles.coin, {left: 20, backgroundColor: '#FFD700'}]} />
-                <View style={[styles.coin, {left: 40, top: 10, backgroundColor: '#FFA500'}]} />
+                <View
+                  style={[styles.coin, {left: 20, backgroundColor: '#FFD700'}]}
+                />
+                <View
+                  style={[
+                    styles.coin,
+                    {left: 40, top: 10, backgroundColor: '#FFA500'},
+                  ]}
+                />
               </View>
             </View>
           </View>
@@ -51,12 +60,14 @@ const MysteryBoxModal = ({
 
           {/* Description */}
           <Text style={styles.description}>
-            You have received a Mystery box. Please open it and claim your reward.
+            You have received a Mystery box. Please open it and claim your
+            reward.
           </Text>
 
           {/* Reward Message */}
           <Text style={styles.rewardText}>
-            Woow! <Text style={styles.rewardAmount}>{rewardAmount}</Text> Super coins
+            Woow! <Text style={styles.rewardAmount}>{rewardAmount}</Text> Super
+            coins
           </Text>
 
           {/* Buttons */}
@@ -74,7 +85,8 @@ const MysteryBoxModal = ({
 
           {/* Footer Note */}
           <Text style={styles.footerNote}>
-            * Every day, you will receive a mystery box. So, don't forget to open it.
+            * Every day, you will receive a mystery box. So, don't forget to
+            open it.
           </Text>
         </View>
       </View>

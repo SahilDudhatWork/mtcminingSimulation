@@ -139,14 +139,18 @@ const RewardScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Rewards" ishelp={true} />
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
         {/* Balance Overview */}
         <View style={styles.balanceContainer}>
           <View style={styles.balanceCard}>
             <View style={styles.balanceItem}>
               <Text style={styles.balanceLabel}>SUPER COINS</Text>
               <Text style={styles.balanceValue}>{masterCoin}</Text>
-              <Text style={styles.balanceSubtext}>~ {(masterCoin * 0.17).toFixed(2)} USDT</Text>
+              <Text style={styles.balanceSubtext}>
+                ~ {(masterCoin * 0.17).toFixed(2)} USDT
+              </Text>
             </View>
             <View style={styles.balanceDivider} />
             <View style={styles.balanceItem}>
@@ -160,13 +164,22 @@ const RewardScreen = () => {
         {/* Quick Actions */}
         <View style={styles.quickActionsContainer}>
           <TouchableOpacity
-            style={[styles.quickActionButton, {backgroundColor: Colors.secondaryColor}]}
+            style={[
+              styles.quickActionButton,
+              {backgroundColor: Colors.secondaryColor},
+            ]}
             onPress={() => navigation.navigate('ConvertCoinScreen')}>
-            <Image source={Images.convertCoinIcon} style={styles.quickActionIcon} />
+            <Image
+              source={Images.convertCoinIcon}
+              style={styles.quickActionIcon}
+            />
             <Text style={styles.quickActionText}>Convert</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.quickActionButton, {backgroundColor: Colors.primaryColor}]}
+            style={[
+              styles.quickActionButton,
+              {backgroundColor: Colors.primaryColor},
+            ]}
             onPress={() => navigation.navigate('HomeScreen')}>
             <Image source={Images.giftIcon} style={styles.quickActionIcon} />
             <Text style={styles.quickActionText}>Play Game</Text>
