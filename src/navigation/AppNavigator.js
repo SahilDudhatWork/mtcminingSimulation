@@ -11,6 +11,7 @@ import HelpScreen from '../screens/Help/HelpScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import ConvertCoinScreen from '../screens/ConvertCoin/ConvertCoinScreen';
 import HomeScreen from '../screens/Home/HomeScreen';
+import RaferScreen from '../screens/RaferScreen/RaferScreen';
 
 const Stack = createNativeStackNavigator();
 
