@@ -109,26 +109,28 @@ export default function OTPVerificationScreen({ navigation, route }) {
 
   const completeSignup = async () => {
     try {
-      // Save user data to AsyncStorage
       const userDataToSave = {
         ...userData,
-        isLoggedIn: true,
         verifiedMobile: true,
         verifiedEmail: true,
       };
-      
-      await AsyncStorage.setItem('userData', JSON.stringify(userDataToSave));
-      
-      Alert.alert(
-        'Success!',
-        'Your account has been created successfully.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('BottomTab'),
-          },
-        ]
-      );
+
+      const result = await signup(userDataToSave);
+
+      if (result.success) {
+        Alert.alert(
+          'Success!',
+          'Your account has been created successfully.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('BottomTab'),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Error', result.error || 'Failed to complete signup. Please try again.');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to complete signup. Please try again.');
     }
@@ -136,25 +138,26 @@ export default function OTPVerificationScreen({ navigation, route }) {
 
   const completeLogin = async () => {
     try {
-      // Save login data to AsyncStorage
       const loginData = {
         email: email,
-        isLoggedIn: true,
-        loginTime: new Date().toISOString(),
       };
-      
-      await AsyncStorage.setItem('userData', JSON.stringify(loginData));
-      
-      Alert.alert(
-        'Welcome Back!',
-        'You have been logged in successfully.',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('BottomTab'),
-          },
-        ]
-      );
+
+      const result = await login(loginData);
+
+      if (result.success) {
+        Alert.alert(
+          'Welcome Back!',
+          'You have been logged in successfully.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('BottomTab'),
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Error', result.error || 'Failed to complete login. Please try again.');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to complete login. Please try again.');
     }
