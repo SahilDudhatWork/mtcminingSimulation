@@ -131,6 +131,11 @@ export default function SplashScreen() {
     }).start();
   }, [loadingProgress]);
 
+  const spin = logoRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <View style={styles.container}>
       {/* Background Circles */}
@@ -146,29 +151,74 @@ export default function SplashScreen() {
                   { translateY: anim.translateY },
                   { scale: anim.scale },
                 ],
+                opacity: anim.opacity,
               },
             ]}
           />
         ))}
       </View>
 
-      {/* Logo Animation */}
-      <Animatable.Image
-        animation="bounceIn"
-        duration={1500}
-        source={Images.mainLogo}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+      {/* Main Content */}
+      <Animated.View style={[styles.mainContent, { opacity: fadeAnim }]}>
+        {/* Logo with enhanced animations */}
+        <Animated.View style={styles.logoContainer}>
+          <Animated.Image
+            source={Images.mainLogo}
+            style={[
+              styles.logo,
+              {
+                transform: [
+                  { scale: logoScale },
+                  { rotate: spin },
+                ],
+              },
+            ]}
+            resizeMode="contain"
+          />
+          <View style={styles.logoGlow} />
+        </Animated.View>
 
-      {/* Text Animation */}
-      <Animatable.Text
+        {/* Title with typewriter effect */}
+        <Animatable.Text
+          animation="fadeInUp"
+          delay={1000}
+          duration={1500}
+          style={styles.title}
+        >
+          MTC USDT Mining
+        </Animatable.Text>
+
+        <Animatable.Text
+          animation="fadeInUp"
+          delay={1500}
+          duration={1000}
+          style={styles.subtitle}
+        >
+          Your Gateway to Digital Mining
+        </Animatable.Text>
+      </Animated.View>
+
+      {/* Loading Progress */}
+      <Animated.View
+        style={[styles.loadingContainer, { opacity: fadeAnim }]}
         animation="fadeInUp"
-        delay={500}
-        style={styles.title}
+        delay={2000}
       >
-        MTC USDT Mining 
-      </Animatable.Text>
+        <View style={styles.progressBarContainer}>
+          <Animated.View
+            style={[
+              styles.progressBar,
+              {
+                width: progressWidth.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: ['0%', '100%'],
+                }),
+              },
+            ]}
+          />
+        </View>
+        <Text style={styles.loadingText}>Loading... {Math.round(loadingProgress)}%</Text>
+      </Animated.View>
     </View>
   );
 }
