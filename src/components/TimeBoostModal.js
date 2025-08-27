@@ -42,12 +42,22 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
           {/* Time Options */}
           <View style={styles.optionsContainer}>
             <Text style={styles.optionsTitle}>Choose time boost:</Text>
-            
+
             {/* 30 Minutes - Watch Ad */}
             <TouchableOpacity style={styles.optionCard} onPress={onWatchAd}>
               <View style={styles.optionLeft}>
-                <View style={[styles.optionIcon, {backgroundColor: Colors.secondaryColor + '20'}]}>
-                  <Image source={Images.presentIcon} style={[styles.optionIconImage, {tintColor: Colors.secondaryColor}]} />
+                <View
+                  style={[
+                    styles.optionIcon,
+                    {backgroundColor: Colors.secondaryColor + '20'},
+                  ]}>
+                  <Image
+                    source={Images.presentIcon}
+                    style={[
+                      styles.optionIconImage,
+                      {tintColor: Colors.secondaryColor},
+                    ]}
+                  />
                 </View>
                 <View>
                   <Text style={styles.optionTitle}>+30 Minutes</Text>
@@ -60,10 +70,22 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
             </TouchableOpacity>
 
             {/* 1 Hour - 50 Coins */}
-            <TouchableOpacity style={styles.optionCard} onPress={() => onSpendCoins(50, 60)}>
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => onSpendCoins(50, 60)}>
               <View style={styles.optionLeft}>
-                <View style={[styles.optionIcon, {backgroundColor: Colors.primaryColor + '20'}]}>
-                  <Image source={Images.Hourglass} style={[styles.optionIconImage, {tintColor: Colors.primaryColor}]} />
+                <View
+                  style={[
+                    styles.optionIcon,
+                    {backgroundColor: Colors.primaryColor + '20'},
+                  ]}>
+                  <Image
+                    source={Images.Hourglass}
+                    style={[
+                      styles.optionIconImage,
+                      {tintColor: Colors.primaryColor},
+                    ]}
+                  />
                 </View>
                 <View>
                   <Text style={styles.optionTitle}>+1 Hour</Text>
@@ -79,10 +101,16 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
             </TouchableOpacity>
 
             {/* 2 Hours - 90 Coins */}
-            <TouchableOpacity style={styles.optionCard} onPress={() => onSpendCoins(90, 120)}>
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => onSpendCoins(90, 120)}>
               <View style={styles.optionLeft}>
-                <View style={[styles.optionIcon, {backgroundColor: '#FF6B6B20'}]}>
-                  <Image source={Images.Roaket} style={[styles.optionIconImage, {tintColor: '#FF6B6B'}]} />
+                <View
+                  style={[styles.optionIcon, {backgroundColor: '#FF6B6B20'}]}>
+                  <Image
+                    source={Images.Roaket}
+                    style={[styles.optionIconImage, {tintColor: '#FF6B6B'}]}
+                  />
                 </View>
                 <View>
                   <Text style={styles.optionTitle}>+2 Hours</Text>

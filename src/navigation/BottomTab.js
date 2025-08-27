@@ -57,25 +57,31 @@ const Bottom = ({state, descriptors, navigation}) => {
               style={[
                 styles.tabButton,
                 label == 'MiningScreen' && styles.centerTabButton,
-                isFocused && label !== 'MiningScreen' && styles.focusedTabButton,
+                isFocused &&
+                  label !== 'MiningScreen' &&
+                  styles.focusedTabButton,
               ]}>
               <View style={styles.tabContent}>
-                <View style={[
-                  styles.iconContainer,
-                  label === 'MiningScreen' && styles.centerIconContainer,
-                  isFocused && label !== 'MiningScreen' && styles.focusedIconContainer,
-                ]}>
+                <View
+                  style={[
+                    styles.iconContainer,
+                    label === 'MiningScreen' && styles.centerIconContainer,
+                    isFocused &&
+                      label !== 'MiningScreen' &&
+                      styles.focusedIconContainer,
+                  ]}>
                   <Image
                     style={[
                       styles.tabIcon,
                       label === 'MiningScreen' && styles.centerTabIcon,
                       {
-                        tintColor: label === 'MiningScreen'
-                          ? Colors.white
-                          : isFocused
-                          ? Colors.primaryColor
-                          : Colors.grey_500
-                      }
+                        tintColor:
+                          label === 'MiningScreen'
+                            ? Colors.white
+                            : isFocused
+                            ? Colors.primaryColor
+                            : Colors.grey_500,
+                      },
                     ]}
                     source={
                       label === 'Rewards'
@@ -89,10 +95,11 @@ const Bottom = ({state, descriptors, navigation}) => {
                   />
                 </View>
                 {label !== 'MiningScreen' && (
-                  <Text style={[
-                    styles.tabLabel,
-                    isFocused && styles.focusedTabLabel,
-                  ]}>
+                  <Text
+                    style={[
+                      styles.tabLabel,
+                      isFocused && styles.focusedTabLabel,
+                    ]}>
                     {label}
                   </Text>
                 )}

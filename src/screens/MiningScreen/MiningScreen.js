@@ -358,7 +358,7 @@ const MiningScreen = props => {
     }
   };
 
-  const addMiningTime = (additionalTime) => {
+  const addMiningTime = additionalTime => {
     if (isMining) {
       // If currently mining, extend the time
       setTimeRemaining(prev => prev + additionalTime);
@@ -602,7 +602,7 @@ const MiningScreen = props => {
 
               <Pressable
                 onPress={() => {
-                  shareReferralCode()
+                  shareReferralCode();
                 }}
                 style={{
                   marginTop: verticalScale(20),

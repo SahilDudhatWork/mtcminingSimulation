@@ -25,7 +25,7 @@ export default function HomeScreen(props) {
   const [list, setList] = useState(
     Array(4)
       .fill()
-      .map(() => ({value: 0, opened: false}))
+      .map(() => ({value: 0, opened: false})),
   );
   const [isVisible, setIsVisible] = useState(false);
   const [giftAmt, setGiftAmt] = useState(0);
@@ -84,7 +84,7 @@ export default function HomeScreen(props) {
         setList(
           Array(4)
             .fill()
-            .map(() => ({value: 0, opened: false}))
+            .map(() => ({value: 0, opened: false})),
         );
         setFlippedCount(0);
       }
@@ -115,7 +115,7 @@ export default function HomeScreen(props) {
             setList(
               Array(4)
                 .fill()
-                .map(() => ({value: 0, opened: false}))
+                .map(() => ({value: 0, opened: false})),
             );
             setFlippedCount(0);
           }
@@ -126,7 +126,7 @@ export default function HomeScreen(props) {
           setList(
             Array(4)
               .fill()
-              .map(() => ({value: 0, opened: false}))
+              .map(() => ({value: 0, opened: false})),
           );
           setFlippedCount(0);
         }
@@ -157,7 +157,7 @@ export default function HomeScreen(props) {
             setList(
               Array(4)
                 .fill()
-                .map(() => ({value: 0, opened: false}))
+                .map(() => ({value: 0, opened: false})),
             );
             setFlippedCount(0);
             clearInterval(giftMiningIntervalId);
@@ -240,8 +240,15 @@ export default function HomeScreen(props) {
             </>
           ) : (
             <>
-              <View style={[styles.cardIconContainer, {backgroundColor: Colors.secondaryColor}]}>
-                <Image style={[styles.cardIcon, {tintColor: Colors.white}]} source={Images.starIcon} />
+              <View
+                style={[
+                  styles.cardIconContainer,
+                  {backgroundColor: Colors.secondaryColor},
+                ]}>
+                <Image
+                  style={[styles.cardIcon, {tintColor: Colors.white}]}
+                  source={Images.starIcon}
+                />
               </View>
               <Text style={styles.cardReward}>{item.value}</Text>
               <Text style={styles.cardLabel}>Coins</Text>
@@ -253,15 +260,21 @@ export default function HomeScreen(props) {
   };
 
   const renderGameMode = ({item}) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[
         styles.gameModeCard,
-        {borderColor: selectedGameMode === item.id ? item.color : Colors.grey_300}
+        {
+          borderColor:
+            selectedGameMode === item.id ? item.color : Colors.grey_300,
+        },
       ]}
       onPress={() => setSelectedGameMode(item.id)}
       activeOpacity={0.8}>
       <View style={[styles.gameModeIcon, {backgroundColor: item.color + '20'}]}>
-        <Image source={item.icon} style={[styles.gameModeIconImage, {tintColor: item.color}]} />
+        <Image
+          source={item.icon}
+          style={[styles.gameModeIconImage, {tintColor: item.color}]}
+        />
       </View>
       <Text style={styles.gameModeTitle}>{item.title}</Text>
       <Text style={styles.gameModeDesc}>{item.description}</Text>
@@ -284,7 +297,9 @@ export default function HomeScreen(props) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
         {/* Header Section */}
         <View style={styles.headerSection}>
           <View style={styles.titleContainer}>
@@ -308,7 +323,9 @@ export default function HomeScreen(props) {
           </View>
           <View style={styles.balanceAmount}>
             <Image style={styles.balanceIcon} source={Images.starIcon} />
-            <Text style={styles.balanceValue}>{masterCoin.toLocaleString()}</Text>
+            <Text style={styles.balanceValue}>
+              {masterCoin.toLocaleString()}
+            </Text>
             <Text style={styles.balanceLabel}>Super Coins</Text>
           </View>
         </View>
@@ -333,7 +350,9 @@ export default function HomeScreen(props) {
             {isGiftMining && (
               <View style={styles.timerContainer}>
                 <Image source={Images.Hourglass} style={styles.timerIcon} />
-                <Text style={styles.timerText}>{formatTime(giftTimeRemaining)}</Text>
+                <Text style={styles.timerText}>
+                  {formatTime(giftTimeRemaining)}
+                </Text>
               </View>
             )}
           </View>
@@ -342,7 +361,10 @@ export default function HomeScreen(props) {
           <View style={styles.gameStatus}>
             <View style={styles.statusItem}>
               <Text style={styles.statusLabel}>Attempts</Text>
-              <Text style={styles.statusValue}>{`${flippedCount}/${MAX_FLIPS}`}</Text>
+              <Text
+                style={
+                  styles.statusValue
+                }>{`${flippedCount}/${MAX_FLIPS}`}</Text>
             </View>
             <View style={styles.statusDivider} />
             <View style={styles.statusItem}>

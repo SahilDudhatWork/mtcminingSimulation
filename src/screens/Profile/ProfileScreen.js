@@ -104,7 +104,11 @@ export default function ProfileScreen(props) {
       icon: Images.pickaxeIcon,
       iconBg: Colors.lightGreen,
       iconTint: Colors.darkGreen,
-      onPress: () => Alert.alert('Coming Soon', 'Mining history feature will be available soon!'),
+      onPress: () =>
+        Alert.alert(
+          'Coming Soon',
+          'Mining history feature will be available soon!',
+        ),
     },
     {
       id: 4,
@@ -113,7 +117,11 @@ export default function ProfileScreen(props) {
       icon: Images.convertCoinIcon,
       iconBg: '#FF6B6B20',
       iconTint: '#FF6B6B',
-      onPress: () => Alert.alert('Coming Soon', 'Withdrawal feature will be available soon!'),
+      onPress: () =>
+        Alert.alert(
+          'Coming Soon',
+          'Withdrawal feature will be available soon!',
+        ),
     },
     {
       id: 5,
@@ -126,29 +134,36 @@ export default function ProfileScreen(props) {
     },
   ];
 
-  const renderStatCard = (item) => (
+  const renderStatCard = item => (
     <View key={item.id} style={styles.statCard}>
       <View style={[styles.statIcon, {backgroundColor: item.backgroundColor}]}>
-        <Image source={item.icon} style={[styles.statIconImage, {tintColor: item.iconTint}]} />
+        <Image
+          source={item.icon}
+          style={[styles.statIconImage, {tintColor: item.iconTint}]}
+        />
       </View>
       <Text style={styles.statValue}>{item.value}</Text>
       <Text style={styles.statTitle}>{item.title}</Text>
     </View>
   );
 
-  const renderMenuItem = (item) => (
-    <TouchableOpacity key={item.id} style={styles.menuItem} onPress={item.onPress}>
+  const renderMenuItem = item => (
+    <TouchableOpacity
+      key={item.id}
+      style={styles.menuItem}
+      onPress={item.onPress}>
       <View style={styles.menuLeft}>
         <View style={[styles.menuIcon, {backgroundColor: item.iconBg}]}>
-          <Image 
-            source={item.icon} 
+          <Image
+            source={item.icon}
             style={[
-              styles.menuIconImage, 
+              styles.menuIconImage,
               {
                 tintColor: item.iconTint,
-                transform: item.icon === Images.rePostIcon ? [{rotate: '90deg'}] : []
-              }
-            ]} 
+                transform:
+                  item.icon === Images.rePostIcon ? [{rotate: '90deg'}] : [],
+              },
+            ]}
           />
         </View>
         <View style={styles.menuContent}>
@@ -163,7 +178,9 @@ export default function ProfileScreen(props) {
   return (
     <SafeAreaView style={styles.container}>
       <Header ishelp={true} />
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.profileImageContainer}>
@@ -172,7 +189,7 @@ export default function ProfileScreen(props) {
               <Image style={styles.editIcon} source={Images.editIcon} />
             </TouchableOpacity>
           </View>
-          
+
           <Text style={styles.nameText}>{userData.username}</Text>
           <View style={styles.referralContainer}>
             <Text style={styles.referralLabel}>Referral ID:</Text>
@@ -190,21 +207,30 @@ export default function ProfileScreen(props) {
 
         {/* Quick Actions */}
         <View style={styles.quickActionsContainer}>
-          <TouchableOpacity 
-            style={[styles.quickAction, {backgroundColor: Colors.secondaryColor}]}
+          <TouchableOpacity
+            style={[
+              styles.quickAction,
+              {backgroundColor: Colors.secondaryColor},
+            ]}
             onPress={() => props.navigation.navigate('ConvertCoinScreen')}>
-            <Image source={Images.convertCoinIcon} style={styles.quickActionIcon} />
+            <Image
+              source={Images.convertCoinIcon}
+              style={styles.quickActionIcon}
+            />
             <Text style={styles.quickActionText}>Convert</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.quickAction, {backgroundColor: Colors.primaryColor}]}
             onPress={() => props.navigation.navigate('Rafers')}>
-            <Image source={Images.multipleUsersIcon} style={styles.quickActionIcon} />
+            <Image
+              source={Images.multipleUsersIcon}
+              style={styles.quickActionIcon}
+            />
             <Text style={styles.quickActionText}>Refer</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.quickAction, {backgroundColor: '#FF6B6B'}]}
             onPress={() => props.navigation.navigate('MiningScreen')}>
             <Image source={Images.pickaxeIcon} style={styles.quickActionIcon} />
@@ -215,9 +241,7 @@ export default function ProfileScreen(props) {
         {/* Menu Items */}
         <View style={styles.menuContainer}>
           <Text style={styles.sectionTitle}>Account</Text>
-          <View style={styles.menuList}>
-            {menuItems.map(renderMenuItem)}
-          </View>
+          <View style={styles.menuList}>{menuItems.map(renderMenuItem)}</View>
         </View>
 
         {/* Account Info Card */}

@@ -79,7 +79,9 @@ export default function ConvertCoinScreen(props) {
 
     Alert.alert(
       'Confirm Conversion',
-      `Convert ${masterCoin} Super Coins to ${convertableAmount.toFixed(4)} USDT?`,
+      `Convert ${masterCoin} Super Coins to ${convertableAmount.toFixed(
+        4,
+      )} USDT?`,
       [
         {text: 'Cancel', style: 'cancel'},
         {
@@ -88,7 +90,10 @@ export default function ConvertCoinScreen(props) {
             // Add to total earned
             const newTotalEarned = totalEarned + convertableAmount;
             setTotalEarned(newTotalEarned);
-            await AsyncStorage.setItem('totalEarned', newTotalEarned.toString());
+            await AsyncStorage.setItem(
+              'totalEarned',
+              newTotalEarned.toString(),
+            );
 
             // Reset master coins
             setMasterCoin(0);
@@ -120,7 +125,10 @@ export default function ConvertCoinScreen(props) {
       <View style={styles.historyItem}>
         <View style={styles.historyLeft}>
           <View style={styles.historyIcon}>
-            <Image source={Images.convertCoinIcon} style={styles.historyIconImage} />
+            <Image
+              source={Images.convertCoinIcon}
+              style={styles.historyIconImage}
+            />
           </View>
           <View>
             <Text style={styles.historyDate}>{item.date}</Text>
@@ -129,10 +137,26 @@ export default function ConvertCoinScreen(props) {
         </View>
         <View style={styles.historyRight}>
           <Text style={styles.historyUsdt}>{item.usdt} USDT</Text>
-          <View style={[styles.statusBadge, 
-            {backgroundColor: item.status === 'completed' ? Colors.lightGreen : Colors.lightRed}]}>
-            <Text style={[styles.statusText,
-              {color: item.status === 'completed' ? Colors.darkGreen : Colors.darkRed}]}>
+          <View
+            style={[
+              styles.statusBadge,
+              {
+                backgroundColor:
+                  item.status === 'completed'
+                    ? Colors.lightGreen
+                    : Colors.lightRed,
+              },
+            ]}>
+            <Text
+              style={[
+                styles.statusText,
+                {
+                  color:
+                    item.status === 'completed'
+                      ? Colors.darkGreen
+                      : Colors.darkRed,
+                },
+              ]}>
               {item.status.toUpperCase()}
             </Text>
           </View>
@@ -144,7 +168,9 @@ export default function ConvertCoinScreen(props) {
   return (
     <SafeAreaView style={styles.container}>
       <Header ishelp={true} />
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
         {/* Header Section */}
         <View style={styles.headerSection}>
           <View style={styles.iconContainer}>
@@ -161,28 +187,34 @@ export default function ConvertCoinScreen(props) {
           <View style={styles.balanceHeader}>
             <Text style={styles.balanceTitle}>Available Balance</Text>
             <View style={styles.rateContainer}>
-              <Text style={styles.rateText}>Rate: 1 Coin = {conversionRate} USDT</Text>
+              <Text style={styles.rateText}>
+                Rate: 1 Coin = {conversionRate} USDT
+              </Text>
             </View>
           </View>
-          
+
           <View style={styles.conversionContainer}>
             <View style={styles.coinSection}>
               <Text style={styles.coinLabel}>Super Coins</Text>
-              <Text style={styles.coinValue}>{masterCoin.toLocaleString()}</Text>
+              <Text style={styles.coinValue}>
+                {masterCoin.toLocaleString()}
+              </Text>
             </View>
-            
+
             <View style={styles.arrowContainer}>
               <Image source={Images.rePostIcon} style={styles.arrowIcon} />
             </View>
-            
+
             <View style={styles.usdtSection}>
               <Text style={styles.usdtLabel}>USDT</Text>
-              <Text style={styles.usdtValue}>{convertableAmount.toFixed(4)}</Text>
+              <Text style={styles.usdtValue}>
+                {convertableAmount.toFixed(4)}
+              </Text>
             </View>
           </View>
 
           {/* Convert Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.convertButton, {opacity: canConvert ? 1 : 0.5}]}
             onPress={handleConvert}
             disabled={!canConvert}>
@@ -195,7 +227,8 @@ export default function ConvertCoinScreen(props) {
           <View style={styles.requirementContainer}>
             <Image source={Images.Info} style={styles.infoIcon} />
             <Text style={styles.requirementText}>
-              Minimum {minimumCoins.toLocaleString()} Super Coins required to convert
+              Minimum {minimumCoins.toLocaleString()} Super Coins required to
+              convert
             </Text>
           </View>
         </View>
