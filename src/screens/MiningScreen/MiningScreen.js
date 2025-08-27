@@ -969,16 +969,11 @@ const MiningScreen = props => {
         onBoost={handleBoostConfirm}
       />
 
-      <BoostGhsModal
+      <TimeBoostModal
         visible={showTimeBoostModal}
         onClose={() => setShowTimeBoostModal(false)}
-        currentGhs={currentGhs}
-        maxGhs={maxGhs}
-        hasReachedLimit={false}
-        onBoost={() => {
-          setShowTimeBoostModal(false);
-          console.log('Time boost applied');
-        }}
+        onWatchAd={handleWatchAdForTime}
+        onSpendCoins={handleSpendCoinsForTime}
       />
     </View>
   );
