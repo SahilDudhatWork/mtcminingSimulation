@@ -69,6 +69,13 @@ const Bottom = ({state, descriptors, navigation}) => {
                     style={[
                       styles.tabIcon,
                       label === 'MiningScreen' && styles.centerTabIcon,
+                      {
+                        tintColor: label === 'MiningScreen'
+                          ? Colors.white
+                          : isFocused
+                          ? Colors.primaryColor
+                          : Colors.grey_500
+                      }
                     ]}
                     source={
                       label === 'Rewards'
