@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Popup from '../../components/Popup';
 import MysteryBoxModal from '../../components/MysteryBoxModal';
 import BoostGhsModal from '../../components/BoostGhsModal';
+import TimeBoostModal from '../../components/TimeBoostModal';
 import {useNavigation} from '@react-navigation/native';
 
 const MiningScreen = props => {
