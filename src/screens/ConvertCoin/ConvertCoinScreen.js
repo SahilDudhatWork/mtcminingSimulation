@@ -1,250 +1,572 @@
-import { View, Text, StyleSheet, Image, FlatList } from 'react-native'
-import React, { useState } from 'react'
-import { Colors } from '../../constants/colors'
-import { horizontalScale, verticalScale } from '../../constants/helper'
-import { Images } from '../../assets/images'
-import Header from '../../components/Header'
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  FlatList,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {Colors} from '../../constants/colors';
+import {horizontalScale, verticalScale} from '../../constants/helper';
+import {Images} from '../../assets/images';
+import Header from '../../components/Header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useNavigation} from '@react-navigation/native';
 
 export default function ConvertCoinScreen(props) {
+  const navigation = useNavigation();
+  const [masterCoin, setMasterCoin] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [conversionRate] = useState(0.0006); // 1 Super Coin = 0.0006 USDT
+  const [minimumCoins] = useState(2500);
 
-    const [history, setHistory] = useState([
-        {
-            date: '11 Feb, 2024',
-            usdt: '0.28'
-        },
-        {
-            date: '13 Feb, 2024',
-            usdt: '0.51'
-        },
-        {
-            date: '15 Feb, 2024',
-            usdt: '0.68'
-        },
-    ]);
+  const [history, setHistory] = useState([
+    {
+      id: 1,
+      date: '11 Feb, 2024',
+      usdt: '0.28',
+      coins: '467',
+      status: 'completed',
+    },
+    {
+      id: 2,
+      date: '13 Feb, 2024',
+      usdt: '0.51',
+      coins: '850',
+      status: 'completed',
+    },
+    {
+      id: 3,
+      date: '15 Feb, 2024',
+      usdt: '0.68',
+      coins: '1133',
+      status: 'completed',
+    },
+  ]);
 
-    const renderItem = ({ item }) => {
-        return (
-            <View style={styles.itemContainer}>
-                <View>
-                    <Text style={styles.blackColor}>Date</Text>
-                    <Text style={styles.greyColor}>{item.date}</Text>
-                </View>
-                <View>
-                    <Text style={styles.blackText}>USDT</Text>
-                    <Text style={styles.greyText}>{item.usdt}</Text>
-                </View>
-            </View>
-        )
+  useEffect(() => {
+    const focusListener = navigation.addListener('focus', async () => {
+      const totalMasterCoin = await AsyncStorage.getItem('masterCoin');
+      const totalEarnedValue = await AsyncStorage.getItem('totalEarned');
+      if (totalMasterCoin) {
+        setMasterCoin(parseFloat(totalMasterCoin) || 0);
+      }
+      if (totalEarnedValue) {
+        setTotalEarned(parseFloat(totalEarnedValue) || 0);
+      }
+    });
+
+    return () => {
+      focusListener();
+    };
+  }, [navigation]);
+
+  const convertableAmount = masterCoin * conversionRate;
+  const canConvert = masterCoin >= minimumCoins;
+
+  const handleConvert = async () => {
+    if (!canConvert) {
+      Alert.alert(
+        'Insufficient Coins',
+        `You need at least ${minimumCoins} Super Coins to convert. You currently have ${masterCoin} coins.`,
+      );
+      return;
     }
 
+    Alert.alert(
+      'Confirm Conversion',
+      `Convert ${masterCoin} Super Coins to ${convertableAmount.toFixed(
+        4,
+      )} USDT?`,
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Convert',
+          onPress: async () => {
+            // Add to total earned
+            const newTotalEarned = totalEarned + convertableAmount;
+            setTotalEarned(newTotalEarned);
+            await AsyncStorage.setItem(
+              'totalEarned',
+              newTotalEarned.toString(),
+            );
+
+            // Reset master coins
+            setMasterCoin(0);
+            await AsyncStorage.setItem('masterCoin', '0');
+
+            // Add to history
+            const newHistoryItem = {
+              id: Date.now(),
+              date: new Date().toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              }),
+              usdt: convertableAmount.toFixed(4),
+              coins: masterCoin.toString(),
+              status: 'completed',
+            };
+            setHistory(prev => [newHistoryItem, ...prev]);
+
+            Alert.alert('Success', 'Coins converted successfully!');
+          },
+        },
+      ],
+    );
+  };
+
+  const renderHistoryItem = ({item}) => {
     return (
-        <>
-            <Header ishelp={true} />
-            <View style={styles.container}>
-                <View style={styles.innerContainer}>
-                    <View style={styles.imageContainer}>
-                        <Image style={styles.giftIconContainer} source={Images.convertCoinIcon} />
-                    </View>
-                    <Text
-                        style={styles.convertText}
-                    >
-                        Convert Super Coins
-                    </Text>
-                    <Text
-                        style={styles.convertCoinText}
-                    >
-                        {`Convert you collected reward point in\nto crypto coins`}
-                    </Text>
+      <View style={styles.historyItem}>
+        <View style={styles.historyLeft}>
+          <View style={styles.historyIcon}>
+            <Image
+              source={Images.convertCoinIcon}
+              style={styles.historyIconImage}
+            />
+          </View>
+          <View>
+            <Text style={styles.historyDate}>{item.date}</Text>
+            <Text style={styles.historyCoins}>{item.coins} Super Coins</Text>
+          </View>
+        </View>
+        <View style={styles.historyRight}>
+          <Text style={styles.historyUsdt}>{item.usdt} USDT</Text>
+          <View
+            style={[
+              styles.statusBadge,
+              {
+                backgroundColor:
+                  item.status === 'completed'
+                    ? Colors.lightGreen
+                    : Colors.lightRed,
+              },
+            ]}>
+            <Text
+              style={[
+                styles.statusText,
+                {
+                  color:
+                    item.status === 'completed'
+                      ? Colors.darkGreen
+                      : Colors.darkRed,
+                },
+              ]}>
+              {item.status.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
-                    <View style={styles.rowContainer}>
-                        <View style={styles.coinContainer}>
-                            <Text style={styles.titleContainer}>Super coins</Text>
-                            <Text style={styles.desc1}>460</Text>
-                        </View>
-                        <View style={styles.repostImage}>
-                            <Image
-                                style={styles.repostContainer}
-                                source={Images.rePostIcon}
-                            />
-                        </View>
-                        <View style={styles.usdtContainer}>
-                            <Text style={styles.titleContainer}>USDT</Text>
-                            <Text style={styles.desc2}>0.27</Text>
-                        </View>
-                    </View>
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header ishelp={true} />
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <View style={styles.iconContainer}>
+            <Image style={styles.convertIcon} source={Images.convertCoinIcon} />
+          </View>
+          <Text style={styles.title}>Convert Super Coins</Text>
+          <Text style={styles.subtitle}>
+            Convert your collected reward points into crypto coins
+          </Text>
+        </View>
 
-                    <Text
-                        style={styles.coinText}
-                    >
-                        * Minimum
-                        <Text style={styles.weight800}>
-                            {" "}2,500 Super coins
-                        </Text>
-                        {" "}required to convert into USDT
-                    </Text>
-
-                    <View style={styles.deviderContainer} />
-
-                    <Text style={styles.historyText}>History</Text>
-
-                    <View style={styles.w100}>
-                        <FlatList
-                            data={history}
-                            renderItem={renderItem}
-                            contentContainerStyle={styles.contentContainer}
-                        />
-                    </View>
-                </View>
+        {/* Balance Card */}
+        <View style={styles.balanceCard}>
+          <View style={styles.balanceHeader}>
+            <Text style={styles.balanceTitle}>Available Balance</Text>
+            <View style={styles.rateContainer}>
+              <Text style={styles.rateText}>
+                Rate: 1 Coin = {conversionRate} USDT
+              </Text>
             </View>
-        </>
-    )
+          </View>
+
+          <View style={styles.conversionContainer}>
+            <View style={styles.coinSection}>
+              <Text style={styles.coinLabel}>Super Coins</Text>
+              <Text style={styles.coinValue}>
+                {masterCoin.toLocaleString()}
+              </Text>
+            </View>
+
+            <View style={styles.arrowContainer}>
+              <Image source={Images.rePostIcon} style={styles.arrowIcon} />
+            </View>
+
+            <View style={styles.usdtSection}>
+              <Text style={styles.usdtLabel}>USDT</Text>
+              <Text style={styles.usdtValue}>
+                {convertableAmount.toFixed(4)}
+              </Text>
+            </View>
+          </View>
+
+          {/* Convert Button */}
+          <TouchableOpacity
+            style={[styles.convertButton, {opacity: canConvert ? 1 : 0.5}]}
+            onPress={handleConvert}
+            disabled={!canConvert}>
+            <Text style={styles.convertButtonText}>
+              {canConvert ? 'Convert Now' : 'Insufficient Coins'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Minimum Requirement */}
+          <View style={styles.requirementContainer}>
+            <Image source={Images.Info} style={styles.infoIcon} />
+            <Text style={styles.requirementText}>
+              Minimum {minimumCoins.toLocaleString()} Super Coins required to
+              convert
+            </Text>
+          </View>
+        </View>
+
+        {/* Quick Stats */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{totalEarned.toFixed(4)}</Text>
+            <Text style={styles.statLabel}>Total Earned</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{history.length}</Text>
+            <Text style={styles.statLabel}>Conversions</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{conversionRate}</Text>
+            <Text style={styles.statLabel}>Current Rate</Text>
+          </View>
+        </View>
+
+        {/* History Section */}
+        <View style={styles.historySection}>
+          <Text style={styles.historyTitle}>Conversion History</Text>
+          {history.length > 0 ? (
+            <FlatList
+              data={history}
+              renderItem={renderHistoryItem}
+              keyExtractor={item => item.id.toString()}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <View style={styles.emptyHistory}>
+              <Image source={Images.convertCoinIcon} style={styles.emptyIcon} />
+              <Text style={styles.emptyText}>No conversions yet</Text>
+              <Text style={styles.emptySubtext}>
+                Start earning Super Coins to make your first conversion
+              </Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    usdtContainer: {
-        borderRadius: verticalScale(10),
-        height: verticalScale(100),
-        width: horizontalScale(160),
-        backgroundColor: Colors.secondaryColor,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    coinContainer: {
-        backgroundColor: Colors.lightGrey,
-        marginRight: horizontalScale(15),
-        borderRadius: verticalScale(10),
-        height: verticalScale(100),
-        width: horizontalScale(160),
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    repostImage: {
-        backgroundColor: Colors.grey_500,
-        position: 'absolute',
-        alignSelf: 'center',
-        borderRadius: verticalScale(20),
-        height: verticalScale(35),
-        width: verticalScale(35),
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 111
-    },
-    desc2: {
-        color: Colors.white,
-        fontSize: verticalScale(17),
-        fontWeight: '600',
-        marginTop: verticalScale(7)
-    },
-    desc1: {
-        color: Colors.black,
-        fontSize: verticalScale(17),
-        fontWeight: '600',
-        marginTop: verticalScale(7)
-    },
-    titleContainer: {
-        color: Colors.grey_500,
-        fontSize: verticalScale(12)
-    },
-    repostContainer: {
-        height: verticalScale(16),
-        width: verticalScale(16),
-        resizeMode: 'contain',
-        transform: [{ rotate: '90deg' }]
-    },
-    rowContainer: {
-        flexDirection: 'row',
-        marginTop: verticalScale(15),
-        justifyContent: 'center'
-    },
-    convertCoinText: {
-        color: Colors.grey_500,
-        textAlign: 'center',
-        marginTop: verticalScale(10)
-    },
-    convertText: {
-        color: Colors.black,
-        fontWeight: '500',
-        fontSize: verticalScale(20),
-        marginTop: verticalScale(12)
-    },
-    imageContainer: {
-        marginTop: verticalScale(-65),
-        height: verticalScale(150),
-        width: verticalScale(150),
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: Colors.secondaryColor,
-        borderRadius: verticalScale(80)
-    },
-    coinText: {
-        color: Colors.grey_500,
-        textAlign: 'center',
-        marginTop: verticalScale(10),
-        fontSize: verticalScale(11)
-    },
-    weight800: {
-        fontWeight: '800'
-    },
-    deviderContainer: {
-        width: '70%',
-        height: verticalScale(1),
-        backgroundColor: Colors.grey_500,
-        marginTop: verticalScale(30)
-    },
-    historyText: {
-        color: Colors.black,
-        marginTop: verticalScale(20),
-        fontSize: verticalScale(18),
-        fontWeight: '500'
-    },
-    w100: {
-        width: '100%'
-    },
-    container: {
-        flex: 1,
-        backgroundColor: Colors.semiGray,
-    },
-    innerContainer: {
-        width: '100%',
-        backgroundColor: Colors.white,
-        height: '100%',
-        marginTop: verticalScale(110),
-        alignItems: 'center',
-        borderTopRightRadius: verticalScale(30),
-        borderTopLeftRadius: verticalScale(30),
-    },
-    giftIconContainer: {
-        height: verticalScale(90),
-        width: verticalScale(90),
-        resizeMode: 'contain',
-        tintColor: Colors.white
-    },
-    itemContainer: {
-        paddingHorizontal: horizontalScale(10),
-        height: verticalScale(55),
-        width: horizontalScale(300),
-        flexDirection: 'row',
-        borderTopWidth: verticalScale(1),
-        justifyContent: 'space-between',
-        paddingTop: verticalScale(5)
-    },
-    blackColor: {
-        color: Colors.black
-    },
-    greyColor: {
-        color: Colors.grey_500
-    },
-    blackText: {
-        textAlign: 'right',
-        color: Colors.black
-    },
-    greyText: {
-        textAlign: 'right',
-        color: Colors.grey_500
-    },
-    contentContainer: {
-        width: horizontalScale(370),
-        alignItems: 'center',
-        paddingTop: verticalScale(10)
-    },
-})
+  container: {
+    flex: 1,
+    backgroundColor: Colors.semiGray,
+  },
+  scrollContainer: {
+    flex: 1,
+    paddingHorizontal: horizontalScale(20),
+  },
+  headerSection: {
+    alignItems: 'center',
+    marginTop: verticalScale(20),
+    marginBottom: verticalScale(30),
+  },
+  iconContainer: {
+    width: verticalScale(100),
+    height: verticalScale(100),
+    borderRadius: verticalScale(50),
+    backgroundColor: Colors.secondaryColor,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: verticalScale(20),
+    shadowColor: Colors.secondaryColor,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  convertIcon: {
+    width: verticalScale(50),
+    height: verticalScale(50),
+    tintColor: Colors.white,
+    resizeMode: 'contain',
+  },
+  title: {
+    fontSize: verticalScale(24),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginBottom: verticalScale(8),
+  },
+  subtitle: {
+    fontSize: verticalScale(14),
+    color: Colors.grey_500,
+    textAlign: 'center',
+    lineHeight: verticalScale(20),
+    paddingHorizontal: horizontalScale(20),
+  },
+  balanceCard: {
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(20),
+    padding: verticalScale(25),
+    marginBottom: verticalScale(20),
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  balanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: verticalScale(20),
+  },
+  balanceTitle: {
+    fontSize: verticalScale(18),
+    fontWeight: '600',
+    color: Colors.black,
+  },
+  rateContainer: {
+    backgroundColor: Colors.bgColor,
+    paddingHorizontal: horizontalScale(12),
+    paddingVertical: verticalScale(6),
+    borderRadius: verticalScale(12),
+  },
+  rateText: {
+    fontSize: verticalScale(12),
+    color: Colors.secondaryColor,
+    fontWeight: '500',
+  },
+  conversionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: verticalScale(25),
+  },
+  coinSection: {
+    flex: 1,
+    backgroundColor: Colors.lightGrey,
+    borderRadius: verticalScale(15),
+    padding: verticalScale(20),
+    alignItems: 'center',
+  },
+  coinLabel: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_500,
+    marginBottom: verticalScale(8),
+    fontWeight: '500',
+  },
+  coinValue: {
+    fontSize: verticalScale(20),
+    fontWeight: 'bold',
+    color: Colors.black,
+  },
+  arrowContainer: {
+    backgroundColor: Colors.grey_300,
+    borderRadius: verticalScale(25),
+    width: verticalScale(50),
+    height: verticalScale(50),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: horizontalScale(15),
+  },
+  arrowIcon: {
+    width: verticalScale(20),
+    height: verticalScale(20),
+    resizeMode: 'contain',
+    transform: [{rotate: '90deg'}],
+    tintColor: Colors.grey_500,
+  },
+  usdtSection: {
+    flex: 1,
+    backgroundColor: Colors.secondaryColor,
+    borderRadius: verticalScale(15),
+    padding: verticalScale(20),
+    alignItems: 'center',
+  },
+  usdtLabel: {
+    fontSize: verticalScale(12),
+    color: Colors.white,
+    marginBottom: verticalScale(8),
+    fontWeight: '500',
+  },
+  usdtValue: {
+    fontSize: verticalScale(20),
+    fontWeight: 'bold',
+    color: Colors.white,
+  },
+  convertButton: {
+    backgroundColor: Colors.primaryColor,
+    borderRadius: verticalScale(15),
+    paddingVertical: verticalScale(15),
+    alignItems: 'center',
+    marginBottom: verticalScale(15),
+  },
+  convertButtonText: {
+    fontSize: verticalScale(16),
+    fontWeight: '600',
+    color: Colors.white,
+  },
+  requirementContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.bgColor,
+    borderRadius: verticalScale(10),
+    padding: verticalScale(12),
+  },
+  infoIcon: {
+    width: verticalScale(16),
+    height: verticalScale(16),
+    marginRight: horizontalScale(8),
+    resizeMode: 'contain',
+  },
+  requirementText: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_500,
+    textAlign: 'center',
+    flex: 1,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(15),
+    padding: verticalScale(20),
+    marginBottom: verticalScale(20),
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: verticalScale(18),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginBottom: verticalScale(4),
+  },
+  statLabel: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_500,
+    textAlign: 'center',
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: Colors.grey_300,
+    marginHorizontal: horizontalScale(15),
+  },
+  historySection: {
+    marginBottom: verticalScale(100),
+  },
+  historyTitle: {
+    fontSize: verticalScale(18),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginBottom: verticalScale(15),
+  },
+  historyItem: {
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(15),
+    padding: verticalScale(15),
+    marginBottom: verticalScale(10),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  historyLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  historyIcon: {
+    width: verticalScale(40),
+    height: verticalScale(40),
+    borderRadius: verticalScale(20),
+    backgroundColor: Colors.bgColor,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: horizontalScale(12),
+  },
+  historyIconImage: {
+    width: verticalScale(20),
+    height: verticalScale(20),
+    tintColor: Colors.secondaryColor,
+    resizeMode: 'contain',
+  },
+  historyDate: {
+    fontSize: verticalScale(14),
+    fontWeight: '500',
+    color: Colors.black,
+    marginBottom: verticalScale(2),
+  },
+  historyCoins: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_500,
+  },
+  historyRight: {
+    alignItems: 'flex-end',
+  },
+  historyUsdt: {
+    fontSize: verticalScale(16),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginBottom: verticalScale(4),
+  },
+  statusBadge: {
+    paddingHorizontal: horizontalScale(8),
+    paddingVertical: verticalScale(2),
+    borderRadius: verticalScale(8),
+  },
+  statusText: {
+    fontSize: verticalScale(10),
+    fontWeight: '600',
+  },
+  emptyHistory: {
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(15),
+    padding: verticalScale(40),
+    alignItems: 'center',
+  },
+  emptyIcon: {
+    width: verticalScale(60),
+    height: verticalScale(60),
+    tintColor: Colors.grey_400,
+    marginBottom: verticalScale(15),
+    resizeMode: 'contain',
+  },
+  emptyText: {
+    fontSize: verticalScale(16),
+    fontWeight: '500',
+    color: Colors.grey_500,
+    marginBottom: verticalScale(8),
+  },
+  emptySubtext: {
+    fontSize: verticalScale(14),
+    color: Colors.grey_400,
+    textAlign: 'center',
+  },
+});

@@ -50,59 +50,59 @@ const Bottom = ({state, descriptors, navigation}) => {
               styles.mainItemContainer,
               {
                 marginTop: label == 'MiningScreen' ? verticalScale(-80) : 0,
-                marginLeft: label == 'Rewards' ? horizontalScale(15) : 0,
-                marginRight: label == 'Rafers' ? horizontalScale(15) : 0,
               },
             ]}>
             <Pressable
               onPress={onPress}
-              style={{
-                backgroundColor:
-                  label == 'MiningScreen' ? Colors.primaryColor : 'transparent',
-                borderRadius: label == 'MiningScreen' ? verticalScale(100) : 0,
-                height: label == 'MiningScreen' ? verticalScale(85) : 'auto',
-                width: label == 'MiningScreen' ? verticalScale(85) : 'auto',
-              }}>
-              <View
-                style={{
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  flex: 1,
-                  padding: verticalScale(15),
-                }}>
-                <Image
-                  style={
-                    label === 'MiningScreen'
-                      ? {
-                          height: verticalScale(40),
-                          width: verticalScale(40),
-                          tintColor: Colors.white,
-                        }
-                      : {
-                          height: verticalScale(25),
-                          width: verticalScale(25),
-                          tintColor: isFocused ? Colors.primaryColor : 'grey',
-                        }
-                  }
-                  source={
-                    label === 'Rewards'
-                      ? isFocused
-                        ? Images.filledrewardsIcon
-                        : Images.rewardsIcon
-                      : label === 'Rafers'
-                      ? Images.raferIcon
-                      : Images.pickaxeIcon
-                  }
-                />
-                {label !== 'MiningScreen' ? (
+              style={[
+                styles.tabButton,
+                label == 'MiningScreen' && styles.centerTabButton,
+                isFocused &&
+                  label !== 'MiningScreen' &&
+                  styles.focusedTabButton,
+              ]}>
+              <View style={styles.tabContent}>
+                <View
+                  style={[
+                    styles.iconContainer,
+                    label === 'MiningScreen' && styles.centerIconContainer,
+                    isFocused &&
+                      label !== 'MiningScreen' &&
+                      styles.focusedIconContainer,
+                  ]}>
+                  <Image
+                    style={[
+                      styles.tabIcon,
+                      label === 'MiningScreen' && styles.centerTabIcon,
+                      {
+                        tintColor:
+                          label === 'MiningScreen'
+                            ? Colors.white
+                            : isFocused
+                            ? Colors.primaryColor
+                            : Colors.grey_500,
+                      },
+                    ]}
+                    source={
+                      label === 'Rewards'
+                        ? isFocused
+                          ? Images.filledrewardsIcon
+                          : Images.rewardsIcon
+                        : label === 'Rafers'
+                        ? Images.raferIcon
+                        : Images.pickaxeIcon
+                    }
+                  />
+                </View>
+                {label !== 'MiningScreen' && (
                   <Text
-                    style={{
-                      color: isFocused ? Colors.primaryColor : 'grey',
-                      fontSize: verticalScale(10),
-                    }}>
+                    style={[
+                      styles.tabLabel,
+                      isFocused && styles.focusedTabLabel,
+                    ]}>
                     {label}
                   </Text>
-                ) : null}
+                )}
               </View>
             </Pressable>
           </View>
@@ -131,17 +131,85 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     backgroundColor: Colors.white,
-    borderTopRightRadius: verticalScale(20),
-    borderTopLeftRadius: verticalScale(20),
-    height: verticalScale(80),
+    borderTopRightRadius: verticalScale(25),
+    borderTopLeftRadius: verticalScale(25),
+    height: verticalScale(85),
     width: '100%',
+    paddingHorizontal: horizontalScale(10),
+    paddingBottom: verticalScale(5),
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 8,
   },
   mainItemContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 15,
-    borderRadius: 1,
-    borderColor: '#333B42',
+  },
+  tabButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: verticalScale(8),
+    paddingHorizontal: horizontalScale(12),
+    borderRadius: verticalScale(15),
+    minWidth: horizontalScale(50),
+  },
+  centerTabButton: {
+    backgroundColor: Colors.primaryColor,
+    borderRadius: verticalScale(50),
+    height: verticalScale(85),
+    width: verticalScale(85),
+    shadowColor: Colors.primaryColor,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  focusedTabButton: {
+    backgroundColor: `${Colors.primaryColor}15`,
+  },
+  tabContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: verticalScale(2),
+  },
+  centerIconContainer: {
+    marginBottom: 0,
+  },
+  focusedIconContainer: {
+    transform: [{scale: 1.1}],
+  },
+  tabIcon: {
+    height: verticalScale(22),
+    width: verticalScale(22),
+    resizeMode: 'contain',
+  },
+  centerTabIcon: {
+    height: verticalScale(35),
+    width: verticalScale(35),
+  },
+  tabLabel: {
+    fontSize: verticalScale(11),
+    fontWeight: '500',
+    color: Colors.grey_500,
+    marginTop: verticalScale(2),
+    textAlign: 'center',
+  },
+  focusedTabLabel: {
+    color: Colors.primaryColor,
+    fontWeight: '600',
   },
 });

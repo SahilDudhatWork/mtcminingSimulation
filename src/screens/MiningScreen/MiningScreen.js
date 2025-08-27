@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Popup from '../../components/Popup';
 import MysteryBoxModal from '../../components/MysteryBoxModal';
 import BoostGhsModal from '../../components/BoostGhsModal';
+import TimeBoostModal from '../../components/TimeBoostModal';
 import {useNavigation} from '@react-navigation/native';
 
 const MiningScreen = props => {
@@ -332,6 +333,44 @@ const MiningScreen = props => {
     setShowTimeBoostModal(true);
   };
 
+  const handleWatchAdForTime = () => {
+    // Add 30 minutes to mining time
+    console.log('Watch ad for 30 minutes time boost');
+    setShowTimeBoostModal(false);
+    // Implement ad watching logic here
+    addMiningTime(30 * 60 * 1000); // 30 minutes in milliseconds
+  };
+
+  const handleSpendCoinsForTime = (coins, minutes) => {
+    // Check if user has enough coins
+    if (masterCoin >= coins) {
+      console.log(`Spend ${coins} coins for ${minutes} minutes boost`);
+      setMasterCoin(prev => {
+        const newAmount = prev - coins;
+        AsyncStorage.setItem('masterCoin', newAmount.toString());
+        return newAmount;
+      });
+      addMiningTime(minutes * 60 * 1000); // Convert minutes to milliseconds
+      setShowTimeBoostModal(false);
+    } else {
+      console.log('Not enough coins');
+      // Could show an alert or toast message
+    }
+  };
+
+  const addMiningTime = additionalTime => {
+    if (isMining) {
+      // If currently mining, extend the time
+      setTimeRemaining(prev => prev + additionalTime);
+    } else {
+      // If not mining, start with the additional time
+      setTimeRemaining(additionalTime);
+      setIsMining(true);
+      const now = new Date().getTime();
+      AsyncStorage.setItem('sessionStart', now.toString());
+    }
+  };
+
   const handleGhsBoost = () => {
     setShowBoostGhsModal(true);
   };
@@ -563,7 +602,7 @@ const MiningScreen = props => {
 
               <Pressable
                 onPress={() => {
-                  shareReferralCode()
+                  shareReferralCode();
                 }}
                 style={{
                   marginTop: verticalScale(20),
@@ -930,16 +969,11 @@ const MiningScreen = props => {
         onBoost={handleBoostConfirm}
       />
 
-      <BoostGhsModal
+      <TimeBoostModal
         visible={showTimeBoostModal}
         onClose={() => setShowTimeBoostModal(false)}
-        currentGhs={currentGhs}
-        maxGhs={maxGhs}
-        hasReachedLimit={false}
-        onBoost={() => {
-          setShowTimeBoostModal(false);
-          console.log('Time boost applied');
-        }}
+        onWatchAd={handleWatchAdForTime}
+        onSpendCoins={handleSpendCoinsForTime}
       />
     </View>
   );
