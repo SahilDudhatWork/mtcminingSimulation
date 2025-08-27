@@ -188,13 +188,11 @@ const styles = StyleSheet.create({
   tabIcon: {
     height: verticalScale(22),
     width: verticalScale(22),
-    tintColor: Colors.grey_500,
     resizeMode: 'contain',
   },
   centerTabIcon: {
     height: verticalScale(35),
     width: verticalScale(35),
-    tintColor: Colors.white,
   },
   tabLabel: {
     fontSize: verticalScale(11),
