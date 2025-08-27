@@ -1,225 +1,516 @@
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native'
-import React from 'react'
-import Header from '../../components/Header'
-import { Images } from '../../assets/images'
-import { horizontalScale, verticalScale } from '../../constants/helper'
-import { Colors } from '../../constants/colors'
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Pressable,
+  ScrollView,
+  SafeAreaView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import Header from '../../components/Header';
+import {Images} from '../../assets/images';
+import {horizontalScale, verticalScale} from '../../constants/helper';
+import {Colors} from '../../constants/colors';
+import {useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ProfileScreen(props) {
-    return (
-        <View style={styles.container}>
-            <Header
-                ishelp={true}
-            />
+  const navigation = useNavigation();
+  const [userData, setUserData] = useState({
+    username: 'Hii Test',
+    refer_code: 'TH1707461793717',
+  });
+  const [masterCoin, setMasterCoin] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
 
-            <View
-                style={styles.profileImageContainer}
-            >
-                <Image
-                    style={styles.profileImage}
-                    source={Images.girlFaceIcon}
-                />
-                <Pressable
-                    style={styles.editContainer}
-                    onPress={() => { }}
-                >
-                    <Image
-                        style={styles.editImage}
-                        source={Images.editIcon}
-                    />
-                </Pressable>
-            </View>
+  useEffect(() => {
+    const focusListener = navigation.addListener('focus', async () => {
+      const totalMasterCoin = await AsyncStorage.getItem('masterCoin');
+      const totalEarnedValue = await AsyncStorage.getItem('totalEarned');
+      if (totalMasterCoin) {
+        setMasterCoin(parseFloat(totalMasterCoin) || 0);
+      }
+      if (totalEarnedValue) {
+        setTotalEarned(parseFloat(totalEarnedValue) || 0);
+      }
+    });
 
-            <Text
-                style={styles.nameText}>
-                Hii Test
-            </Text>
-            <Text
-                style={styles.idText}
-            >
-                #TH1707461793717
-            </Text>
+    return () => {
+      focusListener();
+    };
+  }, [navigation]);
 
-            <View style={styles.itemContainer}>
-                <View style={styles.alignCentered}>
-                    <View style={[styles.itemImageContainer, {backgroundColor: Colors.secondaryColor}]}>
-                        <Image source={Images.TLogo} style={styles.usdtImage} />
-                    </View>
-                    <Text style={styles.itemText}>0 USDT</Text>
-                    <Text style={styles.itemDesc}>Current balance</Text>
-                </View>
-                <View style={styles.alignCentered}>
-                    <View style={styles.itemImageContainer}>
-                        <Image source={Images.starIcon} style={styles.coinsImage} />
-                    </View>
-                    <Text style={styles.itemText}>442</Text>
-                    <Text style={styles.itemDesc}>Super coins</Text>
-                </View>
-            </View>
+  const profileStats = [
+    {
+      id: 1,
+      title: 'Total Balance',
+      value: `${totalEarned.toFixed(4)} USDT`,
+      icon: Images.TLogo,
+      backgroundColor: Colors.secondaryColor,
+      iconTint: Colors.white,
+    },
+    {
+      id: 2,
+      title: 'Super Coins',
+      value: masterCoin.toLocaleString(),
+      icon: Images.starIcon,
+      backgroundColor: Colors.primaryColor,
+      iconTint: Colors.white,
+    },
+    {
+      id: 3,
+      title: 'Mining Level',
+      value: 'Level 1',
+      icon: Images.pickaxeIcon,
+      backgroundColor: Colors.lightGreen,
+      iconTint: Colors.darkGreen,
+    },
+    {
+      id: 4,
+      title: 'Referrals',
+      value: '0 Friends',
+      icon: Images.multipleUsersIcon,
+      backgroundColor: '#FF6B6B20',
+      iconTint: '#FF6B6B',
+    },
+  ];
 
-            <Pressable
-                onPress={() => { props.navigation.navigate('ConvertCoinScreen') }}
-                style={styles.pressableContainer}
-            >
-                <View
-                    style={styles.handShakeContainer}
-                >
-                    <Image
-                        style={styles.rePostImage}
-                        source={Images.rePostIcon}
-                    />
-                </View>
-                <View>
-                    <Text style={styles.titleText}>Convert super coins</Text>
-                    <Text style={styles.descText}>Convert your super coins into the USDT</Text>
-                </View>
-            </Pressable>
+  const menuItems = [
+    {
+      id: 1,
+      title: 'Convert Super Coins',
+      description: 'Convert your super coins into USDT',
+      icon: Images.rePostIcon,
+      iconBg: Colors.secondaryColor + '20',
+      iconTint: Colors.secondaryColor,
+      onPress: () => props.navigation.navigate('ConvertCoinScreen'),
+    },
+    {
+      id: 2,
+      title: 'Refer Friends',
+      description: 'Invite your friends and get rewards!',
+      icon: Images.handShakeIcon,
+      iconBg: Colors.primaryColor + '20',
+      iconTint: Colors.primaryColor,
+      onPress: () => props.navigation.navigate('Rafers'),
+    },
+    {
+      id: 3,
+      title: 'Mining History',
+      description: 'View your mining activity',
+      icon: Images.pickaxeIcon,
+      iconBg: Colors.lightGreen,
+      iconTint: Colors.darkGreen,
+      onPress: () => Alert.alert('Coming Soon', 'Mining history feature will be available soon!'),
+    },
+    {
+      id: 4,
+      title: 'Withdrawal',
+      description: 'Withdraw your earnings',
+      icon: Images.convertCoinIcon,
+      iconBg: '#FF6B6B20',
+      iconTint: '#FF6B6B',
+      onPress: () => Alert.alert('Coming Soon', 'Withdrawal feature will be available soon!'),
+    },
+    {
+      id: 5,
+      title: 'Help & Support',
+      description: 'Get help and contact support',
+      icon: Images.Question,
+      iconBg: Colors.grey_300,
+      iconTint: Colors.grey_500,
+      onPress: () => props.navigation.navigate('HelpScreen'),
+    },
+  ];
 
-            <Pressable
-                onPress={() => { props.navigation.navigate('Rafers') }}
-                style={styles.pressableContainer}
-            >
-                <View style={styles.handShakeContainer}>
-                    <Image
-                        style={styles.handShakeImage}
-                        source={Images.handShakeIcon}
-                    />
-                </View>
-                <View>
-                    <Text style={styles.titleText}>Rafer friends!</Text>
-                    <Text style={styles.descText}>Invite your friend and get rewards!</Text>
-                </View>
-            </Pressable>
+  const renderStatCard = (item) => (
+    <View key={item.id} style={styles.statCard}>
+      <View style={[styles.statIcon, {backgroundColor: item.backgroundColor}]}>
+        <Image source={item.icon} style={[styles.statIconImage, {tintColor: item.iconTint}]} />
+      </View>
+      <Text style={styles.statValue}>{item.value}</Text>
+      <Text style={styles.statTitle}>{item.title}</Text>
+    </View>
+  );
 
+  const renderMenuItem = (item) => (
+    <TouchableOpacity key={item.id} style={styles.menuItem} onPress={item.onPress}>
+      <View style={styles.menuLeft}>
+        <View style={[styles.menuIcon, {backgroundColor: item.iconBg}]}>
+          <Image 
+            source={item.icon} 
+            style={[
+              styles.menuIconImage, 
+              {
+                tintColor: item.iconTint,
+                transform: item.icon === Images.rePostIcon ? [{rotate: '90deg'}] : []
+              }
+            ]} 
+          />
         </View>
-    )
+        <View style={styles.menuContent}>
+          <Text style={styles.menuTitle}>{item.title}</Text>
+          <Text style={styles.menuDescription}>{item.description}</Text>
+        </View>
+      </View>
+      <Image source={Images.lessThanIcon} style={styles.arrowIcon} />
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header ishelp={true} />
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {/* Profile Header */}
+        <View style={styles.profileHeader}>
+          <View style={styles.profileImageContainer}>
+            <Image style={styles.profileImage} source={Images.girlFaceIcon} />
+            <TouchableOpacity style={styles.editButton} onPress={() => {}}>
+              <Image style={styles.editIcon} source={Images.editIcon} />
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.nameText}>{userData.username}</Text>
+          <View style={styles.referralContainer}>
+            <Text style={styles.referralLabel}>Referral ID:</Text>
+            <Text style={styles.referralCode}>#{userData.refer_code}</Text>
+          </View>
+        </View>
+
+        {/* Stats Grid */}
+        <View style={styles.statsContainer}>
+          <Text style={styles.sectionTitle}>Your Stats</Text>
+          <View style={styles.statsGrid}>
+            {profileStats.map(renderStatCard)}
+          </View>
+        </View>
+
+        {/* Quick Actions */}
+        <View style={styles.quickActionsContainer}>
+          <TouchableOpacity 
+            style={[styles.quickAction, {backgroundColor: Colors.secondaryColor}]}
+            onPress={() => props.navigation.navigate('ConvertCoinScreen')}>
+            <Image source={Images.convertCoinIcon} style={styles.quickActionIcon} />
+            <Text style={styles.quickActionText}>Convert</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.quickAction, {backgroundColor: Colors.primaryColor}]}
+            onPress={() => props.navigation.navigate('Rafers')}>
+            <Image source={Images.multipleUsersIcon} style={styles.quickActionIcon} />
+            <Text style={styles.quickActionText}>Refer</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.quickAction, {backgroundColor: '#FF6B6B'}]}
+            onPress={() => props.navigation.navigate('MiningScreen')}>
+            <Image source={Images.pickaxeIcon} style={styles.quickActionIcon} />
+            <Text style={styles.quickActionText}>Mine</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Menu Items */}
+        <View style={styles.menuContainer}>
+          <Text style={styles.sectionTitle}>Account</Text>
+          <View style={styles.menuList}>
+            {menuItems.map(renderMenuItem)}
+          </View>
+        </View>
+
+        {/* Account Info Card */}
+        <View style={styles.accountInfoCard}>
+          <View style={styles.accountInfoHeader}>
+            <Text style={styles.accountInfoTitle}>Account Information</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Username</Text>
+            <Text style={styles.infoValue}>{userData.username}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Referral Code</Text>
+            <Text style={styles.infoValue}>#{userData.refer_code}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Join Date</Text>
+            <Text style={styles.infoValue}>Feb 2024</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Account Level</Text>
+            <Text style={styles.infoValue}>Beginner</Text>
+          </View>
+        </View>
+
+        {/* Version Info */}
+        <View style={styles.versionContainer}>
+          <Text style={styles.versionText}>MTC Mining Simulation v1.0.0</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    profileImageContainer: {
-        height: verticalScale(180),
-        width: verticalScale(180),
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: Colors.white,
-        borderRadius: verticalScale(180),
-        alignSelf: 'center',
-        marginTop: verticalScale(40)
-    },
-    profileImage: {
-        height: verticalScale(165),
-        width: verticalScale(165),
-        resizeMode: 'contain'
-    },
-    editImage: {
-        height: verticalScale(15),
-        width: verticalScale(15),
-        resizeMode: 'contain',
-    },
-    editContainer: {
-        backgroundColor: Colors.grey_500,
-        height: verticalScale(30),
-        width: verticalScale(30),
-        borderRadius: verticalScale(15),
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'absolute',
-        bottom: 5,
-        right: 25
-    },
-    nameText: {
-        color: Colors.black,
-        fontWeight: "500",
-        fontSize: 18,
-        textAlign: 'center',
-        marginTop: verticalScale(20)
-    },
-    idText: {
-        color: Colors.secondaryColor,
-        fontSize: 12,
-        letterSpacing: 2,
-        fontWeight: "500",
-        textAlign: 'center'
-    },
-    coinsImage: {
-        height: verticalScale(25),
-        width: verticalScale(25),
-        resizeMode: 'center'
-    },
-    usdtImage: {
-        height: verticalScale(20),
-        width: verticalScale(20),
-        resizeMode: 'center'
-    },
-    itemDesc: {
-        color: Colors.grey_500,
-        fontSize: verticalScale(12)
-    },
-    itemText: {
-        color: Colors.black,
-        fontWeight: '600',
-        marginTop: verticalScale(5)
-    },
-    itemImageContainer: {
-        height: verticalScale(45),
-        width: verticalScale(45),
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: Colors.white,
-        borderRadius: verticalScale(25)
-    },
-    alignCentered: {
-        alignItems: 'center'
-    },
-    itemContainer: {
-        marginTop: verticalScale(25),
-        width: '85%',
-        alignSelf: 'center',
-        justifyContent: 'space-around',
-        flexDirection: 'row'
-    },
-    rePostImage: {
-        height: verticalScale(15),
-        width: verticalScale(15),
-        resizeMode: 'contain',
-        transform: [{ rotate: '90deg' }],
-        tintColor: Colors.secondaryColor
-    },
-    container: {
-        flex: 1,
-    },
-    titleText: {
-        fontSize: verticalScale(13),
-        color: Colors.black,
-        fontWeight: '600'
-    },
-    descText: {
-        fontSize: verticalScale(10),
-        color: Colors.grey_500
-    },
-    handShakeImage: {
-        height: verticalScale(20),
-        width: verticalScale(20),
-        resizeMode: 'contain',
-    },
-    handShakeContainer: {
-        height: verticalScale(35),
-        width: verticalScale(35),
-        borderRadius: verticalScale(20),
-        backgroundColor: Colors.lightGrey,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: horizontalScale(10)
-    },
-    pressableContainer: {
-        height: verticalScale(60),
-        width: '85%',
-        flexDirection: 'row',
-        backgroundColor: Colors.white,
-        alignSelf: 'center',
-        marginTop: verticalScale(20),
-        alignItems: 'center',
-        paddingHorizontal: horizontalScale(15),
-        borderRadius: verticalScale(10)
-    },
-})
+  container: {
+    flex: 1,
+    backgroundColor: Colors.semiGray,
+  },
+  scrollContainer: {
+    flex: 1,
+    paddingHorizontal: horizontalScale(20),
+  },
+  profileHeader: {
+    alignItems: 'center',
+    marginTop: verticalScale(20),
+    marginBottom: verticalScale(30),
+  },
+  profileImageContainer: {
+    width: verticalScale(120),
+    height: verticalScale(120),
+    borderRadius: verticalScale(60),
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: verticalScale(15),
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+    position: 'relative',
+  },
+  profileImage: {
+    width: verticalScale(100),
+    height: verticalScale(100),
+    resizeMode: 'contain',
+  },
+  editButton: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    backgroundColor: Colors.secondaryColor,
+    width: verticalScale(35),
+    height: verticalScale(35),
+    borderRadius: verticalScale(17.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.secondaryColor,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  editIcon: {
+    width: verticalScale(18),
+    height: verticalScale(18),
+    tintColor: Colors.white,
+    resizeMode: 'contain',
+  },
+  nameText: {
+    fontSize: verticalScale(24),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginBottom: verticalScale(8),
+  },
+  referralContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.bgColor,
+    paddingHorizontal: horizontalScale(15),
+    paddingVertical: verticalScale(8),
+    borderRadius: verticalScale(20),
+  },
+  referralLabel: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_500,
+    marginRight: horizontalScale(5),
+  },
+  referralCode: {
+    fontSize: verticalScale(12),
+    fontWeight: '600',
+    color: Colors.secondaryColor,
+  },
+  sectionTitle: {
+    fontSize: verticalScale(18),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginBottom: verticalScale(15),
+  },
+  statsContainer: {
+    marginBottom: verticalScale(25),
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statCard: {
+    width: '48%',
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(15),
+    padding: verticalScale(15),
+    alignItems: 'center',
+    marginBottom: verticalScale(12),
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statIcon: {
+    width: verticalScale(50),
+    height: verticalScale(50),
+    borderRadius: verticalScale(25),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: verticalScale(10),
+  },
+  statIconImage: {
+    width: verticalScale(25),
+    height: verticalScale(25),
+    resizeMode: 'contain',
+  },
+  statValue: {
+    fontSize: verticalScale(16),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginBottom: verticalScale(4),
+    textAlign: 'center',
+  },
+  statTitle: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_500,
+    textAlign: 'center',
+  },
+  quickActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: verticalScale(25),
+    gap: horizontalScale(10),
+  },
+  quickAction: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: verticalScale(15),
+    borderRadius: verticalScale(15),
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quickActionIcon: {
+    width: verticalScale(25),
+    height: verticalScale(25),
+    tintColor: Colors.white,
+    marginBottom: verticalScale(8),
+    resizeMode: 'contain',
+  },
+  quickActionText: {
+    fontSize: verticalScale(12),
+    fontWeight: '600',
+    color: Colors.white,
+  },
+  menuContainer: {
+    marginBottom: verticalScale(25),
+  },
+  menuList: {
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(15),
+    overflow: 'hidden',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: horizontalScale(15),
+    paddingVertical: verticalScale(15),
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightLine,
+  },
+  menuLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  menuIcon: {
+    width: verticalScale(45),
+    height: verticalScale(45),
+    borderRadius: verticalScale(22.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: horizontalScale(15),
+  },
+  menuIconImage: {
+    width: verticalScale(22),
+    height: verticalScale(22),
+    resizeMode: 'contain',
+  },
+  menuContent: {
+    flex: 1,
+  },
+  menuTitle: {
+    fontSize: verticalScale(16),
+    fontWeight: '600',
+    color: Colors.black,
+    marginBottom: verticalScale(2),
+  },
+  menuDescription: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_500,
+    lineHeight: verticalScale(16),
+  },
+  arrowIcon: {
+    width: verticalScale(18),
+    height: verticalScale(18),
+    tintColor: Colors.grey_400,
+    resizeMode: 'contain',
+    transform: [{rotate: '180deg'}],
+  },
+  accountInfoCard: {
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(15),
+    padding: verticalScale(20),
+    marginBottom: verticalScale(25),
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  accountInfoHeader: {
+    marginBottom: verticalScale(15),
+  },
+  accountInfoTitle: {
+    fontSize: verticalScale(16),
+    fontWeight: '600',
+    color: Colors.black,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: verticalScale(8),
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightLine,
+  },
+  infoLabel: {
+    fontSize: verticalScale(14),
+    color: Colors.grey_500,
+  },
+  infoValue: {
+    fontSize: verticalScale(14),
+    fontWeight: '500',
+    color: Colors.black,
+  },
+  versionContainer: {
+    alignItems: 'center',
+    marginBottom: verticalScale(100),
+  },
+  versionText: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_400,
+  },
+});
