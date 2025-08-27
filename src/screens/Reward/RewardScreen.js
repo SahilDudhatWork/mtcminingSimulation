@@ -50,6 +50,15 @@ const RewardScreen = () => {
     },
     {
       id: 2,
+      title: 'Play Games',
+      description: 'Play mini-games to earn rewards',
+      icon: Images.giftIcon,
+      coins: '10-500',
+      status: 'available',
+      onPress: () => navigation.navigate('HomeScreen'),
+    },
+    {
+      id: 3,
       title: 'Mining Rewards',
       description: 'Earn from active mining',
       icon: Images.pickaxeIcon,
@@ -58,7 +67,7 @@ const RewardScreen = () => {
       onPress: () => navigation.navigate('MiningScreen'),
     },
     {
-      id: 3,
+      id: 4,
       title: 'Referral Bonus',
       description: 'Invite friends and earn',
       icon: Images.multipleUsersIcon,
@@ -67,7 +76,7 @@ const RewardScreen = () => {
       onPress: () => navigation.navigate('RaferScreen'),
     },
     {
-      id: 4,
+      id: 5,
       title: 'Achievement Rewards',
       description: 'Complete tasks to earn',
       icon: Images.rewardsIcon,
