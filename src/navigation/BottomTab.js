@@ -50,59 +50,45 @@ const Bottom = ({state, descriptors, navigation}) => {
               styles.mainItemContainer,
               {
                 marginTop: label == 'MiningScreen' ? verticalScale(-80) : 0,
-                marginLeft: label == 'Rewards' ? horizontalScale(15) : 0,
-                marginRight: label == 'Rafers' ? horizontalScale(15) : 0,
               },
             ]}>
             <Pressable
               onPress={onPress}
-              style={{
-                backgroundColor:
-                  label == 'MiningScreen' ? Colors.primaryColor : 'transparent',
-                borderRadius: label == 'MiningScreen' ? verticalScale(100) : 0,
-                height: label == 'MiningScreen' ? verticalScale(85) : 'auto',
-                width: label == 'MiningScreen' ? verticalScale(85) : 'auto',
-              }}>
-              <View
-                style={{
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  flex: 1,
-                  padding: verticalScale(15),
-                }}>
-                <Image
-                  style={
-                    label === 'MiningScreen'
-                      ? {
-                          height: verticalScale(40),
-                          width: verticalScale(40),
-                          tintColor: Colors.white,
-                        }
-                      : {
-                          height: verticalScale(25),
-                          width: verticalScale(25),
-                          tintColor: isFocused ? Colors.primaryColor : 'grey',
-                        }
-                  }
-                  source={
-                    label === 'Rewards'
-                      ? isFocused
-                        ? Images.filledrewardsIcon
-                        : Images.rewardsIcon
-                      : label === 'Rafers'
-                      ? Images.raferIcon
-                      : Images.pickaxeIcon
-                  }
-                />
-                {label !== 'MiningScreen' ? (
-                  <Text
-                    style={{
-                      color: isFocused ? Colors.primaryColor : 'grey',
-                      fontSize: verticalScale(10),
-                    }}>
+              style={[
+                styles.tabButton,
+                label == 'MiningScreen' && styles.centerTabButton,
+                isFocused && label !== 'MiningScreen' && styles.focusedTabButton,
+              ]}>
+              <View style={styles.tabContent}>
+                <View style={[
+                  styles.iconContainer,
+                  label === 'MiningScreen' && styles.centerIconContainer,
+                  isFocused && label !== 'MiningScreen' && styles.focusedIconContainer,
+                ]}>
+                  <Image
+                    style={[
+                      styles.tabIcon,
+                      label === 'MiningScreen' && styles.centerTabIcon,
+                    ]}
+                    source={
+                      label === 'Rewards'
+                        ? isFocused
+                          ? Images.filledrewardsIcon
+                          : Images.rewardsIcon
+                        : label === 'Rafers'
+                        ? Images.raferIcon
+                        : Images.pickaxeIcon
+                    }
+                  />
+                </View>
+                {label !== 'MiningScreen' && (
+                  <Text style={[
+                    styles.tabLabel,
+                    isFocused && styles.focusedTabLabel,
+                  ]}>
                     {label}
                   </Text>
-                ) : null}
+                )}
               </View>
             </Pressable>
           </View>
