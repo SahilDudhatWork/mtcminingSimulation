@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {verticalScale, horizontalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
+import { Images } from '../assets/images';
 
 const MysteryBoxModal = ({
   visible,
@@ -32,28 +33,15 @@ const MysteryBoxModal = ({
           </TouchableOpacity>
 
           {/* 3D Gift Box Image Placeholder */}
-          <View style={styles.giftBoxContainer}>
-            <View style={styles.giftBox}>
-              <View style={[styles.giftBoxTop, {backgroundColor: '#4ECDC4'}]}>
-                <View style={styles.ribbon} />
-              </View>
-              <View
-                style={[styles.giftBoxBottom, {backgroundColor: '#45B7AF'}]}
-              />
-              <View style={styles.giftContent}>
-                <View style={styles.coin} />
-                <View
-                  style={[styles.coin, {left: 20, backgroundColor: '#FFD700'}]}
-                />
-                <View
-                  style={[
-                    styles.coin,
-                    {left: 40, top: 10, backgroundColor: '#FFA500'},
-                  ]}
-                />
-              </View>
-            </View>
-          </View>
+          <Image
+            source={Images.presentIcon}
+            style={{
+              resizeMode: 'center',
+              height: 150,
+              width: 150,
+              marginTop: verticalScale(-120),
+            }}
+          />
 
           {/* Title */}
           <Text style={styles.title}>Mystery Box</Text>
@@ -211,16 +199,17 @@ const styles = StyleSheet.create({
   },
   watchAdButton: {
     backgroundColor: Colors.black,
-    paddingVertical: verticalScale(12),
-    paddingHorizontal: horizontalScale(20),
+    paddingVertical: verticalScale(8),
+    paddingHorizontal: horizontalScale(10),
     borderRadius: verticalScale(25),
-    marginBottom: verticalScale(10),
+    marginBottom: verticalScale(-13),
     alignSelf: 'flex-end',
     marginRight: 10,
+    zIndex: 1,
   },
   watchAdText: {
     color: Colors.white,
-    fontSize: verticalScale(12),
+    fontSize: verticalScale(8),
     fontWeight: '600',
   },
   openButton: {

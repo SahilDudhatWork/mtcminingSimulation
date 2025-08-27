@@ -18,18 +18,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function HomeScreen(props) {
   const navigation = useNavigation();
 
-  const [list, setList] = useState([
-    {value: 10, opened: false},
-    {value: 20, opened: false},
-    {value: 35, opened: false},
-  ]);
+  const [list, setList] = useState(
+    Array(4)
+      .fill()
+      .map(() => ({value: 0, opened: false}))
+  );
   const [isVisible, setIsVisible] = useState(false);
   const [giftAmt, setGiftAmt] = useState(0);
   const [masterCoin, setMasterCoin] = useState(0);
   const [isGiftMining, setIsGiftMining] = useState(false);
   const [giftTimeRemaining, setGiftTimeRemaining] = useState(0);
   const [giftIntervalId, setGiftIntervalId] = useState(null);
-  const GIFT_DURATION_MS = 1 * 60 * 1000; // 1 minutes in milliseconds
+  const [flippedCount, setFlippedCount] = useState(0);
+  const MAX_FLIPS = 3;
+  const GIFT_DURATION_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
 
   useEffect(() => {
     const focusListener = navigation.addListener('focus', async () => {
@@ -40,14 +42,15 @@ export default function HomeScreen(props) {
       const getBoxList = await AsyncStorage.getItem('boxList');
       if (getBoxList != null) {
         const list = JSON.parse(getBoxList);
-        console.log('Retrieved list:', list);
         setList(list);
+        setFlippedCount(list.filter(item => item.opened).length);
       } else {
-        setList([
-          {value: 10, opened: false},
-          {value: 20, opened: false},
-          {value: 35, opened: false},
-        ]);
+        setList(
+          Array(4)
+            .fill()
+            .map(() => ({value: 0, opened: false}))
+        );
+        setFlippedCount(0);
       }
       setIsVisible(false);
     });
@@ -56,19 +59,15 @@ export default function HomeScreen(props) {
       focusListener();
     };
   }, [navigation]);
+
   useEffect(() => {
     const loadGift = async () => {
       try {
         const giftStoredSession = await AsyncStorage.getItem('giftOpenStart');
-        console.log('giftStoredSession', giftStoredSession);
         if (giftStoredSession) {
           const sessionStart = new Date(parseInt(giftStoredSession));
           const now = new Date();
           const elapsedTime = now - sessionStart;
-          console.log(
-            'elapsedTime < GIFT_DURATION_MS',
-            elapsedTime < GIFT_DURATION_MS,
-          );
           if (elapsedTime < GIFT_DURATION_MS) {
             setIsGiftMining(true);
             setGiftTimeRemaining(GIFT_DURATION_MS - elapsedTime);
@@ -77,21 +76,23 @@ export default function HomeScreen(props) {
             await AsyncStorage.removeItem('boxList');
             setIsGiftMining(false);
             setGiftTimeRemaining(0);
-            setList([
-              {value: 10, opened: false},
-              {value: 20, opened: false},
-              {value: 35, opened: false},
-            ]);
+            setList(
+              Array(4)
+                .fill()
+                .map(() => ({value: 0, opened: false}))
+            );
+            setFlippedCount(0);
           }
         } else {
           await AsyncStorage.removeItem('boxList');
           setIsGiftMining(false);
           setGiftTimeRemaining(0);
-          setList([
-            {value: 10, opened: false},
-            {value: 20, opened: false},
-            {value: 35, opened: false},
-          ]);
+          setList(
+            Array(4)
+              .fill()
+              .map(() => ({value: 0, opened: false}))
+          );
+          setFlippedCount(0);
         }
       } catch (error) {
         console.error('Failed to load state from AsyncStorage:', error);
@@ -106,6 +107,7 @@ export default function HomeScreen(props) {
       }
     };
   }, []);
+
   useEffect(() => {
     if (isGiftMining && giftTimeRemaining > 0) {
       const giftMiningIntervalId = setInterval(async () => {
@@ -116,16 +118,17 @@ export default function HomeScreen(props) {
             AsyncStorage.removeItem('boxList');
             setIsGiftMining(false);
             setGiftTimeRemaining(0);
-            setList([
-              {value: 10, opened: false},
-              {value: 20, opened: false},
-              {value: 35, opened: false},
-            ]);
+            setList(
+              Array(4)
+                .fill()
+                .map(() => ({value: 0, opened: false}))
+            );
+            setFlippedCount(0);
             clearInterval(giftMiningIntervalId);
           }
           return newTimeRemaining;
         });
-      }, 1000); // Update earnings every second
+      }, 1000);
 
       setGiftIntervalId(giftMiningIntervalId);
     }
@@ -133,29 +136,32 @@ export default function HomeScreen(props) {
     return () => clearInterval(giftIntervalId);
   }, [isGiftMining, giftTimeRemaining]);
 
-  const openBox = async i => {
+  const openBox = async index => {
+    if (flippedCount >= MAX_FLIPS || list[index].opened) return;
+
     setIsVisible(true);
     const randomAmount = await getRandomInt(10, 200);
     setGiftAmt(randomAmount);
 
-    let Array = list;
-    Array[i].value = randomAmount;
-    Array[i].opened = true;
+    let newList = [...list];
+    newList[index].value = randomAmount;
+    newList[index].opened = true;
+    setList(newList);
+    setFlippedCount(prev => prev + 1);
+    AsyncStorage.setItem('boxList', JSON.stringify(newList));
 
-    setList([...Array]);
-    AsyncStorage.setItem('boxList', JSON.stringify(list));
-    console.log('isGiftMining', isGiftMining);
-    if (!isGiftMining) {
+    if (flippedCount + 1 === 1 && !isGiftMining) {
       const now = new Date().getTime();
-      console.log('now.toString()', now.toString());
       await AsyncStorage.setItem('giftOpenStart', now.toString());
       setIsGiftMining(true);
       setGiftTimeRemaining(GIFT_DURATION_MS);
     }
   };
+
   const getRandomInt = async (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
+
   const claimReward = async () => {
     setIsVisible(false);
     setMasterCoin(prev => {
@@ -164,25 +170,20 @@ export default function HomeScreen(props) {
       return totalMasterCoin;
     });
   };
-  const renderItem = ({item, index}) => {
-    const handlePress = () => {
-      if (!item.opened) {
-        openBox(index);
-      }
-    };
 
+  const renderItem = ({item, index}) => {
+    const handlePress = () => openBox(index);
     return (
       <Pressable
-        onPress={handlePress} // Call only if !item.opened
+        onPress={handlePress}
         style={[
           styles.itemContainer,
           {
-            marginHorizontal: index === 1 ? horizontalScale(25) : 0,
-            opacity: item.opened ? 0.5 : 1, // Visually indicate disabled state
+            opacity: item.opened ? 0.5 : 1,
+            backgroundColor: item.opened ? Colors.grey_400 : Colors.primaryColor,
           },
         ]}
-        disabled={item.opened} // Disable pressable if the item is already opened
-      >
+        disabled={item.opened || flippedCount >= MAX_FLIPS}>
         {!item.opened ? (
           <Image style={styles.itemImage} source={Images.giftIcon} />
         ) : (
@@ -191,20 +192,19 @@ export default function HomeScreen(props) {
       </Pressable>
     );
   };
+
   return (
     <View style={styles.container}>
       <Pressable
         style={styles.questionContainer}
-        onPress={() => {
-          props.navigation.navigate('HelpScreen');
-        }}>
+        onPress={() => props.navigation.navigate('HelpScreen')}>
         <Image style={styles.queImage} source={Images.Question} />
       </Pressable>
       <View style={styles.innerContainer}>
         <Image style={styles.giftIconContainer} source={Images.presentIcon} />
         <Text style={styles.titleText}>Flip & Win</Text>
         <Text style={styles.descText1}>
-          {'You will win the super coins by playing\na simple game'}
+          You will win the super coins by playing a simple game
         </Text>
         <View style={styles.pointContainer}>
           <Image style={styles.starImage} source={Images.starIcon} />
@@ -212,30 +212,23 @@ export default function HomeScreen(props) {
         </View>
         <TouchableOpacity
           onPress={() => props.navigation.navigate('ConvertCoinScreen')}
-          style={[
-            styles.touchContainer,
-            {backgroundColor: Colors.secondaryColor},
-          ]}>
-          <Text style={styles.fs10}>Convert to USDT</Text>
+          style={styles.flipButton}>
+          <Text style={styles.flipButtonText}>Flip a Card</Text>
         </TouchableOpacity>
-        <View
-          style={[
-            styles.touchContainer,
-            {backgroundColor: 'rgba(42, 63, 189, 0.60)'},
-          ]}>
-          <Text style={styles.fs10}>Flip a Card</Text>
+        <View style={styles.flipCountContainer}>
+          <Text style={styles.flipCountText}>{`${flippedCount}/${MAX_FLIPS}`}</Text>
         </View>
-        <View style={styles.h120}>
+        <View style={styles.gridContainer}>
           <FlatList
             data={list}
             renderItem={renderItem}
-            numColumns={3}
-            style={styles.mt30}
-            contentContainerStyle={styles.h70}
+            numColumns={4}
+            keyExtractor={(item, index) => index.toString()}
+            contentContainerStyle={styles.grid}
           />
         </View>
         <Text style={styles.descText}>
-          * You can flip only 3 cards at a time. Once you flip all the cards you
+          * You can flip only 4 cards at a time. Once you flip all the cards you
           have to wait for the next round for 30 minutes.
         </Text>
       </View>
@@ -273,13 +266,24 @@ const styles = StyleSheet.create({
     width: verticalScale(22),
     resizeMode: 'contain',
   },
-  fs10: {
-    fontSize: verticalScale(10),
-  },
-  touchContainer: {
-    padding: verticalScale(7),
-    marginTop: verticalScale(10),
+  flipButton: {
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: horizontalScale(20),
+    backgroundColor: Colors.black,
     borderRadius: verticalScale(10),
+    marginTop: verticalScale(20),
+  },
+  flipButtonText: {
+    color: Colors.white,
+    fontSize: verticalScale(14),
+  },
+  flipCountContainer: {
+    marginTop: verticalScale(10),
+    alignItems: 'center',
+  },
+  flipCountText: {
+    color: Colors.grey_500,
+    fontSize: verticalScale(14),
   },
   descText1: {
     color: Colors.grey_500,
@@ -289,36 +293,35 @@ const styles = StyleSheet.create({
   titleText: {
     color: Colors.black,
     fontWeight: '500',
-    fontSize: verticalScale(15),
+    fontSize: verticalScale(20),
     marginTop: verticalScale(15),
   },
   queImage: {
     flex: 1,
     resizeMode: 'center',
   },
-  h70: {
-    height: verticalScale(70),
+  gridContainer: {
+    marginTop: verticalScale(20),
   },
-  mt30: {
-    marginTop: verticalScale(30),
-  },
-  h120: {
-    height: verticalScale(120),
+  grid: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   descText: {
     color: Colors.grey_500,
     textAlign: 'left',
     width: '70%',
     fontSize: verticalScale(12),
+    marginTop: verticalScale(10),
   },
   itemImage: {
     height: verticalScale(25),
     width: verticalScale(25),
     resizeMode: 'contain',
-    tintColor: Colors.grey_400,
+    tintColor: Colors.white,
   },
   itemText: {
-    fontSize: verticalScale(20),
+    fontSize: verticalScale(16),
     color: Colors.white,
     fontWeight: '700',
   },
@@ -329,17 +332,18 @@ const styles = StyleSheet.create({
   innerContainer: {
     width: '100%',
     backgroundColor: Colors.white,
-    height: '67%',
-    marginTop: verticalScale(180),
+    height: '80%',
+    marginTop: verticalScale(50),
     alignItems: 'center',
     borderTopRightRadius: verticalScale(30),
     borderTopLeftRadius: verticalScale(30),
+    paddingBottom: verticalScale(60), // Adjust for bottom bar overlap
   },
   giftIconContainer: {
-    height: verticalScale(150),
-    width: verticalScale(150),
+    height: verticalScale(120),
+    width: verticalScale(120),
     resizeMode: 'contain',
-    marginTop: verticalScale(-85),
+    marginTop: verticalScale(-60),
   },
   questionContainer: {
     backgroundColor: Colors.white,
@@ -354,11 +358,12 @@ const styles = StyleSheet.create({
     top: 20,
   },
   itemContainer: {
-    width: verticalScale(70),
-    height: verticalScale(70),
-    backgroundColor: Colors.secondaryColor,
+    width: verticalScale(50),
+    height: verticalScale(50),
+    backgroundColor: Colors.primaryColor,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: verticalScale(15),
+    borderRadius: verticalScale(10),
+    margin: horizontalScale(5),
   },
 });

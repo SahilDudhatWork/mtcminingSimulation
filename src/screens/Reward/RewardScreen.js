@@ -213,7 +213,7 @@ const RewardScreen = () => {
         </View>
 
         {/* Daily Streak */}
-        <View style={styles.sectionContainer}>
+        <View style={[styles.sectionContainer,{marginBottom: verticalScale(150)}]}>
           <View style={styles.streakContainer}>
             <View style={styles.streakHeader}>
               <Text style={styles.sectionTitle}>Daily Streak</Text>

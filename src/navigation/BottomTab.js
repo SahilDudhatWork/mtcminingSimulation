@@ -118,7 +118,7 @@ export default function BottomTab() {
       initialRouteName={'MiningScreen'}
       screenOptions={{headerShown: false}}
       tabBar={props => <Bottom {...props} />}>
-      <Tab.Screen name="Rewards" component={RewardScreen} />
+      <Tab.Screen name="Rewards" component={HomeScreen} />
       <Tab.Screen name="MiningScreen" component={MiningScreen} />
       <Tab.Screen name="Rafers" component={RaferScreen} />
     </Tab.Navigator>

@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: verticalScale(15),
     padding: verticalScale(20),
-    marginBottom: verticalScale(30),
+    marginBottom: verticalScale(150),
   },
   termsTitle: {
     fontSize: verticalScale(16),

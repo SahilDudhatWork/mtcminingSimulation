@@ -9,6 +9,7 @@ import {
   Text,
   View,
   TouchableOpacity,
+  Share,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {styles} from './styles';
@@ -343,7 +344,16 @@ const MiningScreen = props => {
       console.log('Boost applied');
     }
   };
-
+  const shareReferralCode = async () => {
+    try {
+      const result = await Share.share({
+        message: `Join MTC Mining with my referral code: ${userData.refer_code} and start earning crypto today!`,
+        title: 'Join MTC Mining',
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Failed to share referral code');
+    }
+  };
   return (
     <View style={styles.mainBox}>
       <SafeAreaView style={styles.mainBox}>
@@ -553,7 +563,7 @@ const MiningScreen = props => {
 
               <Pressable
                 onPress={() => {
-                  console.log('Rafer Clicked');
+                  shareReferralCode()
                 }}
                 style={{
                   marginTop: verticalScale(20),

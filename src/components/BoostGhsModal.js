@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {verticalScale, horizontalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
+import { Images } from '../assets/images';
 
 const BoostGhsModal = ({
   visible,
@@ -35,55 +36,15 @@ const BoostGhsModal = ({
           </TouchableOpacity>
 
           {/* 3D Rocket Image */}
-          <View style={styles.rocketContainer}>
-            <View style={styles.rocket}>
-              {/* Rocket Body */}
-              <View style={[styles.rocketBody, {backgroundColor: '#4ECDC4'}]} />
-
-              {/* Rocket Nose */}
-              <View style={[styles.rocketNose, {backgroundColor: '#45B7AF'}]} />
-
-              {/* Rocket Fins */}
-              <View
-                style={[
-                  styles.rocketFin,
-                  styles.leftFin,
-                  {backgroundColor: '#3AB0A8'},
-                ]}
-              />
-              <View
-                style={[
-                  styles.rocketFin,
-                  styles.rightFin,
-                  {backgroundColor: '#3AB0A8'},
-                ]}
-              />
-
-              {/* Fire/Exhaust */}
-              <View style={styles.fireContainer}>
-                <View style={[styles.fire, {backgroundColor: '#FF6B6B'}]} />
-                <View
-                  style={[
-                    styles.fire,
-                    styles.fire2,
-                    {backgroundColor: '#FFD93D'},
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.fire,
-                    styles.fire3,
-                    {backgroundColor: '#FF8E53'},
-                  ]}
-                />
-              </View>
-
-              {/* Sparkles */}
-              <View style={[styles.sparkle, styles.sparkle1]} />
-              <View style={[styles.sparkle, styles.sparkle2]} />
-              <View style={[styles.sparkle, styles.sparkle3]} />
-            </View>
-          </View>
+          <Image
+            source={Images.rocketImage}
+            style={{
+              resizeMode: 'center',
+              height: 150,
+              width: 150,
+              marginTop: verticalScale(-100),
+            }}
+          />
 
           {/* Title */}
           <Text style={styles.title}>Boost Gh/s</Text>
