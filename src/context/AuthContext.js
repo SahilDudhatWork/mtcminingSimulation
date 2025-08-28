@@ -1,23 +1,21 @@
-import React, {createContext, useContext, useState, useEffect} from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const AuthContext = createContext({});
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
 
-export const AuthProvider = ({children}) => {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
-  // Check authentication status on app start
   useEffect(() => {
     checkAuthStatus();
   }, []);
@@ -25,64 +23,62 @@ export const AuthProvider = ({children}) => {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-
-      // Check if user is logged in
-      const userData = await AsyncStorage.getItem('userData');
-      if (userData) {
-        const parsedUserData = JSON.parse(userData);
-        setUser(parsedUserData);
+      const storedData = await AsyncStorage.getItem('userData');
+      if (storedData) {
+        const parsed = JSON.parse(storedData);
+        setUser(parsed);
         setIsLoggedIn(true);
       }
 
-      // Check if onboarding is completed
-      const onboardingStatus = await AsyncStorage.getItem(
-        'onboardingCompleted',
-      );
+      const onboardingStatus = await AsyncStorage.getItem('onboardingCompleted');
       setOnboardingCompleted(onboardingStatus === 'true');
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      console.error('Auth check error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async userData => {
+  const login = async (email, password) => {
     try {
-      const userDataToStore = {
-        ...userData,
-        isLoggedIn: true,
-        loginTime: new Date().toISOString(),
-      };
+      const res = await axios.post('https://peradox.in/api/mtc/login', { email, password });
 
-      await AsyncStorage.setItem('userData', JSON.stringify(userDataToStore));
-      setUser(userDataToStore);
-      setIsLoggedIn(true);
-
-      return {success: true};
+      if (res.data?.status === 'success') {
+        const userData = res.data.data.user;
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
+        setUser(userData);
+        setIsLoggedIn(true);
+        await completeOnboarding();
+        return { success: true };
+      } else {
+        return { success: false, message: res.data?.message || 'Login failed' };
+      }
     } catch (error) {
-      console.error('Error during login:', error);
-      return {success: false, error: 'Failed to save login data'};
+      console.error('Login API error:', error);
+      return { success: false, message: error.response?.data?.message || error.message };
     }
   };
 
-  const signup = async userData => {
+  const signup = async (name, email, password, refer_code) => {
     try {
-      const userDataToStore = {
-        ...userData,
-        isLoggedIn: true,
-        signupTime: new Date().toISOString(),
-        verifiedMobile: true,
-        verifiedEmail: true,
-      };
+      const payload = { name, email, password };
+      if (refer_code) payload.refer_code = refer_code;
 
-      await AsyncStorage.setItem('userData', JSON.stringify(userDataToStore));
-      setUser(userDataToStore);
-      setIsLoggedIn(true);
+      const res = await axios.post('https://peradox.in/api/mtc/register', payload);
 
-      return {success: true};
+      if (res.data?.status === 'success') {
+        const userData = res.data.data.user;
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
+        setUser(userData);
+        setIsLoggedIn(true);
+        await completeOnboarding();
+        return { success: true };
+      } else {
+        return { success: false, message: res.data?.message || 'Signup failed' };
+      }
     } catch (error) {
-      console.error('Error during signup:', error);
-      return {success: false, error: 'Failed to save signup data'};
+      console.error('Signup API error:', error);
+      return { success: false, message: error.response?.data?.message || error.message };
     }
   };
 
@@ -91,11 +87,8 @@ export const AuthProvider = ({children}) => {
       await AsyncStorage.removeItem('userData');
       setUser(null);
       setIsLoggedIn(false);
-
-      return {success: true};
     } catch (error) {
-      console.error('Error during logout:', error);
-      return {success: false, error: 'Failed to logout'};
+      console.error('Logout error:', error);
     }
   };
 
@@ -103,113 +96,40 @@ export const AuthProvider = ({children}) => {
     try {
       await AsyncStorage.setItem('onboardingCompleted', 'true');
       setOnboardingCompleted(true);
-
-      return {success: true};
     } catch (error) {
-      console.error('Error completing onboarding:', error);
-      return {success: false, error: 'Failed to complete onboarding'};
+      console.error('Onboarding error:', error);
     }
   };
-
-  const resetOnboarding = async () => {
-    try {
-      await AsyncStorage.removeItem('onboardingCompleted');
-      setOnboardingCompleted(false);
-
-      return {success: true};
-    } catch (error) {
-      console.error('Error resetting onboarding:', error);
-      return {success: false, error: 'Failed to reset onboarding'};
-    }
-  };
-
-  const updateUser = async updatedData => {
-    try {
-      const currentUserData = await AsyncStorage.getItem('userData');
-      if (currentUserData) {
-        const parsedUserData = JSON.parse(currentUserData);
-        const newUserData = {...parsedUserData, ...updatedData};
-
-        await AsyncStorage.setItem('userData', JSON.stringify(newUserData));
-        setUser(newUserData);
-
-        return {success: true};
-      }
-      return {success: false, error: 'No user data found'};
-    } catch (error) {
-      console.error('Error updating user:', error);
-      return {success: false, error: 'Failed to update user data'};
-    }
-  };
-
-  const clearAllData = async () => {
-    try {
-      await AsyncStorage.multiRemove(['userData', 'onboardingCompleted']);
-      setUser(null);
-      setIsLoggedIn(false);
-      setOnboardingCompleted(false);
-
-      return {success: true};
-    } catch (error) {
-      console.error('Error clearing all data:', error);
-      return {success: false, error: 'Failed to clear data'};
-    }
-  };
-
-  // Helper functions for authentication checks
-  const isAuthenticated = () => {
-    return isLoggedIn && user;
-  };
-
-  const isFirstTime = () => {
-    return !onboardingCompleted;
-  };
-
-  const getUserData = () => {
-    return user;
-  };
-
   const getInitialRoute = () => {
-    if (isLoading) {
-      return 'SplashScreen';
-    }
+      if (isLoading) {
+        return 'SplashScreen';
+      }
 
-    if (!onboardingCompleted) {
-      return 'OnBoardingScreen';
-    }
+      if (!onboardingCompleted) {
+        return 'OnBoardingScreen';
+      }
 
-    if (!isLoggedIn) {
-      return 'LoginScreen';
-    }
+      if (!isLoggedIn) {
+        return 'LoginScreen';
+      }
 
-    return 'BottomTab';
-  };
+      return 'BottomTab';
+    };
 
-  const value = {
-    // State
-    user,
-    isLoading,
-    isLoggedIn,
-    onboardingCompleted,
-
-    // Auth methods
-    login,
-    signup,
-    logout,
-    completeOnboarding,
-    resetOnboarding,
-    updateUser,
-    clearAllData,
-    checkAuthStatus,
-
-    // Helper methods
-    isAuthenticated,
-    isFirstTime,
-    getUserData,
-    getInitialRoute,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        isLoggedIn,
+        onboardingCompleted,
+        login,
+        signup,
+        logout,
+        completeOnboarding,
+        getInitialRoute,
+      }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
-
-export default AuthContext;

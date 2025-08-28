@@ -21,93 +21,111 @@ const Tab = createBottomTabNavigator();
 const Bottom = ({state, descriptors, navigation}) => {
   return (
     <View style={styles.mainContainer}>
-      {state.routes.map((route, index) => {
-        const {options} = descriptors[route.key];
-        const label =
-          options.tabBarLabel !== undefined
-            ? options.tabBarLabel
-            : options.title !== undefined
-            ? options.title
-            : route.name;
+      <View style={styles.innerContainer}>
+        {state.routes.map((route, index) => {
+          const {options} = descriptors[route.key];
+          const label =
+            options.tabBarLabel !== undefined
+              ? options.tabBarLabel
+              : options.title !== undefined
+              ? options.title
+              : route.name;
 
-        const isFocused = state.index === index;
+          const isFocused = state.index === index;
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-          });
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+            });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
-          }
-        };
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
 
-        return (
-          <View
-            key={index}
-            style={[
-              styles.mainItemContainer,
-              {
-                marginTop: label == 'MiningScreen' ? verticalScale(-80) : 0,
-              },
-            ]}>
-            <Pressable
-              onPress={onPress}
+          return (
+            <View
+              key={index}
               style={[
-                styles.tabButton,
-                label == 'MiningScreen' && styles.centerTabButton,
-                isFocused &&
-                  label !== 'MiningScreen' &&
-                  styles.focusedTabButton,
+                styles.mainItemContainer,
+                // 👇 Rewards → Top Left Radius
+                label === 'Rewards' && {
+                  borderTopLeftRadius: verticalScale(25),
+                },
+                // 👇 Rafers → Top Right Radius
+                label === 'Rafers' && {
+                  borderTopRightRadius: verticalScale(25),
+                },
+                // 👇 MiningScreen → Full Circle
+                label === 'MiningScreen' && {
+                  marginTop: verticalScale(-50),
+                  borderRadius: verticalScale(50),
+                  width: verticalScale(100),
+                  height: verticalScale(100),
+                  backgroundColor: Colors.semiGray,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flex: 0,
+                },
               ]}>
-              <View style={styles.tabContent}>
-                <View
-                  style={[
-                    styles.iconContainer,
-                    label === 'MiningScreen' && styles.centerIconContainer,
-                    isFocused &&
-                      label !== 'MiningScreen' &&
-                      styles.focusedIconContainer,
-                  ]}>
-                  <Image
+              <Pressable
+                onPress={onPress}
+                style={[
+                  styles.tabButton,
+                  label === 'MiningScreen' && styles.centerTabButton,
+                  isFocused &&
+                    label !== 'MiningScreen' &&
+                    styles.focusedTabButton,
+                ]}>
+                <View style={styles.tabContent}>
+                  <View
                     style={[
-                      styles.tabIcon,
-                      label === 'MiningScreen' && styles.centerTabIcon,
-                      {
-                        tintColor:
-                          label === 'MiningScreen'
-                            ? Colors.white
-                            : isFocused
-                            ? Colors.primaryColor
-                            : Colors.grey_500,
-                      },
-                    ]}
-                    source={
-                      label === 'Rewards'
-                        ? isFocused
-                          ? Images.filledrewardsIcon
-                          : Images.rewardsIcon
-                        : label === 'Rafers'
-                        ? Images.raferIcon
-                        : Images.pickaxeIcon
-                    }
-                  />
-                </View>
-                {label !== 'MiningScreen' && (
-                  <Text
-                    style={[
-                      styles.tabLabel,
-                      isFocused && styles.focusedTabLabel,
+                      styles.iconContainer,
+                      label === 'MiningScreen' && styles.centerIconContainer,
+                      isFocused &&
+                        label !== 'MiningScreen' &&
+                        styles.focusedIconContainer,
                     ]}>
-                    {label}
-                  </Text>
-                )}
-              </View>
-            </Pressable>
-          </View>
-        );
-      })}
+                    <Image
+                      style={[
+                        styles.tabIcon,
+                        label === 'MiningScreen' && styles.centerTabIcon,
+                        {
+                          tintColor:
+                            label === 'MiningScreen'
+                              ? Colors.white
+                              : isFocused
+                              ? Colors.primaryColor
+                              : Colors.grey_500,
+                        },
+                      ]}
+                      source={
+                        label === 'Rewards'
+                          ? isFocused
+                            ? Images.filledrewardsIcon
+                            : Images.rewardsIcon
+                          : label === 'Rafers'
+                          ? Images.raferIcon
+                          : Images.pickaxeIcon
+                      }
+                    />
+                  </View>
+                  {label !== 'MiningScreen' && (
+                    <Text
+                      style={[
+                        styles.tabLabel,
+                        isFocused && styles.focusedTabLabel,
+                      ]}>
+                      {label}
+                    </Text>
+                  )}
+                </View>
+              </Pressable>
+            </View>
+          );
+        })}
+      </View>
     </View>
   );
 };
@@ -130,26 +148,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'absolute',
     bottom: 0,
+    backgroundColor: Colors.semiGray,
+    borderTopRightRadius: verticalScale(25),
+    borderTopLeftRadius: verticalScale(25),
+    height: verticalScale(100),
+    width: '100%',
+    paddingHorizontal: horizontalScale(10),
+    paddingBottom: verticalScale(5),
+  },
+  innerContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: Colors.white,
     borderTopRightRadius: verticalScale(25),
     borderTopLeftRadius: verticalScale(25),
     height: verticalScale(85),
-    width: '100%',
-    paddingHorizontal: horizontalScale(10),
-    paddingBottom: verticalScale(5),
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 8,
+    alignSelf: 'flex-end',
   },
   mainItemContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: Colors.white,
   },
   tabButton: {
     alignItems: 'center',
@@ -164,18 +186,13 @@ const styles = StyleSheet.create({
     borderRadius: verticalScale(50),
     height: verticalScale(85),
     width: verticalScale(85),
+    elevation: 10,
     shadowColor: Colors.primaryColor,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 10,
   },
-  focusedTabButton: {
-    backgroundColor: `${Colors.primaryColor}15`,
-  },
+  focusedTabButton: {},
   tabContent: {
     alignItems: 'center',
     justifyContent: 'center',

@@ -54,7 +54,7 @@ export default function SplashScreen() {
       } else {
         navigation.replace('OnBoardingScreen');
       }
-    }, 4000);
+    }, 1000);
 
     // Logo animations
     Animated.parallel([

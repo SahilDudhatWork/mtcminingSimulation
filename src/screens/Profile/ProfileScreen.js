@@ -57,8 +57,8 @@ export default function ProfileScreen(props) {
       title: 'Super Coins',
       value: masterCoin.toLocaleString(),
       icon: Images.starIcon,
-      backgroundColor: Colors.primaryColor,
-      iconTint: Colors.white,
+      backgroundColor: Colors.lightLine,
+      // iconTint: Colors.white,
     },
     {
       id: 3,
@@ -97,32 +97,32 @@ export default function ProfileScreen(props) {
       iconTint: Colors.primaryColor,
       onPress: () => props.navigation.navigate('Rafers'),
     },
-    {
-      id: 3,
-      title: 'Mining History',
-      description: 'View your mining activity',
-      icon: Images.pickaxeIcon,
-      iconBg: Colors.lightGreen,
-      iconTint: Colors.darkGreen,
-      onPress: () =>
-        Alert.alert(
-          'Coming Soon',
-          'Mining history feature will be available soon!',
-        ),
-    },
-    {
-      id: 4,
-      title: 'Withdrawal',
-      description: 'Withdraw your earnings',
-      icon: Images.convertCoinIcon,
-      iconBg: '#FF6B6B20',
-      iconTint: '#FF6B6B',
-      onPress: () =>
-        Alert.alert(
-          'Coming Soon',
-          'Withdrawal feature will be available soon!',
-        ),
-    },
+    // {
+    //   id: 3,
+    //   title: 'Mining History',
+    //   description: 'View your mining activity',
+    //   icon: Images.pickaxeIcon,
+    //   iconBg: Colors.lightGreen,
+    //   iconTint: Colors.darkGreen,
+    //   onPress: () =>
+    //     Alert.alert(
+    //       'Coming Soon',
+    //       'Mining history feature will be available soon!',
+    //     ),
+    // },
+    // {
+    //   id: 4,
+    //   title: 'Withdrawal',
+    //   description: 'Withdraw your earnings',
+    //   icon: Images.convertCoinIcon,
+    //   iconBg: '#FF6B6B20',
+    //   iconTint: '#FF6B6B',
+    //   onPress: () =>
+    //     Alert.alert(
+    //       'Coming Soon',
+    //       'Withdrawal feature will be available soon!',
+    //     ),
+    // },
     {
       id: 5,
       title: 'Help & Support',
@@ -185,9 +185,9 @@ export default function ProfileScreen(props) {
         <View style={styles.profileHeader}>
           <View style={styles.profileImageContainer}>
             <Image style={styles.profileImage} source={Images.girlFaceIcon} />
-            <TouchableOpacity style={styles.editButton} onPress={() => {}}>
+            {/* <TouchableOpacity style={styles.editButton} onPress={() => {}}>
               <Image style={styles.editIcon} source={Images.editIcon} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           <Text style={styles.nameText}>{userData.username}</Text>

@@ -750,17 +750,6 @@ const MiningScreen = props => {
                       borderColor: Colors.secondaryColor,
                       justifyContent: 'center',
                     }}>
-                    {/* <View
-                    style={{
-                      backgroundColor: Colors.secondaryColor,
-                      borderRadius: Dimensions.get('window').width * 0.35,
-                      alignSelf: 'center',
-                      flex: 1,
-                      width: '100%',
-                      borderWidth: 3,
-                      borderColor: Colors.secondaryColor,
-                      justifyContent: 'center',
-                    }}> */}
                     <Text
                       style={{
                         color: Colors.white,
@@ -807,7 +796,6 @@ const MiningScreen = props => {
                       {isMining && `${currentGhs} GH/S`}
                     </Text>
                   </Pressable>
-                  {/* </View> */}
                 </View>
               </View>
               <Carousel

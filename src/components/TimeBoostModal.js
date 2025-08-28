@@ -7,6 +7,7 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import {Colors} from '../constants/colors';
 import {horizontalScale, verticalScale} from '../constants/helper';
@@ -38,113 +39,114 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
           <Text style={styles.subtitle}>
             Boost your mining time to earn more rewards!
           </Text>
+          <ScrollView>
+            {/* Time Options */}
+            <View style={styles.optionsContainer}>
+              <Text style={styles.optionsTitle}>Choose time boost:</Text>
 
-          {/* Time Options */}
-          <View style={styles.optionsContainer}>
-            <Text style={styles.optionsTitle}>Choose time boost:</Text>
-
-            {/* 30 Minutes - Watch Ad */}
-            <TouchableOpacity style={styles.optionCard} onPress={onWatchAd}>
-              <View style={styles.optionLeft}>
-                <View
-                  style={[
-                    styles.optionIcon,
-                    {backgroundColor: Colors.secondaryColor + '20'},
-                  ]}>
-                  <Image
-                    source={Images.presentIcon}
+              {/* 30 Minutes - Watch Ad */}
+              <TouchableOpacity style={styles.optionCard} onPress={onWatchAd}>
+                <View style={styles.optionLeft}>
+                  <View
                     style={[
-                      styles.optionIconImage,
-                      {tintColor: Colors.secondaryColor},
-                    ]}
-                  />
-                </View>
-                <View>
-                  <Text style={styles.optionTitle}>+30 Minutes</Text>
-                  <Text style={styles.optionDesc}>Watch a short ad</Text>
-                </View>
-              </View>
-              <View style={styles.optionRight}>
-                <Text style={styles.freeText}>FREE</Text>
-              </View>
-            </TouchableOpacity>
-
-            {/* 1 Hour - 50 Coins */}
-            <TouchableOpacity
-              style={styles.optionCard}
-              onPress={() => onSpendCoins(50, 60)}>
-              <View style={styles.optionLeft}>
-                <View
-                  style={[
-                    styles.optionIcon,
-                    {backgroundColor: Colors.primaryColor + '20'},
-                  ]}>
-                  <Image
-                    source={Images.Hourglass}
-                    style={[
-                      styles.optionIconImage,
-                      {tintColor: Colors.primaryColor},
-                    ]}
-                  />
-                </View>
-                <View>
-                  <Text style={styles.optionTitle}>+1 Hour</Text>
-                  <Text style={styles.optionDesc}>Extend mining time</Text>
-                </View>
-              </View>
-              <View style={styles.optionRight}>
-                <View style={styles.coinContainer}>
-                  <Image source={Images.starIcon} style={styles.coinIcon} />
-                  <Text style={styles.coinText}>50</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            {/* 2 Hours - 90 Coins */}
-            <TouchableOpacity
-              style={styles.optionCard}
-              onPress={() => onSpendCoins(90, 120)}>
-              <View style={styles.optionLeft}>
-                <View
-                  style={[styles.optionIcon, {backgroundColor: '#FF6B6B20'}]}>
-                  <Image
-                    source={Images.Roaket}
-                    style={[styles.optionIconImage, {tintColor: '#FF6B6B'}]}
-                  />
-                </View>
-                <View>
-                  <Text style={styles.optionTitle}>+2 Hours</Text>
-                  <Text style={styles.optionDesc}>Maximum boost</Text>
-                  <View style={styles.popularBadge}>
-                    <Text style={styles.popularText}>POPULAR</Text>
+                      styles.optionIcon,
+                      {backgroundColor: Colors.secondaryColor + '20'},
+                    ]}>
+                    <Image
+                      source={Images.presentIcon}
+                      style={[
+                        styles.optionIconImage,
+                        {tintColor: Colors.secondaryColor},
+                      ]}
+                    />
+                  </View>
+                  <View>
+                    <Text style={styles.optionTitle}>+30 Minutes</Text>
+                    <Text style={styles.optionDesc}>Watch a short ad</Text>
                   </View>
                 </View>
-              </View>
-              <View style={styles.optionRight}>
-                <View style={styles.coinContainer}>
-                  <Image source={Images.starIcon} style={styles.coinIcon} />
-                  <Text style={styles.coinText}>90</Text>
+                <View style={styles.optionRight}>
+                  <Text style={styles.freeText}>FREE</Text>
                 </View>
-              </View>
-            </TouchableOpacity>
-          </View>
+              </TouchableOpacity>
 
-          {/* Benefits Section */}
-          <View style={styles.benefitsContainer}>
-            <Text style={styles.benefitsTitle}>Benefits:</Text>
-            <View style={styles.benefitItem}>
-              <Image source={Images.Tick} style={styles.benefitIcon} />
-              <Text style={styles.benefitText}>Increase total mining time</Text>
+              {/* 1 Hour - 50 Coins */}
+              <TouchableOpacity
+                style={styles.optionCard}
+                onPress={() => onSpendCoins(50, 60)}>
+                <View style={styles.optionLeft}>
+                  <View
+                    style={[
+                      styles.optionIcon,
+                      {backgroundColor: Colors.primaryColor + '20'},
+                    ]}>
+                    <Image
+                      source={Images.Hourglass}
+                      style={[
+                        styles.optionIconImage,
+                        {tintColor: Colors.primaryColor},
+                      ]}
+                    />
+                  </View>
+                  <View>
+                    <Text style={styles.optionTitle}>+1 Hour</Text>
+                    <Text style={styles.optionDesc}>Extend mining time</Text>
+                  </View>
+                </View>
+                <View style={styles.optionRight}>
+                  <View style={styles.coinContainer}>
+                    <Image source={Images.starIcon} style={styles.coinIcon} />
+                    <Text style={styles.coinText}>50</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              {/* 2 Hours - 90 Coins */}
+              <TouchableOpacity
+                style={styles.optionCard}
+                onPress={() => onSpendCoins(90, 120)}>
+                <View style={styles.optionLeft}>
+                  <View
+                    style={[styles.optionIcon, {backgroundColor: '#FF6B6B20'}]}>
+                    <Image
+                      source={Images.Roaket}
+                      style={[styles.optionIconImage, {tintColor: '#FF6B6B'}]}
+                    />
+                  </View>
+                  <View>
+                    <Text style={styles.optionTitle}>+2 Hours</Text>
+                    <Text style={styles.optionDesc}>Maximum boost</Text>
+                    <View style={styles.popularBadge}>
+                      <Text style={styles.popularText}>POPULAR</Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.optionRight}>
+                  <View style={styles.coinContainer}>
+                    <Image source={Images.starIcon} style={styles.coinIcon} />
+                    <Text style={styles.coinText}>90</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             </View>
-            <View style={styles.benefitItem}>
-              <Image source={Images.Tick} style={styles.benefitIcon} />
-              <Text style={styles.benefitText}>Earn more USDT rewards</Text>
+
+            {/* Benefits Section */}
+            <View style={styles.benefitsContainer}>
+              <Text style={styles.benefitsTitle}>Benefits:</Text>
+              <View style={styles.benefitItem}>
+                <Image source={Images.Tick} style={styles.benefitIcon} />
+                <Text style={styles.benefitText}>Increase total mining time</Text>
+              </View>
+              <View style={styles.benefitItem}>
+                <Image source={Images.Tick} style={styles.benefitIcon} />
+                <Text style={styles.benefitText}>Earn more USDT rewards</Text>
+              </View>
+              <View style={styles.benefitItem}>
+                <Image source={Images.Tick} style={styles.benefitIcon} />
+                <Text style={styles.benefitText}>Stack with speed boosts</Text>
+              </View>
             </View>
-            <View style={styles.benefitItem}>
-              <Image source={Images.Tick} style={styles.benefitIcon} />
-              <Text style={styles.benefitText}>Stack with speed boosts</Text>
-            </View>
-          </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>

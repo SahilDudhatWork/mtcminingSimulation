@@ -6,7 +6,7 @@ import { Colors } from '../constants/colors';
 const { width } = Dimensions.get('window');
 
 export default function InputField(props) {
-    const { title, placeholder, onChangeT, errorTitle } = props;
+    const { title, placeholder, onChangeText, errorTitle } = props;
 
     return (
         <>
@@ -14,7 +14,7 @@ export default function InputField(props) {
             <TextInput
                 placeholder={placeholder}
                 placeholderTextColor={Colors.shadeGrey}
-                onChangeText={text => onChangeT(text)}
+                onChangeText={onChangeText}
                 style={styles.inputContainer}
             />
             <Text style={styles.errorText}>{errorTitle}</Text>
@@ -26,7 +26,8 @@ const styles = StyleSheet.create({
     titleText: {
         color: Colors.black,
         marginLeft: 20,
-        fontWeight: '500'
+        fontWeight: '500',
+        marginBottom: verticalScale(-10),        
     },
     inputContainer: {
         width: "100%", // 🔥 90% of screen width
@@ -44,5 +45,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginTop: 5,
         marginHorizontal: 15,
+        marginBottom: verticalScale(10),
     },
 })
