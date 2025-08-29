@@ -269,6 +269,30 @@ export default function ConvertCoinScreen(props) {
           )}
         </View>
       </ScrollView>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <View style={styles.confirmationOverlay}>
+          <View style={styles.confirmationModal}>
+            <Text style={styles.confirmationTitle}>Confirm Conversion</Text>
+            <Text style={styles.confirmationMessage}>
+              Convert {masterCoin.toLocaleString()} Super Coins to {convertableAmount.toFixed(4)} USDT?
+            </Text>
+            <View style={styles.confirmationButtons}>
+              <TouchableOpacity
+                style={[styles.confirmationButton, styles.cancelButton]}
+                onPress={() => setShowConfirmation(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.confirmationButton, styles.convertConfirmButton]}
+                onPress={confirmConversion}>
+                <Text style={styles.convertConfirmButtonText}>Convert</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
