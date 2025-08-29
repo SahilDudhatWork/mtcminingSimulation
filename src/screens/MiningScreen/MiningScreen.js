@@ -411,7 +411,7 @@ const MiningScreen = props => {
         title: 'Join MTC Mining',
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to share referral code');
+      showToast.error('Error', 'Failed to share referral code');
     }
   };
   return (
