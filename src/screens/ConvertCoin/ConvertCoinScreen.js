@@ -23,6 +23,7 @@ export default function ConvertCoinScreen(props) {
   const [totalEarned, setTotalEarned] = useState(0);
   const [conversionRate] = useState(0.0006); // 1 Super Coin = 0.0006 USDT
   const [minimumCoins] = useState(2500);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const [history, setHistory] = useState([
     {
