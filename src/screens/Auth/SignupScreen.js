@@ -8,6 +8,7 @@ import InputField from '../../components/InputField';
 import Button from '../../components/Button';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import { useAuth } from '../../context/AuthContext';
+import {showToast} from '../../utils/toastUtils';
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string().min(3, 'Name must be at least 3 characters').required('Name is required'),
