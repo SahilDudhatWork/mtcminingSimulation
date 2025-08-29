@@ -18,6 +18,21 @@ import {showToast} from '../utils/toastUtils';
 const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
   const screenHeight = Dimensions.get('window').height;
 
+  const handleWatchAd = async () => {
+    try {
+      const result = await adManager.showRewardedAd();
+      if (result.success) {
+        showToast.success('Reward Earned!', '+30 minutes added to your mining time');
+        onWatchAd();
+      } else {
+        showToast.info('Ad Cancelled', 'Watch the complete ad to earn rewards');
+      }
+    } catch (error) {
+      console.error('Error showing rewarded ad:', error);
+      showToast.error('Ad Error', 'Unable to load ad. Please try again.');
+    }
+  };
+
   return (
     <Modal
       transparent={true}
