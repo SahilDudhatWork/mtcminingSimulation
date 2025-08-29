@@ -62,7 +62,7 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
               <Text style={styles.optionsTitle}>Choose time boost:</Text>
 
               {/* 30 Minutes - Watch Ad */}
-              <TouchableOpacity style={styles.optionCard} onPress={onWatchAd}>
+              <TouchableOpacity style={styles.optionCard} onPress={handleWatchAd}>
                 <View style={styles.optionLeft}>
                   <View
                     style={[
