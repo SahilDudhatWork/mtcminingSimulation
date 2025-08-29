@@ -475,17 +475,39 @@ export default function HomeScreen(props) {
             <>
               {/* Daily Bonus UI - styled grid like shared design */}
               <View style={{marginBottom: verticalScale(16)}}>
-                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10)}}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: verticalScale(10),
+                  }}>
                   <Text style={styles.sectionTitle}>Daily Bonus</Text>
-                  <TouchableOpacity onPress={() => props.navigation.navigate('ConvertCoinScreen')} style={{backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.grey_300, paddingHorizontal: horizontalScale(12), paddingVertical: verticalScale(6), borderRadius: verticalScale(18)}}>
-                    <Text style={{color: Colors.textDark, fontWeight: '600'}}>Convert</Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      props.navigation.navigate('ConvertCoinScreen')
+                    }
+                    style={{
+                      backgroundColor: Colors.white,
+                      borderWidth: 1,
+                      borderColor: Colors.grey_300,
+                      paddingHorizontal: horizontalScale(12),
+                      paddingVertical: verticalScale(6),
+                      borderRadius: verticalScale(18),
+                    }}>
+                    <Text style={{color: Colors.textDark, fontWeight: '600'}}>
+                      Convert
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.dailyGrid}>
                   {dailyRewards.map((amount, i) => {
                     const collected = i < dailyDayIndex;
                     const isToday = i === dailyDayIndex;
-                    const disabled = collected || i > dailyDayIndex || (isToday && !canClaimDaily);
+                    const disabled =
+                      collected ||
+                      i > dailyDayIndex ||
+                      (isToday && !canClaimDaily);
                     return (
                       <TouchableOpacity
                         key={`day-${i}`}
@@ -496,15 +518,24 @@ export default function HomeScreen(props) {
                           const reward = amount;
                           setMasterCoin(prev => {
                             const total = prev + reward;
-                            AsyncStorage.setItem('masterCoin', total.toString());
+                            AsyncStorage.setItem(
+                              'masterCoin',
+                              total.toString(),
+                            );
                             return total;
                           });
                           const nextDay = (dailyDayIndex + 1) % 7;
                           setDailyDayIndex(nextDay);
                           const now = Date.now();
                           setLastDailyClaim(now);
-                          await AsyncStorage.setItem('dailyDayIndex', nextDay.toString());
-                          await AsyncStorage.setItem('lastDailyClaim', now.toString());
+                          await AsyncStorage.setItem(
+                            'dailyDayIndex',
+                            nextDay.toString(),
+                          );
+                          await AsyncStorage.setItem(
+                            'lastDailyClaim',
+                            now.toString(),
+                          );
                           setIsVisible(true);
                           setGiftAmt(reward);
                         }}
@@ -516,7 +547,10 @@ export default function HomeScreen(props) {
                             opacity: disabled && !isToday ? 0.7 : 1,
                           },
                         ]}>
-                        <Image source={Images.starIcon} style={styles.dailyStarIcon} />
+                        <Image
+                          source={Images.starIcon}
+                          style={styles.dailyStarIcon}
+                        />
                         <Text style={styles.dailyValue}>{amount}</Text>
                         <Text style={styles.dailyLabel}>Super Coin</Text>
                         <View
@@ -532,7 +566,9 @@ export default function HomeScreen(props) {
                           ]}>
                           <Text
                             style={{
-                              color: collected ? Colors.white : Colors.semiBlack,
+                              color: collected
+                                ? Colors.white
+                                : Colors.semiBlack,
                               fontWeight: '700',
                               fontSize: verticalScale(10),
                             }}>
@@ -541,13 +577,29 @@ export default function HomeScreen(props) {
                         </View>
                         {collected && (
                           <View style={styles.dailyCheckBadge}>
-                            <Image source={Images.Tick} style={styles.dailyCheckIcon} />
+                            <Image
+                              source={Images.Tick}
+                              style={styles.dailyCheckIcon}
+                            />
                           </View>
                         )}
                         {isToday && !canClaimDaily && (
                           <View style={styles.dailyOverlay}>
-                            <Image source={Images.Hourglass} style={[styles.dailyCheckIcon, {tintColor: Colors.white}]} />
-                            <Text style={{color: Colors.white, fontWeight: '700', marginTop: verticalScale(4)}}>{formatTime(dailyTimeRemaining)}</Text>
+                            <Image
+                              source={Images.Hourglass}
+                              style={[
+                                styles.dailyCheckIcon,
+                                {tintColor: Colors.white},
+                              ]}
+                            />
+                            <Text
+                              style={{
+                                color: Colors.white,
+                                fontWeight: '700',
+                                marginTop: verticalScale(4),
+                              }}>
+                              {formatTime(dailyTimeRemaining)}
+                            </Text>
                           </View>
                         )}
                       </TouchableOpacity>
@@ -558,9 +610,15 @@ export default function HomeScreen(props) {
 
               <View style={styles.instructionsContainer}>
                 <Text style={styles.instructionsTitle}>Daily Bonus Rules:</Text>
-                <Text style={styles.instructionsText}>• One claim every 24 hours</Text>
-                <Text style={styles.instructionsText}>• Rewards for 7 consecutive days</Text>
-                <Text style={styles.instructionsText}>• Cycle repeats after Day 7</Text>
+                <Text style={styles.instructionsText}>
+                  • One claim every 24 hours
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Rewards for 7 consecutive days
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Cycle repeats after Day 7
+                </Text>
               </View>
             </>
           )}
