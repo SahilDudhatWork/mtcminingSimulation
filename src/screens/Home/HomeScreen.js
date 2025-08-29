@@ -38,6 +38,11 @@ export default function HomeScreen(props) {
   const MAX_FLIPS = 4;
   const GIFT_DURATION_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
 
+  // Daily bonus state
+  const [dailyDayIndex, setDailyDayIndex] = useState(0);
+  const [lastDailyClaim, setLastDailyClaim] = useState(null);
+  const DAILY_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
   // Game modes
   const [selectedGameMode, setSelectedGameMode] = useState('flip');
   const gameModes = [
@@ -58,7 +63,7 @@ export default function HomeScreen(props) {
       // color: Colors.secondaryColor,
       minReward: 50,
       maxReward: 500,
-    }
+    },
   ];
 
   useEffect(() => {
@@ -80,6 +85,12 @@ export default function HomeScreen(props) {
         );
         setFlippedCount(0);
       }
+      // Load daily bonus progress
+      const storedDay = await AsyncStorage.getItem('dailyDayIndex');
+      const storedLast = await AsyncStorage.getItem('lastDailyClaim');
+      if (storedDay !== null) setDailyDayIndex(parseInt(storedDay, 10) || 0);
+      if (storedLast !== null) setLastDailyClaim(parseInt(storedLast, 10));
+
       setIsVisible(false);
     });
 
@@ -161,6 +172,16 @@ export default function HomeScreen(props) {
       setGiftIntervalId(giftMiningIntervalId);
     }
 
+    // Daily bonus timer refresh
+    const dailyInterval = setInterval(() => {
+      setLastDailyClaim(prev => (prev ? prev : prev));
+    }, 1000);
+
+    return () => {
+      clearInterval(giftIntervalId);
+      clearInterval(dailyInterval);
+    };
+
     return () => clearInterval(giftIntervalId);
   }, [isGiftMining, giftTimeRemaining]);
 
@@ -175,10 +196,11 @@ export default function HomeScreen(props) {
     newList[index].value = randomAmount;
     newList[index].opened = true;
     setList(newList);
-    setFlippedCount(prev => prev + 1);
+    const newFlipped = flippedCount + 1;
+    setFlippedCount(newFlipped);
     AsyncStorage.setItem('boxList', JSON.stringify(newList));
 
-    if (flippedCount + 1 === 1 && !isGiftMining) {
+    if (newFlipped >= MAX_FLIPS && !isGiftMining) {
       const now = new Date().getTime();
       await AsyncStorage.setItem('giftOpenStart', now.toString());
       setIsGiftMining(true);
@@ -209,18 +231,19 @@ export default function HomeScreen(props) {
 
   const renderCard = ({item, index}) => {
     const handlePress = () => openBox(index);
+    const overlayActive = isGiftMining || flippedCount >= MAX_FLIPS;
     return (
       <TouchableOpacity
         onPress={handlePress}
         style={[
           styles.cardContainer,
           {
-            opacity: item.opened ? 0.7 : 1,
+            opacity: overlayActive ? 0.3 : item.opened ? 0.7 : 1,
             backgroundColor: item.opened ? Colors.grey_300 : Colors.white,
             transform: [{scale: item.opened ? 0.95 : 1}],
           },
         ]}
-        disabled={item.opened || flippedCount >= MAX_FLIPS}
+        disabled={overlayActive || item.opened}
         activeOpacity={0.8}>
         <View style={styles.cardContent}>
           {!item.opened ? (
@@ -277,6 +300,11 @@ export default function HomeScreen(props) {
   );
 
   const selectedGame = gameModes.find(mode => mode.id === selectedGameMode);
+  const canClaimDaily =
+    !lastDailyClaim || Date.now() - lastDailyClaim >= DAILY_COOLDOWN_MS;
+  const dailyTimeRemaining = lastDailyClaim
+    ? Math.max(0, DAILY_COOLDOWN_MS - (Date.now() - lastDailyClaim))
+    : 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -340,7 +368,7 @@ export default function HomeScreen(props) {
         <View style={styles.gameSection}>
           <View style={styles.gameHeader}>
             <Text style={styles.gameTitle}>{selectedGame.title}</Text>
-            {isGiftMining && (
+            {selectedGame.id === 'flip' && isGiftMining && (
               <View style={styles.timerContainer}>
                 <Image source={Images.Hourglass} style={styles.timerIcon} />
                 <Text style={styles.timerText}>
@@ -348,55 +376,211 @@ export default function HomeScreen(props) {
                 </Text>
               </View>
             )}
+            {selectedGame.id === 'daily' && !canClaimDaily && (
+              <View style={styles.timerContainer}>
+                <Image source={Images.Hourglass} style={styles.timerIcon} />
+                <Text style={styles.timerText}>
+                  {formatTime(dailyTimeRemaining)}
+                </Text>
+              </View>
+            )}
           </View>
 
-          {/* Game Status */}
-          <View style={styles.gameStatus}>
-            <View style={styles.statusItem}>
-              <Text style={styles.statusLabel}>Attempts</Text>
-              <Text
-                style={
-                  styles.statusValue
-                }>{`${flippedCount}/${MAX_FLIPS}`}</Text>
-            </View>
-            <View style={styles.statusDivider} />
-            <View style={styles.statusItem}>
-              <Text style={styles.statusLabel}>Reward Range</Text>
-              <Text style={styles.statusValue}>
-                {selectedGame.minReward}-{selectedGame.maxReward}
-              </Text>
-            </View>
-          </View>
+          {selectedGame.id === 'flip' ? (
+            <>
+              {/* Game Status */}
+              <View style={styles.gameStatus}>
+                <View style={styles.statusItem}>
+                  <Text style={styles.statusLabel}>Attempts</Text>
+                  <Text
+                    style={
+                      styles.statusValue
+                    }>{`${flippedCount}/${MAX_FLIPS}`}</Text>
+                </View>
+                <View style={styles.statusDivider} />
+                <View style={styles.statusItem}>
+                  <Text style={styles.statusLabel}>Reward Range</Text>
+                  <Text style={styles.statusValue}>
+                    {selectedGame.minReward}-{selectedGame.maxReward}
+                  </Text>
+                </View>
+              </View>
 
-          {/* Cards Grid */}
-          <View style={styles.cardsSection}>
-            <FlatList
-              data={list}
-              renderItem={renderCard}
-              numColumns={2}
-              keyExtractor={(item, index) => index.toString()}
-              contentContainerStyle={styles.cardsGrid}
-              scrollEnabled={false}
-              columnWrapperStyle={styles.cardRow}
-            />
-          </View>
+              {/* Cards Grid */}
+              <View style={[styles.cardsSection, {position: 'relative'}]}>
+                <FlatList
+                  data={list}
+                  renderItem={renderCard}
+                  numColumns={2}
+                  keyExtractor={(item, index) => index.toString()}
+                  contentContainerStyle={styles.cardsGrid}
+                  scrollEnabled={false}
+                  columnWrapperStyle={styles.cardRow}
+                />
+                {(isGiftMining || flippedCount >= MAX_FLIPS) && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0,0,0,0.4)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: verticalScale(15),
+                    }}>
+                    <Text
+                      style={{
+                        color: Colors.white,
+                        fontWeight: '600',
+                        marginBottom: verticalScale(6),
+                      }}>
+                      Come back later to play again
+                    </Text>
+                    {isGiftMining && (
+                      <View style={styles.timerContainer}>
+                        <Image
+                          source={Images.Hourglass}
+                          style={styles.timerIcon}
+                        />
+                        <Text style={styles.timerText}>
+                          {formatTime(giftTimeRemaining)}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
 
-          {/* Game Instructions */}
-          <View style={styles.instructionsContainer}>
-            <Text style={styles.instructionsTitle}>How to Play:</Text>
-            <Text style={styles.instructionsText}>
-              • Tap on any card to reveal your reward
-            </Text>
-            <Text style={styles.instructionsText}>
-              • You can flip {MAX_FLIPS} cards per session
-            </Text>
-            <Text style={styles.instructionsText}>
-              • Wait 30 minutes between sessions
-            </Text>
-            <Text style={styles.instructionsText}>
-              • Higher rewards available in other game modes
-            </Text>
-          </View>
+              {/* Game Instructions */}
+              <View style={styles.instructionsContainer}>
+                <Text style={styles.instructionsTitle}>How to Play:</Text>
+                <Text style={styles.instructionsText}>
+                  • Tap on any card to reveal your reward
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • You can flip {MAX_FLIPS} cards per session
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Wait 30 minutes between sessions
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Higher rewards available in other game modes
+                </Text>
+              </View>
+            </>
+          ) : (
+            <>
+              {/* Daily Bonus UI */}
+              <View style={{marginBottom: verticalScale(20)}}>
+                <Text style={styles.sectionTitle}>7-Day Streak</Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
+                  {Array.from({length: 7}).map((_, i) => {
+                    const collected = i < dailyDayIndex;
+                    const isToday = i === dailyDayIndex;
+                    return (
+                      <View
+                        key={i}
+                        style={{
+                          width: verticalScale(40),
+                          height: verticalScale(50),
+                          borderRadius: verticalScale(10),
+                          backgroundColor: collected
+                            ? Colors.lightGreen
+                            : Colors.bgColor,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderWidth: 2,
+                          borderColor: isToday
+                            ? Colors.secondaryColor
+                            : Colors.grey_300,
+                        }}>
+                        <Text
+                          style={{
+                            fontSize: verticalScale(10),
+                            color: Colors.grey_500,
+                          }}>
+                          Day {i + 1}
+                        </Text>
+                        <Image
+                          source={collected ? Images.starIcon : Images.giftIcon}
+                          style={{
+                            width: verticalScale(18),
+                            height: verticalScale(18),
+                            tintColor: collected
+                              ? Colors.darkGreen
+                              : Colors.primaryColor,
+                            resizeMode: 'contain',
+                          }}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <TouchableOpacity
+                disabled={!canClaimDaily}
+                onPress={async () => {
+                  if (!canClaimDaily) return;
+                  const reward = await getRandomInt(
+                    selectedGame.minReward,
+                    selectedGame.maxReward,
+                  );
+                  setMasterCoin(prev => {
+                    const total = prev + reward;
+                    AsyncStorage.setItem('masterCoin', total.toString());
+                    return total;
+                  });
+                  const nextDay = (dailyDayIndex + 1) % 7;
+                  setDailyDayIndex(nextDay);
+                  const now = Date.now();
+                  setLastDailyClaim(now);
+                  await AsyncStorage.setItem(
+                    'dailyDayIndex',
+                    nextDay.toString(),
+                  );
+                  await AsyncStorage.setItem('lastDailyClaim', now.toString());
+                  setIsVisible(true);
+                  setGiftAmt(reward);
+                }}
+                style={{
+                  backgroundColor: canClaimDaily
+                    ? Colors.secondaryColor
+                    : Colors.grey_300,
+                  paddingVertical: verticalScale(14),
+                  borderRadius: verticalScale(12),
+                  alignItems: 'center',
+                  marginBottom: verticalScale(15),
+                }}>
+                <Text
+                  style={{
+                    color: canClaimDaily ? Colors.white : Colors.grey_500,
+                    fontWeight: '700',
+                  }}>
+                  {canClaimDaily ? 'Claim Daily Bonus' : 'Come back later'}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.instructionsContainer}>
+                <Text style={styles.instructionsTitle}>Daily Bonus Rules:</Text>
+                <Text style={styles.instructionsText}>
+                  • One claim every 24 hours
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Rewards for 7 consecutive days
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Cycle repeats after Day 7
+                </Text>
+              </View>
+            </>
+          )}
         </View>
       </ScrollView>
 

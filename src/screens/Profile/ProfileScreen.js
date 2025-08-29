@@ -279,38 +279,16 @@ export default function ProfileScreen(props) {
             <Text style={styles.infoValue}>{userData.email}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>User ID</Text>
-            <Text style={styles.infoValue}>#{userData.id}</Text>
-          </View>
-          <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Referral Code</Text>
             <Text style={styles.infoValue}>{userData.refer_code}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Account Status</Text>
-            <Text style={[styles.infoValue, {color: userData.isActive ? Colors.darkGreen : Colors.grey_500}]}>
-              {userData.isActive ? 'Active' : 'Inactive'}
-            </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Verification Status</Text>
-            <Text style={[styles.infoValue, {color: userData.isVerified ? Colors.darkGreen : Colors.grey_500}]}>
-              {userData.isVerified ? 'Verified' : 'Unverified'}
-            </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Registration Type</Text>
-            <Text style={styles.infoValue}>{userData.socialType}</Text>
-          </View>
-          <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Join Date</Text>
             <Text style={styles.infoValue}>
-              {userData.createdAt !== 'N/A' ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
+              {userData.createdAt !== 'N/A'
+                ? new Date(userData.createdAt).toLocaleDateString()
+                : 'N/A'}
             </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Mining Points</Text>
-            <Text style={styles.infoValue}>{userData.mine}</Text>
           </View>
         </View>
 
