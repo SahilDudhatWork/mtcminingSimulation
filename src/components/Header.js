@@ -30,10 +30,11 @@ const styles = StyleSheet.create({
     container: {
         width: '100%',
         paddingHorizontal: horizontalScale(20),
-        marginTop: verticalScale(20),
+        marginTop: verticalScale(10),
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        paddingBottom: verticalScale(10),
     },
     btnContainer: {
         height: verticalScale(35),
@@ -51,8 +52,8 @@ const styles = StyleSheet.create({
     iconContainer: {
         overflow: 'hidden',
         backgroundColor: Colors.white,
-        height: verticalScale(30),
-        width: verticalScale(30),
+        height: verticalScale(35),
+        width: verticalScale(35),
         borderRadius: 15,
         alignItems: "center",
         justifyContent: "center",
@@ -60,6 +61,8 @@ const styles = StyleSheet.create({
     },
     imageStyle: {
         flex: 1,
-        resizeMode: "center"
+        resizeMode: "center",
+        height: verticalScale(35),
+        width: verticalScale(35),
     },
 })

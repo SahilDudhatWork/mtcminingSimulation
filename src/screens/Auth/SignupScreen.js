@@ -33,6 +33,10 @@ export default function SignupScreen({ navigation }) {
       Alert.alert('Error', res.message);
     }
   };
+  const navigateToLogin = () => {
+    navigation.navigate('LoginScreen');
+  };
+
 
   return (
     <>
@@ -100,7 +104,27 @@ export default function SignupScreen({ navigation }) {
                 </View>
 
                 <View style={styles.buttonContainer}>
-                  <Button title="Create Account" onPress={handleSubmit} loading={loading} />
+                  <Button
+                    title="Create Account"
+                    onPress={handleSubmit}
+                    loading={loading}
+                    disabled={loading}
+                    style={{
+                      backgroundColor: loading
+                        ? Colors.primaryColor + '80'
+                        : Colors.primaryColor,
+                      paddingVertical: verticalScale(15),
+                      borderRadius: verticalScale(30),
+                      alignItems: 'center',
+                    }}
+                  />
+                  <Text style={styles.loginText}>
+                    Already have an account?{' '}
+                    <Text style={styles.loginLink} onPress={navigateToLogin}>
+                      Sign In
+                    </Text>
+                  </Text>
+                  {/* <Button title="Create Account" onPress={handleSubmit} loading={loading} /> */}
                 </View>
               </View>
             )}
@@ -153,7 +177,7 @@ const styles = StyleSheet.create({
     fontSize: verticalScale(16),
     color: Colors.shadeGrey,
     textAlign: 'center',
-    marginBottom: verticalScale(30),
+    marginVertical: verticalScale(30),
   },
   loginLink: {color: Colors.primaryColor, fontWeight: '600'},
 });

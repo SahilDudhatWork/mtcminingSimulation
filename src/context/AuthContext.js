@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [apiResponse, setApiResponse] = useState(null);
 
   useEffect(() => {
     checkAuthStatus();
@@ -23,15 +24,21 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      const storedData = await AsyncStorage.getItem('userData');
-      if (storedData) {
-        const parsed = JSON.parse(storedData);
-        setUser(parsed);
-        setIsLoggedIn(true);
-      }
-
+      
+      // Check if user has completed onboarding
       const onboardingStatus = await AsyncStorage.getItem('onboardingCompleted');
       setOnboardingCompleted(onboardingStatus === 'true');
+      
+      // Check if user is logged in and get stored session data
+      const storedSession = await AsyncStorage.getItem('userSession');
+      if (storedSession) {
+        const sessionData = JSON.parse(storedSession);
+        if (sessionData.apiResponse && sessionData.apiResponse.data && sessionData.apiResponse.data.user) {
+          setUser(sessionData.apiResponse.data.user);
+          setApiResponse(sessionData.apiResponse);
+          setIsLoggedIn(true);
+        }
+      }
     } catch (error) {
       console.error('Auth check error:', error);
     } finally {
@@ -45,8 +52,17 @@ export const AuthProvider = ({ children }) => {
 
       if (res.data?.status === 'success') {
         const userData = res.data.data.user;
+        const sessionData = {
+          apiResponse: res.data,
+          loginTime: new Date().toISOString()
+        };
+        
+        // Save session data and user data
+        await AsyncStorage.setItem('userSession', JSON.stringify(sessionData));
         await AsyncStorage.setItem('userData', JSON.stringify(userData));
+        
         setUser(userData);
+        setApiResponse(res.data);
         setIsLoggedIn(true);
         await completeOnboarding();
         return { success: true };
@@ -68,8 +84,17 @@ export const AuthProvider = ({ children }) => {
 
       if (res.data?.status === 'success') {
         const userData = res.data.data.user;
+        const sessionData = {
+          apiResponse: res.data,
+          signupTime: new Date().toISOString()
+        };
+        
+        // Save session data and user data
+        await AsyncStorage.setItem('userSession', JSON.stringify(sessionData));
         await AsyncStorage.setItem('userData', JSON.stringify(userData));
+        
         setUser(userData);
+        setApiResponse(res.data);
         setIsLoggedIn(true);
         await completeOnboarding();
         return { success: true };
@@ -85,7 +110,9 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await AsyncStorage.removeItem('userData');
+      await AsyncStorage.removeItem('userSession');
       setUser(null);
+      setApiResponse(null);
       setIsLoggedIn(false);
     } catch (error) {
       console.error('Logout error:', error);
@@ -123,6 +150,7 @@ export const AuthProvider = ({ children }) => {
         isLoading,
         isLoggedIn,
         onboardingCompleted,
+        apiResponse,
         login,
         signup,
         logout,

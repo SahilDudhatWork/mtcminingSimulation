@@ -17,6 +17,7 @@ import {Images} from '../../assets/images';
 import {useNavigation} from '@react-navigation/native';
 import Popup from '../../components/Popup';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomStatusBar from '../../components/CustomStatusBar';
 
 export default function HomeScreen(props) {
   const navigation = useNavigation();
@@ -54,19 +55,10 @@ export default function HomeScreen(props) {
       title: 'Daily Bonus',
       description: 'Claim your daily reward',
       icon: Images.presentIcon,
-      color: Colors.secondaryColor,
+      // color: Colors.secondaryColor,
       minReward: 50,
       maxReward: 500,
-    },
-    {
-      id: 'lucky',
-      title: 'Lucky Spin',
-      description: 'Spin to win big rewards',
-      icon: Images.starIcon,
-      color: '#FF6B6B',
-      minReward: 25,
-      maxReward: 1000,
-    },
+    }
   ];
 
   useEffect(() => {
@@ -289,17 +281,18 @@ export default function HomeScreen(props) {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.helpButton}
-          onPress={() => props.navigation.navigate('HelpScreen')}>
-          <Image style={styles.helpIcon} source={Images.Question} />
-        </TouchableOpacity>
-      </View>
+      <CustomStatusBar dark backgroundColor={Colors.semiGray} />
 
       <ScrollView
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.helpButton}
+            onPress={() => props.navigation.navigate('HelpScreen')}>
+            <Image style={styles.helpIcon} source={Images.Question} />
+          </TouchableOpacity>
+        </View>
         {/* Header Section */}
         <View style={styles.headerSection}>
           <View style={styles.titleContainer}>
@@ -429,7 +422,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: horizontalScale(20),
+    paddingHorizontal: horizontalScale(1),
     paddingTop: verticalScale(10),
   },
   helpButton: {
@@ -468,7 +461,7 @@ const styles = StyleSheet.create({
     width: verticalScale(35),
     height: verticalScale(35),
     marginRight: horizontalScale(10),
-    tintColor: Colors.primaryColor,
+    // tintColor: Colors.primaryColor,
     resizeMode: 'contain',
   },
   title: {

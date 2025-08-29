@@ -23,10 +23,13 @@ import MysteryBoxModal from '../../components/MysteryBoxModal';
 import BoostGhsModal from '../../components/BoostGhsModal';
 import TimeBoostModal from '../../components/TimeBoostModal';
 import {useNavigation} from '@react-navigation/native';
+import {useAuth} from '../../context/AuthContext';
+import CustomStatusBar from '../../components/CustomStatusBar';
 
 const MiningScreen = props => {
   const navigation = useNavigation();
   const [currentOption, setCurrentOption] = useState(0);
+  const {user, apiResponse} = useAuth();
   const [userData, setUserData] = useState({}); // State to store user name
   const [isMining, setIsMining] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -52,6 +55,23 @@ const MiningScreen = props => {
   const [maxGhs] = useState(100);
   const GIFT_DURATION_MS = 1 * 60 * 1000; // 1 minutes in milliseconds
 
+  useEffect(() => {
+      // Load user data from auth context
+      if (user && apiResponse) {
+        setUserData({
+          username: user.name || 'Guest User',
+          refer_code: user.refer_code || 'N/A',
+          email: user.email || 'N/A',
+          id: user.id || 'N/A',
+          isActive: user.is_active || 0,
+          isVerified: user.is_verified || 0,
+          socialType: user.social_type || 'email',
+          createdAt: user.created_at || 'N/A',
+          mine: user.mine || 0,
+        });
+      }
+    }, [user, apiResponse]);
+  
   const OptionIcon = [
     {
       id: 0,
@@ -395,6 +415,7 @@ const MiningScreen = props => {
   };
   return (
     <View style={styles.mainBox}>
+      <CustomStatusBar dark backgroundColor={Colors.semiGray} />
       <SafeAreaView style={styles.mainBox}>
         <ScrollView style={styles.mainBox}>
           <View style={styles.mainBox}>
@@ -414,7 +435,7 @@ const MiningScreen = props => {
                     fontWeight: '500',
                     fontSize: 16,
                   }}>
-                  Hello, {userData?.username}
+                  Hello, {userData.username}
                 </Text>
                 <Text
                   style={{
@@ -802,7 +823,7 @@ const MiningScreen = props => {
                 data={OptionIcon}
                 renderItem={({item, index}) => {
                   return (
-                    <View
+                    <TouchableOpacity
                       style={{
                         backgroundColor: Colors.bgColor,
                         padding: 20,
@@ -884,7 +905,7 @@ const MiningScreen = props => {
                           Read more
                         </Text>
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   );
                 }}
                 activeSlideAlignment="start"

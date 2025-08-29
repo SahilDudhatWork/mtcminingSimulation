@@ -16,15 +16,35 @@ import {horizontalScale, verticalScale} from '../../constants/helper';
 import {Colors} from '../../constants/colors';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useAuth} from '../../context/AuthContext';
+import CustomStatusBar from '../../components/CustomStatusBar';
 
 export default function ProfileScreen(props) {
   const navigation = useNavigation();
+  const {user, apiResponse} = useAuth();
   const [userData, setUserData] = useState({
-    username: 'Hii Test',
-    refer_code: 'TH1707461793717',
+    username: 'Guest User',
+    refer_code: 'N/A',
   });
   const [masterCoin, setMasterCoin] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
+
+  useEffect(() => {
+    // Load user data from auth context
+    if (user && apiResponse) {
+      setUserData({
+        username: user.name || 'Guest User',
+        refer_code: user.refer_code || 'N/A',
+        email: user.email || 'N/A',
+        id: user.id || 'N/A',
+        isActive: user.is_active || 0,
+        isVerified: user.is_verified || 0,
+        socialType: user.social_type || 'email',
+        createdAt: user.created_at || 'N/A',
+        mine: user.mine || 0,
+      });
+    }
+  }, [user, apiResponse]);
 
   useEffect(() => {
     const focusListener = navigation.addListener('focus', async () => {
@@ -177,6 +197,7 @@ export default function ProfileScreen(props) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <CustomStatusBar dark backgroundColor={Colors.semiGray} />
       <Header ishelp={true} />
       <ScrollView
         style={styles.scrollContainer}
@@ -250,20 +271,46 @@ export default function ProfileScreen(props) {
             <Text style={styles.accountInfoTitle}>Account Information</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Username</Text>
+            <Text style={styles.infoLabel}>Name</Text>
             <Text style={styles.infoValue}>{userData.username}</Text>
           </View>
           <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{userData.email}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>User ID</Text>
+            <Text style={styles.infoValue}>#{userData.id}</Text>
+          </View>
+          <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Referral Code</Text>
-            <Text style={styles.infoValue}>#{userData.refer_code}</Text>
+            <Text style={styles.infoValue}>{userData.refer_code}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Account Status</Text>
+            <Text style={[styles.infoValue, {color: userData.isActive ? Colors.darkGreen : Colors.grey_500}]}>
+              {userData.isActive ? 'Active' : 'Inactive'}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Verification Status</Text>
+            <Text style={[styles.infoValue, {color: userData.isVerified ? Colors.darkGreen : Colors.grey_500}]}>
+              {userData.isVerified ? 'Verified' : 'Unverified'}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Registration Type</Text>
+            <Text style={styles.infoValue}>{userData.socialType}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Join Date</Text>
-            <Text style={styles.infoValue}>Feb 2024</Text>
+            <Text style={styles.infoValue}>
+              {userData.createdAt !== 'N/A' ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
+            </Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Account Level</Text>
-            <Text style={styles.infoValue}>Beginner</Text>
+            <Text style={styles.infoLabel}>Mining Points</Text>
+            <Text style={styles.infoValue}>{userData.mine}</Text>
           </View>
         </View>
 

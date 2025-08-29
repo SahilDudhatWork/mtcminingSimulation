@@ -22,15 +22,10 @@ export default function OnBoardingScreen(props) {
 
   const completeOnboarding = async () => {
     try {
-      const result = await completeOnboardingAuth();
-      if (result.success) {
-        props.navigation.navigate('LoginScreen');
-      } else {
-        console.error('Error completing onboarding:', result.error);
-        props.navigation.navigate('LoginScreen');
-      }
+      await completeOnboardingAuth();
+      props.navigation.navigate('LoginScreen');
     } catch (error) {
-      console.error('Error saving onboarding completion:', error);
+      console.error('Error completing onboarding:', error);
       props.navigation.navigate('LoginScreen');
     }
   };

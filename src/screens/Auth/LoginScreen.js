@@ -13,10 +13,9 @@ import CustomStatusBar from '../../components/CustomStatusBar';
 import InputField from '../../components/InputField';
 import Button from '../../components/Button';
 import {horizontalScale, verticalScale} from '../../constants/helper';
-import axios from 'axios';
 import {Formik} from 'formik';
 import * as Yup from 'yup';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useAuth} from '../../context/AuthContext';
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -28,40 +27,24 @@ const LoginSchema = Yup.object().shape({
 });
 
 export default function LoginScreen({navigation}) {
+  const {login} = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async values => {
     setLoading(true);
     try {
-      const payload = {
-        email: values.email,
-        password: values.password,
-      };
-
-      const response = await axios.post(
-        'https://peradox.in/api/mtc/login',
-        payload
-      );
-
-      if (response.data?.status === 'success') {
-        // Save full response and onboardingComplete
-        await AsyncStorage.setItem(
-          'userSession',
-          JSON.stringify({
-            onboardingComplete: true,
-            apiResponse: response.data,
-          })
-        );
-
+      const result = await login(values.email, values.password);
+      
+      if (result.success) {
         Alert.alert('Success', 'Login successful!');
         navigation.navigate('BottomTab');
       } else {
-        Alert.alert('Error', response.data?.message || 'Login failed.');
+        Alert.alert('Error', result.message || 'Login failed.');
       }
     } catch (error) {
-      console.error('Login error:', error.response?.data || error.message);
-      Alert.alert('Error', error.response?.data?.message || 'Login failed.');
+      console.error('Login error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
