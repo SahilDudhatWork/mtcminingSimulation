@@ -12,6 +12,8 @@ import {
 import {Colors} from '../constants/colors';
 import {horizontalScale, verticalScale} from '../constants/helper';
 import {Images} from '../assets/images';
+import adManager from '../utils/adManager';
+import {showToast} from '../utils/toastUtils';
 
 const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
   const screenHeight = Dimensions.get('window').height;
