@@ -11,6 +11,8 @@ import {
 import {verticalScale, horizontalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
 import { Images } from '../assets/images';
+import adManager from '../utils/adManager';
+import {showToast} from '../utils/toastUtils';
 
 const BoostGhsModal = ({
   visible,
