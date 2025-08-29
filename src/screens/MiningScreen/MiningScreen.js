@@ -53,7 +53,8 @@ const MiningScreen = props => {
   const [showTimeBoostModal, setShowTimeBoostModal] = useState(false);
   const [currentGhs, setCurrentGhs] = useState(30);
   const [maxGhs] = useState(100);
-  const GIFT_DURATION_MS = 1 * 60 * 1000; // 1 minutes in milliseconds
+  const GIFT_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  const MAX_TIME_BOOST_MS = 2 * 60 * 60 * 1000; // 2 hours cap for time boost
 
   useEffect(() => {
       // Load user data from auth context
@@ -238,7 +239,7 @@ const MiningScreen = props => {
     const loadGift = async () => {
       try {
         const giftStoredSession = await AsyncStorage.getItem(
-          'giftSessionStart',
+          'mysteryBoxCooldownStart',
         );
         if (giftStoredSession) {
           const sessionStart = new Date(parseInt(giftStoredSession));
@@ -249,7 +250,7 @@ const MiningScreen = props => {
             setIsGiftMining(true);
             setGiftTimeRemaining(GIFT_DURATION_MS - elapsedTime);
           } else {
-            await AsyncStorage.removeItem('giftSessionStart');
+            await AsyncStorage.removeItem('mysteryBoxCooldownStart');
             setIsGiftMining(false);
             setGiftTimeRemaining(0);
           }
@@ -300,7 +301,7 @@ const MiningScreen = props => {
         setGiftTimeRemaining(prev => {
           const newTimeRemaining = prev - 1000;
           if (newTimeRemaining <= 0) {
-            AsyncStorage.removeItem('giftSessionStart');
+            AsyncStorage.removeItem('mysteryBoxCooldownStart');
             setIsGiftMining(false);
             setGiftTimeRemaining(0);
             clearInterval(giftMiningIntervalId);
@@ -320,10 +321,6 @@ const MiningScreen = props => {
       const randomAmount = await getRandomInt(10, 200);
       setGiftAmt(randomAmount);
       setShowMysteryBoxModal(true);
-      const now = new Date().getTime();
-      await AsyncStorage.setItem('giftSessionStart', now.toString());
-      setIsGiftMining(true);
-      setGiftTimeRemaining(GIFT_DURATION_MS);
     }
   };
 
@@ -333,13 +330,15 @@ const MiningScreen = props => {
 
   const claimReward = async () => {
     setShowMysteryBoxModal(false);
-    console.log('giftAmty', giftAmt);
-
     setMasterCoin(prev => {
       const totalMasterCoin = prev + giftAmt;
       AsyncStorage.setItem('masterCoin', totalMasterCoin.toString());
       return totalMasterCoin;
     });
+    const now = new Date().getTime();
+    await AsyncStorage.setItem('mysteryBoxCooldownStart', now.toString());
+    setIsGiftMining(true);
+    setGiftTimeRemaining(GIFT_DURATION_MS);
   };
 
   const handleWatchAd = () => {
@@ -380,11 +379,10 @@ const MiningScreen = props => {
 
   const addMiningTime = additionalTime => {
     if (isMining) {
-      // If currently mining, extend the time
-      setTimeRemaining(prev => prev + additionalTime);
+      setTimeRemaining(prev => Math.min(prev + additionalTime, MAX_TIME_BOOST_MS));
     } else {
-      // If not mining, start with the additional time
-      setTimeRemaining(additionalTime);
+      const newTime = Math.min(additionalTime, MAX_TIME_BOOST_MS);
+      setTimeRemaining(newTime);
       setIsMining(true);
       const now = new Date().getTime();
       AsyncStorage.setItem('sessionStart', now.toString());
@@ -691,17 +689,19 @@ const MiningScreen = props => {
                       tintColor: Colors.white,
                     }}
                   />
-                  <Image
-                    source={Images.RedDot}
-                    style={{
-                      resizeMode: 'center',
-                      height: 18,
-                      width: 18,
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                    }}
-                  />
+                  {timeRemaining < MAX_TIME_BOOST_MS && (
+                    <Image
+                      source={Images.RedDot}
+                      style={{
+                        resizeMode: 'center',
+                        height: 18,
+                        width: 18,
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                      }}
+                    />
+                  )}
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -723,17 +723,19 @@ const MiningScreen = props => {
                       tintColor: Colors.white,
                     }}
                   />
-                  <Image
-                    source={Images.RedDot}
-                    style={{
-                      resizeMode: 'center',
-                      height: 18,
-                      width: 18,
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                    }}
-                  />
+                  {currentGhs < maxGhs && (
+                    <Image
+                      source={Images.RedDot}
+                      style={{
+                        resizeMode: 'center',
+                        height: 18,
+                        width: 18,
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                      }}
+                    />
+                  )}
                 </TouchableOpacity>
               </View>
               <View
@@ -824,6 +826,7 @@ const MiningScreen = props => {
                 renderItem={({item, index}) => {
                   return (
                     <TouchableOpacity
+                      onPress={() => (item.id === 0 ? handleTimeBoost() : handleGhsBoost())}
                       style={{
                         backgroundColor: Colors.bgColor,
                         padding: 20,
@@ -934,18 +937,18 @@ const MiningScreen = props => {
             </View>
           </View>
         </ScrollView>
-        <TouchableOpacity onPress={openGift}>
-          <ImageBackground
-            source={Images.GiftCircle}
-            style={{
-              height: verticalScale(70),
-              width: verticalScale(70),
-              position: 'absolute',
-              bottom: verticalScale(50),
-              right: 10,
-            }}
-            resizeMode="center">
-            {!isGiftMining && (
+        {!isGiftMining && (
+          <TouchableOpacity onPress={openGift}>
+            <ImageBackground
+              source={Images.GiftCircle}
+              style={{
+                height: verticalScale(70),
+                width: verticalScale(70),
+                position: 'absolute',
+                bottom: verticalScale(50),
+                right: 10,
+              }}
+              resizeMode="center">
               <Image
                 source={Images.RedDot}
                 style={{
@@ -957,9 +960,9 @@ const MiningScreen = props => {
                   right: 3,
                 }}
               />
-            )}
-          </ImageBackground>
-        </TouchableOpacity>
+            </ImageBackground>
+          </TouchableOpacity>
+        )}
       </SafeAreaView>
       <MysteryBoxModal
         visible={showMysteryBoxModal}
