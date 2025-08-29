@@ -57,22 +57,22 @@ const MiningScreen = props => {
   const MAX_TIME_BOOST_MS = 2 * 60 * 60 * 1000; // 2 hours cap for time boost
 
   useEffect(() => {
-      // Load user data from auth context
-      if (user && apiResponse) {
-        setUserData({
-          username: user.name || 'Guest User',
-          refer_code: user.refer_code || 'N/A',
-          email: user.email || 'N/A',
-          id: user.id || 'N/A',
-          isActive: user.is_active || 0,
-          isVerified: user.is_verified || 0,
-          socialType: user.social_type || 'email',
-          createdAt: user.created_at || 'N/A',
-          mine: user.mine || 0,
-        });
-      }
-    }, [user, apiResponse]);
-  
+    // Load user data from auth context
+    if (user && apiResponse) {
+      setUserData({
+        username: user.name || 'Guest User',
+        refer_code: user.refer_code || 'N/A',
+        email: user.email || 'N/A',
+        id: user.id || 'N/A',
+        isActive: user.is_active || 0,
+        isVerified: user.is_verified || 0,
+        socialType: user.social_type || 'email',
+        createdAt: user.created_at || 'N/A',
+        mine: user.mine || 0,
+      });
+    }
+  }, [user, apiResponse]);
+
   const OptionIcon = [
     {
       id: 0,
@@ -379,7 +379,9 @@ const MiningScreen = props => {
 
   const addMiningTime = additionalTime => {
     if (isMining) {
-      setTimeRemaining(prev => Math.min(prev + additionalTime, MAX_TIME_BOOST_MS));
+      setTimeRemaining(prev =>
+        Math.min(prev + additionalTime, MAX_TIME_BOOST_MS),
+      );
     } else {
       const newTime = Math.min(additionalTime, MAX_TIME_BOOST_MS);
       setTimeRemaining(newTime);
@@ -826,7 +828,9 @@ const MiningScreen = props => {
                 renderItem={({item, index}) => {
                   return (
                     <TouchableOpacity
-                      onPress={() => (item.id === 0 ? handleTimeBoost() : handleGhsBoost())}
+                      onPress={() =>
+                        item.id === 0 ? handleTimeBoost() : handleGhsBoost()
+                      }
                       style={{
                         backgroundColor: Colors.bgColor,
                         padding: 20,

@@ -63,7 +63,7 @@ export default function HomeScreen(props) {
       // color: Colors.secondaryColor,
       minReward: 50,
       maxReward: 500,
-    }
+    },
   ];
 
   useEffect(() => {
@@ -300,7 +300,8 @@ export default function HomeScreen(props) {
   );
 
   const selectedGame = gameModes.find(mode => mode.id === selectedGameMode);
-  const canClaimDaily = !lastDailyClaim || Date.now() - lastDailyClaim >= DAILY_COOLDOWN_MS;
+  const canClaimDaily =
+    !lastDailyClaim || Date.now() - lastDailyClaim >= DAILY_COOLDOWN_MS;
   const dailyTimeRemaining = lastDailyClaim
     ? Math.max(0, DAILY_COOLDOWN_MS - (Date.now() - lastDailyClaim))
     : 0;
@@ -378,7 +379,9 @@ export default function HomeScreen(props) {
             {selectedGame.id === 'daily' && !canClaimDaily && (
               <View style={styles.timerContainer}>
                 <Image source={Images.Hourglass} style={styles.timerIcon} />
-                <Text style={styles.timerText}>{formatTime(dailyTimeRemaining)}</Text>
+                <Text style={styles.timerText}>
+                  {formatTime(dailyTimeRemaining)}
+                </Text>
               </View>
             )}
           </View>
@@ -389,7 +392,10 @@ export default function HomeScreen(props) {
               <View style={styles.gameStatus}>
                 <View style={styles.statusItem}>
                   <Text style={styles.statusLabel}>Attempts</Text>
-                  <Text style={styles.statusValue}>{`${flippedCount}/${MAX_FLIPS}`}</Text>
+                  <Text
+                    style={
+                      styles.statusValue
+                    }>{`${flippedCount}/${MAX_FLIPS}`}</Text>
                 </View>
                 <View style={styles.statusDivider} />
                 <View style={styles.statusItem}>
@@ -424,13 +430,23 @@ export default function HomeScreen(props) {
                       justifyContent: 'center',
                       borderRadius: verticalScale(15),
                     }}>
-                    <Text style={{color: Colors.white, fontWeight: '600', marginBottom: verticalScale(6)}}>
+                    <Text
+                      style={{
+                        color: Colors.white,
+                        fontWeight: '600',
+                        marginBottom: verticalScale(6),
+                      }}>
                       Come back later to play again
                     </Text>
                     {isGiftMining && (
                       <View style={styles.timerContainer}>
-                        <Image source={Images.Hourglass} style={styles.timerIcon} />
-                        <Text style={styles.timerText}>{formatTime(giftTimeRemaining)}</Text>
+                        <Image
+                          source={Images.Hourglass}
+                          style={styles.timerIcon}
+                        />
+                        <Text style={styles.timerText}>
+                          {formatTime(giftTimeRemaining)}
+                        </Text>
                       </View>
                     )}
                   </View>
@@ -440,10 +456,18 @@ export default function HomeScreen(props) {
               {/* Game Instructions */}
               <View style={styles.instructionsContainer}>
                 <Text style={styles.instructionsTitle}>How to Play:</Text>
-                <Text style={styles.instructionsText}>• Tap on any card to reveal your reward</Text>
-                <Text style={styles.instructionsText}>• You can flip {MAX_FLIPS} cards per session</Text>
-                <Text style={styles.instructionsText}>• Wait 30 minutes between sessions</Text>
-                <Text style={styles.instructionsText}>• Higher rewards available in other game modes</Text>
+                <Text style={styles.instructionsText}>
+                  • Tap on any card to reveal your reward
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • You can flip {MAX_FLIPS} cards per session
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Wait 30 minutes between sessions
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Higher rewards available in other game modes
+                </Text>
               </View>
             </>
           ) : (
@@ -451,7 +475,11 @@ export default function HomeScreen(props) {
               {/* Daily Bonus UI */}
               <View style={{marginBottom: verticalScale(20)}}>
                 <Text style={styles.sectionTitle}>7-Day Streak</Text>
-                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                  }}>
                   {Array.from({length: 7}).map((_, i) => {
                     const collected = i < dailyDayIndex;
                     const isToday = i === dailyDayIndex;
@@ -462,19 +490,31 @@ export default function HomeScreen(props) {
                           width: verticalScale(40),
                           height: verticalScale(50),
                           borderRadius: verticalScale(10),
-                          backgroundColor: collected ? Colors.lightGreen : Colors.bgColor,
+                          backgroundColor: collected
+                            ? Colors.lightGreen
+                            : Colors.bgColor,
                           alignItems: 'center',
                           justifyContent: 'center',
                           borderWidth: 2,
-                          borderColor: isToday ? Colors.secondaryColor : Colors.grey_300,
+                          borderColor: isToday
+                            ? Colors.secondaryColor
+                            : Colors.grey_300,
                         }}>
-                        <Text style={{fontSize: verticalScale(10), color: Colors.grey_500}}>Day {i + 1}</Text>
+                        <Text
+                          style={{
+                            fontSize: verticalScale(10),
+                            color: Colors.grey_500,
+                          }}>
+                          Day {i + 1}
+                        </Text>
                         <Image
                           source={collected ? Images.starIcon : Images.giftIcon}
                           style={{
                             width: verticalScale(18),
                             height: verticalScale(18),
-                            tintColor: collected ? Colors.darkGreen : Colors.primaryColor,
+                            tintColor: collected
+                              ? Colors.darkGreen
+                              : Colors.primaryColor,
                             resizeMode: 'contain',
                           }}
                         />
@@ -488,7 +528,10 @@ export default function HomeScreen(props) {
                 disabled={!canClaimDaily}
                 onPress={async () => {
                   if (!canClaimDaily) return;
-                  const reward = await getRandomInt(selectedGame.minReward, selectedGame.maxReward);
+                  const reward = await getRandomInt(
+                    selectedGame.minReward,
+                    selectedGame.maxReward,
+                  );
                   setMasterCoin(prev => {
                     const total = prev + reward;
                     AsyncStorage.setItem('masterCoin', total.toString());
@@ -498,28 +541,43 @@ export default function HomeScreen(props) {
                   setDailyDayIndex(nextDay);
                   const now = Date.now();
                   setLastDailyClaim(now);
-                  await AsyncStorage.setItem('dailyDayIndex', nextDay.toString());
+                  await AsyncStorage.setItem(
+                    'dailyDayIndex',
+                    nextDay.toString(),
+                  );
                   await AsyncStorage.setItem('lastDailyClaim', now.toString());
                   setIsVisible(true);
                   setGiftAmt(reward);
                 }}
                 style={{
-                  backgroundColor: canClaimDaily ? Colors.secondaryColor : Colors.grey_300,
+                  backgroundColor: canClaimDaily
+                    ? Colors.secondaryColor
+                    : Colors.grey_300,
                   paddingVertical: verticalScale(14),
                   borderRadius: verticalScale(12),
                   alignItems: 'center',
                   marginBottom: verticalScale(15),
                 }}>
-                <Text style={{color: canClaimDaily ? Colors.white : Colors.grey_500, fontWeight: '700'}}>
+                <Text
+                  style={{
+                    color: canClaimDaily ? Colors.white : Colors.grey_500,
+                    fontWeight: '700',
+                  }}>
                   {canClaimDaily ? 'Claim Daily Bonus' : 'Come back later'}
                 </Text>
               </TouchableOpacity>
 
               <View style={styles.instructionsContainer}>
                 <Text style={styles.instructionsTitle}>Daily Bonus Rules:</Text>
-                <Text style={styles.instructionsText}>• One claim every 24 hours</Text>
-                <Text style={styles.instructionsText}>• Rewards for 7 consecutive days</Text>
-                <Text style={styles.instructionsText}>• Cycle repeats after Day 7</Text>
+                <Text style={styles.instructionsText}>
+                  • One claim every 24 hours
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Rewards for 7 consecutive days
+                </Text>
+                <Text style={styles.instructionsText}>
+                  • Cycle repeats after Day 7
+                </Text>
               </View>
             </>
           )}

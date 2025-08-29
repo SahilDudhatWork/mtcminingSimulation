@@ -285,7 +285,9 @@ export default function ProfileScreen(props) {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Join Date</Text>
             <Text style={styles.infoValue}>
-              {userData.createdAt !== 'N/A' ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
+              {userData.createdAt !== 'N/A'
+                ? new Date(userData.createdAt).toLocaleDateString()
+                : 'N/A'}
             </Text>
           </View>
         </View>
