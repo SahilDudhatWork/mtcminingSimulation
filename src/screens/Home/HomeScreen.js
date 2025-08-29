@@ -42,6 +42,7 @@ export default function HomeScreen(props) {
   const [dailyDayIndex, setDailyDayIndex] = useState(0);
   const [lastDailyClaim, setLastDailyClaim] = useState(null);
   const DAILY_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+  const dailyRewards = [100, 200, 300, 400, 500, 600, 700];
 
   // Game modes
   const [selectedGameMode, setSelectedGameMode] = useState('flip');
@@ -472,112 +473,94 @@ export default function HomeScreen(props) {
             </>
           ) : (
             <>
-              {/* Daily Bonus UI */}
-              <View style={{marginBottom: verticalScale(20)}}>
-                <Text style={styles.sectionTitle}>7-Day Streak</Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  {Array.from({length: 7}).map((_, i) => {
+              {/* Daily Bonus UI - styled grid like shared design */}
+              <View style={{marginBottom: verticalScale(16)}}>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: verticalScale(10)}}>
+                  <Text style={styles.sectionTitle}>Daily Bonus</Text>
+                  <TouchableOpacity onPress={() => props.navigation.navigate('ConvertCoinScreen')} style={{backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.grey_300, paddingHorizontal: horizontalScale(12), paddingVertical: verticalScale(6), borderRadius: verticalScale(18)}}>
+                    <Text style={{color: Colors.textDark, fontWeight: '600'}}>Convert</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.dailyGrid}>
+                  {dailyRewards.map((amount, i) => {
                     const collected = i < dailyDayIndex;
                     const isToday = i === dailyDayIndex;
+                    const disabled = collected || i > dailyDayIndex || (isToday && !canClaimDaily);
                     return (
-                      <View
-                        key={i}
-                        style={{
-                          width: verticalScale(40),
-                          height: verticalScale(50),
-                          borderRadius: verticalScale(10),
-                          backgroundColor: collected
-                            ? Colors.lightGreen
-                            : Colors.bgColor,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderWidth: 2,
-                          borderColor: isToday
-                            ? Colors.secondaryColor
-                            : Colors.grey_300,
-                        }}>
-                        <Text
-                          style={{
-                            fontSize: verticalScale(10),
-                            color: Colors.grey_500,
-                          }}>
-                          Day {i + 1}
-                        </Text>
-                        <Image
-                          source={collected ? Images.starIcon : Images.giftIcon}
-                          style={{
-                            width: verticalScale(18),
-                            height: verticalScale(18),
-                            tintColor: collected
-                              ? Colors.darkGreen
-                              : Colors.primaryColor,
-                            resizeMode: 'contain',
-                          }}
-                        />
-                      </View>
+                      <TouchableOpacity
+                        key={`day-${i}`}
+                        activeOpacity={0.9}
+                        disabled={disabled}
+                        onPress={async () => {
+                          if (!(isToday && canClaimDaily)) return;
+                          const reward = amount;
+                          setMasterCoin(prev => {
+                            const total = prev + reward;
+                            AsyncStorage.setItem('masterCoin', total.toString());
+                            return total;
+                          });
+                          const nextDay = (dailyDayIndex + 1) % 7;
+                          setDailyDayIndex(nextDay);
+                          const now = Date.now();
+                          setLastDailyClaim(now);
+                          await AsyncStorage.setItem('dailyDayIndex', nextDay.toString());
+                          await AsyncStorage.setItem('lastDailyClaim', now.toString());
+                          setIsVisible(true);
+                          setGiftAmt(reward);
+                        }}
+                        style={[
+                          styles.dailyCard,
+                          {
+                            backgroundColor: Colors.semiBlack,
+                            borderColor: Colors.ligthGray,
+                            opacity: disabled && !isToday ? 0.7 : 1,
+                          },
+                        ]}>
+                        <Image source={Images.starIcon} style={styles.dailyStarIcon} />
+                        <Text style={styles.dailyValue}>{amount}</Text>
+                        <Text style={styles.dailyLabel}>Super Coin</Text>
+                        <View
+                          style={[
+                            styles.dailyBadge,
+                            {
+                              backgroundColor: collected
+                                ? Colors.grey_400
+                                : isToday && canClaimDaily
+                                ? '#97EA4B'
+                                : Colors.grey_300,
+                            },
+                          ]}>
+                          <Text
+                            style={{
+                              color: collected ? Colors.white : Colors.semiBlack,
+                              fontWeight: '700',
+                              fontSize: verticalScale(10),
+                            }}>
+                            DAY{i + 1}
+                          </Text>
+                        </View>
+                        {collected && (
+                          <View style={styles.dailyCheckBadge}>
+                            <Image source={Images.Tick} style={styles.dailyCheckIcon} />
+                          </View>
+                        )}
+                        {isToday && !canClaimDaily && (
+                          <View style={styles.dailyOverlay}>
+                            <Image source={Images.Hourglass} style={[styles.dailyCheckIcon, {tintColor: Colors.white}]} />
+                            <Text style={{color: Colors.white, fontWeight: '700', marginTop: verticalScale(4)}}>{formatTime(dailyTimeRemaining)}</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
                     );
                   })}
                 </View>
               </View>
 
-              <TouchableOpacity
-                disabled={!canClaimDaily}
-                onPress={async () => {
-                  if (!canClaimDaily) return;
-                  const reward = await getRandomInt(
-                    selectedGame.minReward,
-                    selectedGame.maxReward,
-                  );
-                  setMasterCoin(prev => {
-                    const total = prev + reward;
-                    AsyncStorage.setItem('masterCoin', total.toString());
-                    return total;
-                  });
-                  const nextDay = (dailyDayIndex + 1) % 7;
-                  setDailyDayIndex(nextDay);
-                  const now = Date.now();
-                  setLastDailyClaim(now);
-                  await AsyncStorage.setItem(
-                    'dailyDayIndex',
-                    nextDay.toString(),
-                  );
-                  await AsyncStorage.setItem('lastDailyClaim', now.toString());
-                  setIsVisible(true);
-                  setGiftAmt(reward);
-                }}
-                style={{
-                  backgroundColor: canClaimDaily
-                    ? Colors.secondaryColor
-                    : Colors.grey_300,
-                  paddingVertical: verticalScale(14),
-                  borderRadius: verticalScale(12),
-                  alignItems: 'center',
-                  marginBottom: verticalScale(15),
-                }}>
-                <Text
-                  style={{
-                    color: canClaimDaily ? Colors.white : Colors.grey_500,
-                    fontWeight: '700',
-                  }}>
-                  {canClaimDaily ? 'Claim Daily Bonus' : 'Come back later'}
-                </Text>
-              </TouchableOpacity>
-
               <View style={styles.instructionsContainer}>
                 <Text style={styles.instructionsTitle}>Daily Bonus Rules:</Text>
-                <Text style={styles.instructionsText}>
-                  • One claim every 24 hours
-                </Text>
-                <Text style={styles.instructionsText}>
-                  • Rewards for 7 consecutive days
-                </Text>
-                <Text style={styles.instructionsText}>
-                  • Cycle repeats after Day 7
-                </Text>
+                <Text style={styles.instructionsText}>• One claim every 24 hours</Text>
+                <Text style={styles.instructionsText}>• Rewards for 7 consecutive days</Text>
+                <Text style={styles.instructionsText}>• Cycle repeats after Day 7</Text>
               </View>
             </>
           )}
@@ -899,6 +882,72 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgColor,
     borderRadius: verticalScale(15),
     padding: verticalScale(15),
+  },
+  dailyGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  dailyCard: {
+    width: '31%',
+    borderRadius: verticalScale(12),
+    marginBottom: verticalScale(12),
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: horizontalScale(8),
+    borderWidth: 1,
+    position: 'relative',
+    alignItems: 'center',
+  },
+  dailyStarIcon: {
+    width: verticalScale(16),
+    height: verticalScale(16),
+    tintColor: Colors.warningYellow,
+    position: 'absolute',
+    top: verticalScale(8),
+    left: verticalScale(8),
+    resizeMode: 'contain',
+  },
+  dailyValue: {
+    fontSize: verticalScale(16),
+    fontWeight: '700',
+    color: Colors.white,
+    marginTop: verticalScale(10),
+  },
+  dailyLabel: {
+    fontSize: verticalScale(10),
+    color: Colors.grey_400,
+    marginBottom: verticalScale(10),
+  },
+  dailyBadge: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: verticalScale(6),
+    borderBottomLeftRadius: verticalScale(12),
+    borderBottomRightRadius: verticalScale(12),
+    alignItems: 'center',
+  },
+  dailyCheckBadge: {
+    position: 'absolute',
+    bottom: verticalScale(8),
+    left: verticalScale(8),
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(10),
+    padding: verticalScale(2),
+  },
+  dailyCheckIcon: {
+    width: verticalScale(14),
+    height: verticalScale(14),
+    tintColor: Colors.darkGreen,
+    resizeMode: 'contain',
+  },
+  dailyOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: verticalScale(12),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   instructionsTitle: {
     fontSize: verticalScale(14),
