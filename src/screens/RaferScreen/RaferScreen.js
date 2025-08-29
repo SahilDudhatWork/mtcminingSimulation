@@ -9,7 +9,6 @@ import {
   FlatList,
   SafeAreaView,
   Clipboard,
-  Alert,
   Share,
 } from 'react-native';
 import {Colors} from '../../constants/colors';
