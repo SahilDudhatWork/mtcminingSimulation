@@ -71,54 +71,49 @@ export default function ConvertCoinScreen(props) {
 
   const handleConvert = async () => {
     if (!canConvert) {
-      Alert.alert(
+      showToast.error(
         'Insufficient Coins',
         `You need at least ${minimumCoins} Super Coins to convert. You currently have ${masterCoin} coins.`,
       );
       return;
     }
 
-    Alert.alert(
-      'Confirm Conversion',
-      `Convert ${masterCoin} Super Coins to ${convertableAmount.toFixed(
-        4,
-      )} USDT?`,
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Convert',
-          onPress: async () => {
-            // Add to total earned
-            const newTotalEarned = totalEarned + convertableAmount;
-            setTotalEarned(newTotalEarned);
-            await AsyncStorage.setItem(
-              'totalEarned',
-              newTotalEarned.toString(),
-            );
+    setShowConfirmation(true);
+  };
 
-            // Reset master coins
-            setMasterCoin(0);
-            await AsyncStorage.setItem('masterCoin', '0');
+  const confirmConversion = async () => {
+    try {
+      // Add to total earned
+      const newTotalEarned = totalEarned + convertableAmount;
+      setTotalEarned(newTotalEarned);
+      await AsyncStorage.setItem(
+        'totalEarned',
+        newTotalEarned.toString(),
+      );
 
-            // Add to history
-            const newHistoryItem = {
-              id: Date.now(),
-              date: new Date().toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              }),
-              usdt: convertableAmount.toFixed(4),
-              coins: masterCoin.toString(),
-              status: 'completed',
-            };
-            setHistory(prev => [newHistoryItem, ...prev]);
+      // Reset master coins
+      setMasterCoin(0);
+      await AsyncStorage.setItem('masterCoin', '0');
 
-            Alert.alert('Success', 'Coins converted successfully!');
-          },
-        },
-      ],
-    );
+      // Add to history
+      const newHistoryItem = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }),
+        usdt: convertableAmount.toFixed(4),
+        coins: masterCoin.toString(),
+        status: 'completed',
+      };
+      setHistory(prev => [newHistoryItem, ...prev]);
+
+      setShowConfirmation(false);
+      showToast.success('Success', 'Coins converted successfully!');
+    } catch (error) {
+      showToast.error('Error', 'Failed to convert coins. Please try again.');
+    }
   };
 
   const renderHistoryItem = ({item}) => {
