@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import {Colors} from '../../constants/colors';
