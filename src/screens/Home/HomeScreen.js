@@ -222,6 +222,20 @@ export default function HomeScreen(props) {
       AsyncStorage.setItem('masterCoin', totalMasterCoin.toString());
       return totalMasterCoin;
     });
+
+    // Show interstitial ad after opening 4 cards in Flip & Win
+    if (selectedGameMode === 'flip' && flippedCount >= MAX_FLIPS) {
+      setTimeout(() => {
+        adManager.showInterstitialAd();
+      }, 500); // Small delay to ensure modal is closed
+    }
+
+    // Show interstitial ad after Daily Bonus collection
+    if (selectedGameMode === 'daily') {
+      setTimeout(() => {
+        adManager.showInterstitialAd();
+      }, 500); // Small delay to ensure modal is closed
+    }
   };
 
   const formatTime = ms => {
