@@ -27,10 +27,7 @@ const Popup = ({
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={() => {
-        Alert.alert('Modal has been closed.');
-        onClose();
-      }}>
+      onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <Image style={styles.popupImage} source={image} />
