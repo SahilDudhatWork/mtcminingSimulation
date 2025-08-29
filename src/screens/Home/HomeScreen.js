@@ -536,7 +536,9 @@ export default function HomeScreen(props) {
                           styles.dailyCard,
                           {
                             backgroundColor: Colors.white,
-                            borderColor: collected ? Colors.semiGray : Colors.primaryColor,
+                            borderColor: collected
+                              ? Colors.semiGray
+                              : Colors.primaryColor,
                             opacity: disabled && !isToday ? 0.7 : 1,
                           },
                         ]}>

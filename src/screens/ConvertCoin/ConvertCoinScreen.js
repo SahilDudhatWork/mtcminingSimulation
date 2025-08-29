@@ -86,10 +86,7 @@ export default function ConvertCoinScreen(props) {
       // Add to total earned
       const newTotalEarned = totalEarned + convertableAmount;
       setTotalEarned(newTotalEarned);
-      await AsyncStorage.setItem(
-        'totalEarned',
-        newTotalEarned.toString(),
-      );
+      await AsyncStorage.setItem('totalEarned', newTotalEarned.toString());
 
       // Reset master coins
       setMasterCoin(0);
@@ -276,7 +273,8 @@ export default function ConvertCoinScreen(props) {
           <View style={styles.confirmationModal}>
             <Text style={styles.confirmationTitle}>Confirm Conversion</Text>
             <Text style={styles.confirmationMessage}>
-              Convert {masterCoin.toLocaleString()} Super Coins to {convertableAmount.toFixed(4)} USDT?
+              Convert {masterCoin.toLocaleString()} Super Coins to{' '}
+              {convertableAmount.toFixed(4)} USDT?
             </Text>
             <View style={styles.confirmationButtons}>
               <TouchableOpacity
@@ -606,7 +604,7 @@ const styles = StyleSheet.create({
     marginHorizontal: horizontalScale(30),
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 8,

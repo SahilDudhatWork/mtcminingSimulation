@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {verticalScale, horizontalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
-import { Images } from '../assets/images';
+import {Images} from '../assets/images';
 import adManager from '../utils/adManager';
 import {showToast} from '../utils/toastUtils';
 
@@ -30,10 +30,16 @@ const BoostGhsModal = ({
     try {
       const result = await adManager.showRewardedAd();
       if (result.success) {
-        showToast.success('Boost Activated!', 'Your mining speed has been increased');
+        showToast.success(
+          'Boost Activated!',
+          'Your mining speed has been increased',
+        );
         onBoost();
       } else {
-        showToast.info('Ad Cancelled', 'Watch the complete ad to boost your GH/s');
+        showToast.info(
+          'Ad Cancelled',
+          'Watch the complete ad to boost your GH/s',
+        );
       }
     } catch (error) {
       console.error('Error showing rewarded ad:', error);

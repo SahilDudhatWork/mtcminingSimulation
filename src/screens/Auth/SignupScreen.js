@@ -1,30 +1,46 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Formik } from 'formik';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import {Formik} from 'formik';
 import * as Yup from 'yup';
-import { Colors } from '../../constants/colors';
-import { horizontalScale, verticalScale } from '../../constants/helper';
+import {Colors} from '../../constants/colors';
+import {horizontalScale, verticalScale} from '../../constants/helper';
 import InputField from '../../components/InputField';
 import Button from '../../components/Button';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import { useAuth } from '../../context/AuthContext';
+import {useAuth} from '../../context/AuthContext';
 import {showToast} from '../../utils/toastUtils';
 
 const SignupSchema = Yup.object().shape({
-  name: Yup.string().min(3, 'Name must be at least 3 characters').required('Name is required'),
+  name: Yup.string()
+    .min(3, 'Name must be at least 3 characters')
+    .required('Name is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
-  password: Yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .required('Password is required'),
   refer_code: Yup.string(),
 });
 
-export default function SignupScreen({ navigation }) {
-  const { signup } = useAuth();
+export default function SignupScreen({navigation}) {
+  const {signup} = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSignup = async values => {
     setLoading(true);
-    const res = await signup(values.name, values.email, values.password, values.refer_code);
+    const res = await signup(
+      values.name,
+      values.email,
+      values.password,
+      values.refer_code,
+    );
     setLoading(false);
 
     if (res.success) {
@@ -38,22 +54,32 @@ export default function SignupScreen({ navigation }) {
     navigation.navigate('LoginScreen');
   };
 
-
   return (
     <>
       <CustomStatusBar dark backgroundColor={Colors.white} />
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.headerContainer}>
             <Text style={styles.welcomeText}>Create Account</Text>
-            <Text style={styles.subtitleText}>Join the mining revolution today</Text>
+            <Text style={styles.subtitleText}>
+              Join the mining revolution today
+            </Text>
           </View>
 
           <Formik
-            initialValues={{ name: '', email: '', password: '', refer_code: '' }}
+            initialValues={{name: '', email: '', password: '', refer_code: ''}}
             validationSchema={SignupSchema}
             onSubmit={handleSignup}>
-            {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+            }) => (
               <View style={styles.formContainer}>
                 <View style={styles.inputContainer}>
                   <Text style={styles.inputLabel}>Name *</Text>
@@ -75,7 +101,9 @@ export default function SignupScreen({ navigation }) {
                     onBlur={handleBlur('email')}
                     keyboardType="email-address"
                     autoCapitalize="none"
-                    errorTitle={errors.email && touched.email ? errors.email : ''}
+                    errorTitle={
+                      errors.email && touched.email ? errors.email : ''
+                    }
                   />
                 </View>
 
@@ -89,7 +117,9 @@ export default function SignupScreen({ navigation }) {
                     secureTextEntry={!showPassword}
                     rightIcon={showPassword ? 'eye-off' : 'eye'}
                     onRightIconPress={() => setShowPassword(!showPassword)}
-                    errorTitle={errors.password && touched.password ? errors.password : ''}
+                    errorTitle={
+                      errors.password && touched.password ? errors.password : ''
+                    }
                   />
                 </View>
 
@@ -100,7 +130,11 @@ export default function SignupScreen({ navigation }) {
                     value={values.refer_code}
                     onChangeText={handleChange('refer_code')}
                     onBlur={handleBlur('refer_code')}
-                    errorTitle={errors.refer_code && touched.refer_code ? errors.refer_code : ''}
+                    errorTitle={
+                      errors.refer_code && touched.refer_code
+                        ? errors.refer_code
+                        : ''
+                    }
                   />
                 </View>
 

@@ -1,12 +1,5 @@
 import React, {useState} from 'react';
-import {
-  Modal,
-  StyleSheet,
-  Text,
-  Pressable,
-  View,
-  Image,
-} from 'react-native';
+import {Modal, StyleSheet, Text, Pressable, View, Image} from 'react-native';
 import {verticalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
 import {Images} from '../assets/images';

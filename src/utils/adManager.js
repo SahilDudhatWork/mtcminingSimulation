@@ -11,13 +11,15 @@ class AdManager {
     this.interstitialAd = null;
     this.rewardedAd = null;
     this.isTestMode = __DEV__; // Use test ads in development
-    
+
     // Test ad unit IDs - replace with your actual ad unit IDs for production
     this.adUnitIds = {
-      interstitial: this.isTestMode ? TestIds.INTERSTITIAL : 'YOUR_INTERSTITIAL_AD_UNIT_ID',
+      interstitial: this.isTestMode
+        ? TestIds.INTERSTITIAL
+        : 'YOUR_INTERSTITIAL_AD_UNIT_ID',
       rewarded: this.isTestMode ? TestIds.REWARDED : 'YOUR_REWARDED_AD_UNIT_ID',
     };
-    
+
     this.initializeAds();
   }
 
@@ -34,13 +36,15 @@ class AdManager {
 
   loadInterstitialAd() {
     try {
-      this.interstitialAd = InterstitialAd.createForAdRequest(this.adUnitIds.interstitial);
-      
+      this.interstitialAd = InterstitialAd.createForAdRequest(
+        this.adUnitIds.interstitial,
+      );
+
       this.interstitialAd.addAdEventListener(AdEventType.LOADED, () => {
         console.log('Interstitial ad loaded');
       });
 
-      this.interstitialAd.addAdEventListener(AdEventType.ERROR, (error) => {
+      this.interstitialAd.addAdEventListener(AdEventType.ERROR, error => {
         console.error('Interstitial ad failed to load:', error);
         // Reload the ad after a delay
         setTimeout(() => this.loadInterstitialAd(), 5000);
@@ -61,12 +65,12 @@ class AdManager {
   loadRewardedAd() {
     try {
       this.rewardedAd = RewardedAd.createForAdRequest(this.adUnitIds.rewarded);
-      
+
       this.rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
         console.log('Rewarded ad loaded');
       });
 
-      this.rewardedAd.addAdEventListener(RewardedAdEventType.ERROR, (error) => {
+      this.rewardedAd.addAdEventListener(RewardedAdEventType.ERROR, error => {
         console.error('Rewarded ad failed to load:', error);
         // Reload the ad after a delay
         setTimeout(() => this.loadRewardedAd(), 5000);
@@ -102,17 +106,17 @@ class AdManager {
   }
 
   async showRewardedAd() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       try {
         if (this.rewardedAd && this.rewardedAd.loaded) {
           // Set up reward listener
           const unsubscribeEarned = this.rewardedAd.addAdEventListener(
             RewardedAdEventType.EARNED_REWARD,
-            (reward) => {
+            reward => {
               console.log('User earned reward:', reward);
-              resolve({ success: true, reward });
+              resolve({success: true, reward});
               unsubscribeEarned();
-            }
+            },
           );
 
           // Set up close listener
@@ -120,9 +124,9 @@ class AdManager {
             RewardedAdEventType.CLOSED,
             () => {
               console.log('Rewarded ad closed without reward');
-              resolve({ success: false, reward: null });
+              resolve({success: false, reward: null});
               unsubscribeClosed();
-            }
+            },
           );
 
           this.rewardedAd.show();
@@ -130,11 +134,11 @@ class AdManager {
           console.log('Rewarded ad not loaded yet');
           // Try to load the ad
           this.loadRewardedAd();
-          resolve({ success: false, reward: null });
+          resolve({success: false, reward: null});
         }
       } catch (error) {
         console.error('Error showing rewarded ad:', error);
-        resolve({ success: false, reward: null });
+        resolve({success: false, reward: null});
       }
     });
   }
