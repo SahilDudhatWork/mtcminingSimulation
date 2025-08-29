@@ -35,16 +35,16 @@ export default function LoginScreen({navigation}) {
     setLoading(true);
     try {
       const result = await login(values.email, values.password);
-      
+
       if (result.success) {
-        Alert.alert('Success', 'Login successful!');
+        showToast.success('Success', 'Login successful!');
         navigation.navigate('BottomTab');
       } else {
-        Alert.alert('Error', result.message || 'Login failed.');
+        showToast.error('Error', result.message || 'Login failed.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      showToast.error('Error', 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
