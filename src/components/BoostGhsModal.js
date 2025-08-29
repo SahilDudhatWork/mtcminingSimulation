@@ -95,7 +95,7 @@ const BoostGhsModal = ({
                   : Colors.secondaryColor,
               },
             ]}
-            onPress={onBoost}
+            onPress={handleBoost}
             disabled={isMaxReached}>
             <Text
               style={[
