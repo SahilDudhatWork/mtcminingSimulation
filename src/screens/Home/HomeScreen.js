@@ -44,6 +44,7 @@ export default function HomeScreen(props) {
   const [dailyDayIndex, setDailyDayIndex] = useState(0);
   const [lastDailyClaim, setLastDailyClaim] = useState(null);
   const DAILY_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+  const dailyRewards = [100, 200, 300, 400, 500, 600, 700];
 
   // Game modes
   const [selectedGameMode, setSelectedGameMode] = useState('flip');
