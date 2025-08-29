@@ -18,6 +18,8 @@ import {useNavigation} from '@react-navigation/native';
 import Popup from '../../components/Popup';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomStatusBar from '../../components/CustomStatusBar';
+import adManager from '../../utils/adManager';
+import {showToast} from '../../utils/toastUtils';
 
 export default function HomeScreen(props) {
   const navigation = useNavigation();
