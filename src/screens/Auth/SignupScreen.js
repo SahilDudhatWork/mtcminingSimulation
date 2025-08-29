@@ -28,10 +28,10 @@ export default function SignupScreen({ navigation }) {
     setLoading(false);
 
     if (res.success) {
-      Alert.alert('Success', 'Signup successful!');
+      showToast.success('Success', 'Signup successful!');
       navigation.navigate('BottomTab');
     } else {
-      Alert.alert('Error', res.message);
+      showToast.error('Error', res.message);
     }
   };
   const navigateToLogin = () => {
