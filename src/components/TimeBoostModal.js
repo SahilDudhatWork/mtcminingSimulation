@@ -12,9 +12,29 @@ import {
 import {Colors} from '../constants/colors';
 import {horizontalScale, verticalScale} from '../constants/helper';
 import {Images} from '../assets/images';
+import adManager from '../utils/adManager';
+import {showToast} from '../utils/toastUtils';
 
 const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
   const screenHeight = Dimensions.get('window').height;
+
+  const handleWatchAd = async () => {
+    try {
+      const result = await adManager.showRewardedAd();
+      if (result.success) {
+        showToast.success(
+          'Reward Earned!',
+          '+30 minutes added to your mining time',
+        );
+        onWatchAd();
+      } else {
+        showToast.info('Ad Cancelled', 'Watch the complete ad to earn rewards');
+      }
+    } catch (error) {
+      console.error('Error showing rewarded ad:', error);
+      showToast.error('Ad Error', 'Unable to load ad. Please try again.');
+    }
+  };
 
   return (
     <Modal
@@ -45,7 +65,9 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
               <Text style={styles.optionsTitle}>Choose time boost:</Text>
 
               {/* 30 Minutes - Watch Ad */}
-              <TouchableOpacity style={styles.optionCard} onPress={onWatchAd}>
+              <TouchableOpacity
+                style={styles.optionCard}
+                onPress={handleWatchAd}>
                 <View style={styles.optionLeft}>
                   <View
                     style={[
@@ -135,7 +157,9 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
               <Text style={styles.benefitsTitle}>Benefits:</Text>
               <View style={styles.benefitItem}>
                 <Image source={Images.Tick} style={styles.benefitIcon} />
-                <Text style={styles.benefitText}>Increase total mining time</Text>
+                <Text style={styles.benefitText}>
+                  Increase total mining time
+                </Text>
               </View>
               <View style={styles.benefitItem}>
                 <Image source={Images.Tick} style={styles.benefitIcon} />

@@ -25,6 +25,7 @@ import TimeBoostModal from '../../components/TimeBoostModal';
 import {useNavigation} from '@react-navigation/native';
 import {useAuth} from '../../context/AuthContext';
 import CustomStatusBar from '../../components/CustomStatusBar';
+import {showToast} from '../../utils/toastUtils';
 
 const MiningScreen = props => {
   const navigation = useNavigation();
@@ -410,7 +411,7 @@ const MiningScreen = props => {
         title: 'Join MTC Mining',
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to share referral code');
+      showToast.error('Error', 'Failed to share referral code');
     }
   };
   return (

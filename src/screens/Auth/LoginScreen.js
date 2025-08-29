@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import {Colors} from '../../constants/colors';
@@ -16,11 +15,10 @@ import {horizontalScale, verticalScale} from '../../constants/helper';
 import {Formik} from 'formik';
 import * as Yup from 'yup';
 import {useAuth} from '../../context/AuthContext';
+import {showToast} from '../../utils/toastUtils';
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string()
-    .email('Invalid email')
-    .required('Email is required'),
+  email: Yup.string().email('Invalid email').required('Email is required'),
   password: Yup.string()
     .min(6, 'Password must be at least 6 characters')
     .required('Password is required'),
@@ -35,16 +33,19 @@ export default function LoginScreen({navigation}) {
     setLoading(true);
     try {
       const result = await login(values.email, values.password);
-      
+
       if (result.success) {
-        Alert.alert('Success', 'Login successful!');
+        showToast.success('Success', 'Login successful!');
         navigation.navigate('BottomTab');
       } else {
-        Alert.alert('Error', result.message || 'Login failed.');
+        showToast.error('Error', result.message || 'Login failed.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      showToast.error(
+        'Error',
+        'An unexpected error occurred. Please try again.',
+      );
     } finally {
       setLoading(false);
     }
@@ -53,7 +54,6 @@ export default function LoginScreen({navigation}) {
   const navigateToSignup = () => {
     navigation.navigate('SignupScreen');
   };
-
 
   return (
     <>
@@ -95,7 +95,9 @@ export default function LoginScreen({navigation}) {
                     onBlur={handleBlur('email')}
                     keyboardType="email-address"
                     autoCapitalize="none"
-                    errorTitle={errors.email && touched.email ? errors.email : ''}
+                    errorTitle={
+                      errors.email && touched.email ? errors.email : ''
+                    }
                   />
                 </View>
 

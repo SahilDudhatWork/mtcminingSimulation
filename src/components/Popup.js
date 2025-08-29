@@ -1,13 +1,5 @@
 import React, {useState} from 'react';
-import {
-  Alert,
-  Modal,
-  StyleSheet,
-  Text,
-  Pressable,
-  View,
-  Image,
-} from 'react-native';
+import {Modal, StyleSheet, Text, Pressable, View, Image} from 'react-native';
 import {verticalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
 import {Images} from '../assets/images';
@@ -28,10 +20,7 @@ const Popup = ({
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={() => {
-        Alert.alert('Modal has been closed.');
-        onClose();
-      }}>
+      onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <Image style={styles.popupImage} source={image} />

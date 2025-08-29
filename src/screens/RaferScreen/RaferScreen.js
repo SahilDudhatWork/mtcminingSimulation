@@ -9,7 +9,6 @@ import {
   FlatList,
   SafeAreaView,
   Clipboard,
-  Alert,
   Share,
 } from 'react-native';
 import {Colors} from '../../constants/colors';
@@ -17,6 +16,7 @@ import {horizontalScale, verticalScale} from '../../constants/helper';
 import {Images} from '../../assets/images';
 import Header from '../../components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {showToast} from '../../utils/toastUtils';
 
 export default function RaferScreen() {
   const [userData, setUserData] = useState({
@@ -57,9 +57,9 @@ export default function RaferScreen() {
   const copyReferralCode = async () => {
     try {
       await Clipboard.setString(userData.refer_code);
-      Alert.alert('Copied!', 'Referral code copied to clipboard');
+      showToast.success('Copied!', 'Referral code copied to clipboard');
     } catch (error) {
-      Alert.alert('Error', 'Failed to copy referral code');
+      showToast.error('Error', 'Failed to copy referral code');
     }
   };
 
@@ -70,7 +70,7 @@ export default function RaferScreen() {
         title: 'Join MTC Mining',
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to share referral code');
+      showToast.error('Error', 'Failed to share referral code');
     }
   };
 

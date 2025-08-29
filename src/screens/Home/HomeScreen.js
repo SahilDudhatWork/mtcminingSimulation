@@ -18,6 +18,8 @@ import {useNavigation} from '@react-navigation/native';
 import Popup from '../../components/Popup';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomStatusBar from '../../components/CustomStatusBar';
+import adManager from '../../utils/adManager';
+import {showToast} from '../../utils/toastUtils';
 
 export default function HomeScreen(props) {
   const navigation = useNavigation();
@@ -42,6 +44,7 @@ export default function HomeScreen(props) {
   const [dailyDayIndex, setDailyDayIndex] = useState(0);
   const [lastDailyClaim, setLastDailyClaim] = useState(null);
   const DAILY_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+  const dailyRewards = [100, 200, 300, 400, 500, 600, 700];
 
   // Game modes
   const [selectedGameMode, setSelectedGameMode] = useState('flip');
@@ -219,14 +222,30 @@ export default function HomeScreen(props) {
       AsyncStorage.setItem('masterCoin', totalMasterCoin.toString());
       return totalMasterCoin;
     });
+
+    // Show interstitial ad after opening 4 cards in Flip & Win
+    if (selectedGameMode === 'flip' && flippedCount >= MAX_FLIPS) {
+      setTimeout(() => {
+        adManager.showInterstitialAd();
+      }, 500); // Small delay to ensure modal is closed
+    }
+
+    // Show interstitial ad after Daily Bonus collection
+    if (selectedGameMode === 'daily') {
+      setTimeout(() => {
+        adManager.showInterstitialAd();
+      }, 500); // Small delay to ensure modal is closed
+    }
   };
 
   const formatTime = ms => {
-    const minutes = Math.floor(ms / 60000);
+    const hours = Math.floor(ms / 3600000); // 1 hour = 3600000 ms
+    const minutes = Math.floor((ms % 3600000) / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
-    return `${minutes.toString().padStart(2, '0')}:${seconds
+
+    return `${hours.toString().padStart(2, '0')}:${minutes
       .toString()
-      .padStart(2, '0')}`;
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const renderCard = ({item, index}) => {
@@ -472,100 +491,98 @@ export default function HomeScreen(props) {
             </>
           ) : (
             <>
-              {/* Daily Bonus UI */}
-              <View style={{marginBottom: verticalScale(20)}}>
-                <Text style={styles.sectionTitle}>7-Day Streak</Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  {Array.from({length: 7}).map((_, i) => {
+              {/* Daily Bonus UI - styled grid like shared design */}
+              <View style={{marginBottom: verticalScale(16)}}>
+                <View style={styles.dailyGrid}>
+                  {dailyRewards.map((amount, i) => {
                     const collected = i < dailyDayIndex;
                     const isToday = i === dailyDayIndex;
+                    const disabled =
+                      collected ||
+                      i > dailyDayIndex ||
+                      (isToday && !canClaimDaily);
                     return (
-                      <View
-                        key={i}
-                        style={{
-                          width: verticalScale(40),
-                          height: verticalScale(50),
-                          borderRadius: verticalScale(10),
-                          backgroundColor: collected
-                            ? Colors.lightGreen
-                            : Colors.bgColor,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderWidth: 2,
-                          borderColor: isToday
-                            ? Colors.secondaryColor
-                            : Colors.grey_300,
-                        }}>
-                        <Text
-                          style={{
-                            fontSize: verticalScale(10),
-                            color: Colors.grey_500,
-                          }}>
-                          Day {i + 1}
-                        </Text>
-                        <Image
-                          source={collected ? Images.starIcon : Images.giftIcon}
-                          style={{
-                            width: verticalScale(18),
-                            height: verticalScale(18),
-                            tintColor: collected
-                              ? Colors.darkGreen
+                      <TouchableOpacity
+                        key={`day-${i}`}
+                        activeOpacity={0.9}
+                        disabled={disabled}
+                        onPress={async () => {
+                          if (!(isToday && canClaimDaily)) return;
+                          const reward = amount;
+                          setMasterCoin(prev => {
+                            const total = prev + reward;
+                            AsyncStorage.setItem(
+                              'masterCoin',
+                              total.toString(),
+                            );
+                            return total;
+                          });
+                          const nextDay = (dailyDayIndex + 1) % 7;
+                          setDailyDayIndex(nextDay);
+                          const now = Date.now();
+                          setLastDailyClaim(now);
+                          await AsyncStorage.setItem(
+                            'dailyDayIndex',
+                            nextDay.toString(),
+                          );
+                          await AsyncStorage.setItem(
+                            'lastDailyClaim',
+                            now.toString(),
+                          );
+                          setIsVisible(true);
+                          setGiftAmt(reward);
+                        }}
+                        style={[
+                          styles.dailyCard,
+                          {
+                            backgroundColor: Colors.white,
+                            borderColor: collected
+                              ? Colors.semiGray
                               : Colors.primaryColor,
-                            resizeMode: 'contain',
-                          }}
+                            opacity: disabled && !isToday ? 0.7 : 1,
+                          },
+                        ]}>
+                        <Image
+                          source={Images.starIcon}
+                          style={styles.dailyStarIcon}
                         />
-                      </View>
+                        <Text style={styles.dailyValue}>{amount}</Text>
+                        <Text style={styles.dailyLabel}>Super Coin</Text>
+                        <View
+                          style={[
+                            styles.dailyBadge,
+                            {
+                              backgroundColor: collected
+                                ? Colors.grey_400
+                                : isToday && canClaimDaily
+                                ? '#97EA4B'
+                                : Colors.grey_300,
+                            },
+                          ]}>
+                          <Text
+                            style={{
+                              color: collected
+                                ? Colors.white
+                                : Colors.semiBlack,
+                              fontWeight: '700',
+                              fontSize: verticalScale(10),
+                            }}>
+                            DAY{i + 1}
+                          </Text>
+                        </View>
+                        {collected && (
+                          <View style={styles.dailyCheckBadge}>
+                            <Image
+                              source={Images.Tick}
+                              style={styles.dailyCheckIcon}
+                            />
+                          </View>
+                        )}
+                      </TouchableOpacity>
                     );
                   })}
                 </View>
               </View>
-
-              <TouchableOpacity
-                disabled={!canClaimDaily}
-                onPress={async () => {
-                  if (!canClaimDaily) return;
-                  const reward = await getRandomInt(
-                    selectedGame.minReward,
-                    selectedGame.maxReward,
-                  );
-                  setMasterCoin(prev => {
-                    const total = prev + reward;
-                    AsyncStorage.setItem('masterCoin', total.toString());
-                    return total;
-                  });
-                  const nextDay = (dailyDayIndex + 1) % 7;
-                  setDailyDayIndex(nextDay);
-                  const now = Date.now();
-                  setLastDailyClaim(now);
-                  await AsyncStorage.setItem(
-                    'dailyDayIndex',
-                    nextDay.toString(),
-                  );
-                  await AsyncStorage.setItem('lastDailyClaim', now.toString());
-                  setIsVisible(true);
-                  setGiftAmt(reward);
-                }}
-                style={{
-                  backgroundColor: canClaimDaily
-                    ? Colors.secondaryColor
-                    : Colors.grey_300,
-                  paddingVertical: verticalScale(14),
-                  borderRadius: verticalScale(12),
-                  alignItems: 'center',
-                  marginBottom: verticalScale(15),
-                }}>
-                <Text
-                  style={{
-                    color: canClaimDaily ? Colors.white : Colors.grey_500,
-                    fontWeight: '700',
-                  }}>
-                  {canClaimDaily ? 'Claim Daily Bonus' : 'Come back later'}
-                </Text>
-              </TouchableOpacity>
 
               <View style={styles.instructionsContainer}>
                 <Text style={styles.instructionsTitle}>Daily Bonus Rules:</Text>
@@ -899,6 +916,58 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgColor,
     borderRadius: verticalScale(15),
     padding: verticalScale(15),
+  },
+  dailyGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  dailyCard: {
+    width: '31%',
+    borderRadius: verticalScale(12),
+    marginBottom: verticalScale(12),
+    paddingVertical: verticalScale(10),
+    paddingHorizontal: horizontalScale(8),
+    borderWidth: 1,
+    position: 'relative',
+    alignItems: 'center',
+  },
+  dailyStarIcon: {
+    width: verticalScale(16),
+    height: verticalScale(16),
+    alignSelf: 'center',
+    resizeMode: 'contain',
+  },
+  dailyValue: {
+    fontSize: verticalScale(16),
+    fontWeight: '700',
+    color: Colors.primaryColor,
+    marginTop: verticalScale(10),
+  },
+  dailyLabel: {
+    fontSize: verticalScale(10),
+    color: Colors.grey_400,
+    marginBottom: verticalScale(10),
+  },
+  dailyBadge: {
+    paddingVertical: verticalScale(6),
+    borderRadius: verticalScale(12),
+    alignItems: 'center',
+    width: '100%',
+  },
+  dailyCheckBadge: {
+    position: 'absolute',
+    top: verticalScale(8),
+    left: verticalScale(8),
+    backgroundColor: Colors.primaryColor,
+    borderRadius: verticalScale(10),
+    padding: verticalScale(2),
+  },
+  dailyCheckIcon: {
+    width: verticalScale(14),
+    height: verticalScale(14),
+    tintColor: Colors.white,
+    resizeMode: 'contain',
   },
   instructionsTitle: {
     fontSize: verticalScale(14),

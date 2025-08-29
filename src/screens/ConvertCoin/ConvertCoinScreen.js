@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  Alert,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {Colors} from '../../constants/colors';
@@ -16,6 +15,7 @@ import {Images} from '../../assets/images';
 import Header from '../../components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
+import {showToast} from '../../utils/toastUtils';
 
 export default function ConvertCoinScreen(props) {
   const navigation = useNavigation();
@@ -23,6 +23,7 @@ export default function ConvertCoinScreen(props) {
   const [totalEarned, setTotalEarned] = useState(0);
   const [conversionRate] = useState(0.0006); // 1 Super Coin = 0.0006 USDT
   const [minimumCoins] = useState(2500);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const [history, setHistory] = useState([
     {
@@ -70,54 +71,46 @@ export default function ConvertCoinScreen(props) {
 
   const handleConvert = async () => {
     if (!canConvert) {
-      Alert.alert(
+      showToast.error(
         'Insufficient Coins',
         `You need at least ${minimumCoins} Super Coins to convert. You currently have ${masterCoin} coins.`,
       );
       return;
     }
 
-    Alert.alert(
-      'Confirm Conversion',
-      `Convert ${masterCoin} Super Coins to ${convertableAmount.toFixed(
-        4,
-      )} USDT?`,
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Convert',
-          onPress: async () => {
-            // Add to total earned
-            const newTotalEarned = totalEarned + convertableAmount;
-            setTotalEarned(newTotalEarned);
-            await AsyncStorage.setItem(
-              'totalEarned',
-              newTotalEarned.toString(),
-            );
+    setShowConfirmation(true);
+  };
 
-            // Reset master coins
-            setMasterCoin(0);
-            await AsyncStorage.setItem('masterCoin', '0');
+  const confirmConversion = async () => {
+    try {
+      // Add to total earned
+      const newTotalEarned = totalEarned + convertableAmount;
+      setTotalEarned(newTotalEarned);
+      await AsyncStorage.setItem('totalEarned', newTotalEarned.toString());
 
-            // Add to history
-            const newHistoryItem = {
-              id: Date.now(),
-              date: new Date().toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              }),
-              usdt: convertableAmount.toFixed(4),
-              coins: masterCoin.toString(),
-              status: 'completed',
-            };
-            setHistory(prev => [newHistoryItem, ...prev]);
+      // Reset master coins
+      setMasterCoin(0);
+      await AsyncStorage.setItem('masterCoin', '0');
 
-            Alert.alert('Success', 'Coins converted successfully!');
-          },
-        },
-      ],
-    );
+      // Add to history
+      const newHistoryItem = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }),
+        usdt: convertableAmount.toFixed(4),
+        coins: masterCoin.toString(),
+        status: 'completed',
+      };
+      setHistory(prev => [newHistoryItem, ...prev]);
+
+      setShowConfirmation(false);
+      showToast.success('Success', 'Coins converted successfully!');
+    } catch (error) {
+      showToast.error('Error', 'Failed to convert coins. Please try again.');
+    }
   };
 
   const renderHistoryItem = ({item}) => {
@@ -273,6 +266,31 @@ export default function ConvertCoinScreen(props) {
           )}
         </View>
       </ScrollView>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <View style={styles.confirmationOverlay}>
+          <View style={styles.confirmationModal}>
+            <Text style={styles.confirmationTitle}>Confirm Conversion</Text>
+            <Text style={styles.confirmationMessage}>
+              Convert {masterCoin.toLocaleString()} Super Coins to{' '}
+              {convertableAmount.toFixed(4)} USDT?
+            </Text>
+            <View style={styles.confirmationButtons}>
+              <TouchableOpacity
+                style={[styles.confirmationButton, styles.cancelButton]}
+                onPress={() => setShowConfirmation(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.confirmationButton, styles.convertConfirmButton]}
+                onPress={confirmConversion}>
+                <Text style={styles.convertConfirmButtonText}>Convert</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -568,5 +586,68 @@ const styles = StyleSheet.create({
     fontSize: verticalScale(14),
     color: Colors.grey_400,
     textAlign: 'center',
+  },
+  confirmationOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmationModal: {
+    backgroundColor: Colors.white,
+    borderRadius: verticalScale(20),
+    padding: verticalScale(25),
+    marginHorizontal: horizontalScale(30),
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  confirmationTitle: {
+    fontSize: verticalScale(20),
+    fontWeight: 'bold',
+    color: Colors.black,
+    marginBottom: verticalScale(15),
+  },
+  confirmationMessage: {
+    fontSize: verticalScale(14),
+    color: Colors.grey_500,
+    textAlign: 'center',
+    marginBottom: verticalScale(25),
+    lineHeight: verticalScale(20),
+  },
+  confirmationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: horizontalScale(15),
+  },
+  confirmationButton: {
+    flex: 1,
+    paddingVertical: verticalScale(12),
+    borderRadius: verticalScale(10),
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: Colors.grey_300,
+  },
+  cancelButtonText: {
+    fontSize: verticalScale(14),
+    fontWeight: '600',
+    color: Colors.grey_500,
+  },
+  convertConfirmButton: {
+    backgroundColor: Colors.secondaryColor,
+  },
+  convertConfirmButtonText: {
+    fontSize: verticalScale(14),
+    fontWeight: '600',
+    color: Colors.white,
   },
 });
