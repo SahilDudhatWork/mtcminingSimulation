@@ -16,7 +16,7 @@ import {styles} from './styles';
 import Carousel from 'react-native-snap-carousel';
 import {Colors} from '../../constants/colors';
 import {Images} from '../../assets/images';
-import {horizontalScale, verticalScale} from '../../constants/helper';
+import {horizontalScale, verticalScale, SUPER_COIN_TO_USDT} from '../../constants/helper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Popup from '../../components/Popup';
 import MysteryBoxModal from '../../components/MysteryBoxModal';
@@ -37,8 +37,19 @@ const MiningScreen = props => {
   const [totalEarned, setTotalEarned] = useState(0);
   const [startTime, setStartTime] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
-  const EARNINGS_PER_SECOND = 1 / (3 * 60); // Total earnings divided by the number of seconds in 3 minutes
+  const SUPER_COINS_PER_SECOND = 1 / (3 * 60); // 1 Super Coin earned over 3 minutes (180 seconds)
   const MINING_DURATION_MS = 3 * 60 * 1000; // 3 minutes in milliseconds
+
+  // Helper function to convert Super Coins to USDT
+  const convertToUSDT = (superCoins) => {
+    return (superCoins * SUPER_COIN_TO_USDT).toFixed(8); // 8 decimal places for precision
+  };
+
+  // Calculate USDT per minute based on Super Coins per second
+  const getUSDTPerMinute = () => {
+    const superCoinsPerMinute = SUPER_COINS_PER_SECOND * 60;
+    return (superCoinsPerMinute * SUPER_COIN_TO_USDT).toFixed(8);
+  };
 
   // for gift
   const [isVisible, setIsVisible] = useState(false);
@@ -54,8 +65,13 @@ const MiningScreen = props => {
   const [showTimeBoostModal, setShowTimeBoostModal] = useState(false);
   const [currentGhs, setCurrentGhs] = useState(30);
   const [maxGhs] = useState(100);
+  
+  // Cooldown states for red dot indicators
+  const [isBoostGhsAvailable, setIsBoostGhsAvailable] = useState(true);
+  const [isTimeBoostAvailable, setIsTimeBoostAvailable] = useState(true);
   const GIFT_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
   const MAX_TIME_BOOST_MS = 2 * 60 * 60 * 1000; // 2 hours cap for time boost
+  const MYSTERY_BOX_DELAY_MS = 3 * 60 * 60 * 1000; // 3 hours delay for mystery box
 
   useEffect(() => {
     // Load user data from auth context
@@ -72,7 +88,39 @@ const MiningScreen = props => {
         mine: user.mine || 0,
       });
     }
+    
+    // Check cooldown states on mount
+    checkCooldownStates();
   }, [user, apiResponse]);
+
+  // Check cooldown states for red dot indicators
+  const checkCooldownStates = async () => {
+    try {
+      // Check BoostGhs cooldown
+      const boostGhsCooldown = await AsyncStorage.getItem('boostGhsAdCooldown');
+      if (boostGhsCooldown) {
+        const endTime = parseInt(boostGhsCooldown, 10);
+        const currentTime = new Date().getTime();
+        setIsBoostGhsAvailable(currentTime >= endTime);
+      }
+      
+      // Check TimeBoost cooldown
+      const timeBoostCooldown = await AsyncStorage.getItem('timeBoostAdCooldown');
+      if (timeBoostCooldown) {
+        const endTime = parseInt(timeBoostCooldown, 10);
+        const currentTime = new Date().getTime();
+        setIsTimeBoostAvailable(currentTime >= endTime);
+      }
+    } catch (error) {
+      console.error('Error checking cooldown states:', error);
+    }
+  };
+
+  // Update cooldown states periodically
+  useEffect(() => {
+    const interval = setInterval(checkCooldownStates, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const OptionIcon = [
     {
@@ -121,21 +169,41 @@ const MiningScreen = props => {
     const loadMiningData = async () => {
       try {
         const sessionStart = await AsyncStorage.getItem('sessionStart');
+        const boostedEndTime = await AsyncStorage.getItem('boostedEndTime');
         const totalEarnedValue = await AsyncStorage.getItem('totalEarned');
 
         if (sessionStart) {
-          const startTime = new Date(parseInt(sessionStart, 10));
-          const currentTime = new Date();
-          const elapsedTime = currentTime - startTime;
-
-          if (elapsedTime >= MINING_DURATION_MS) {
-            await AsyncStorage.removeItem('sessionStart');
-            setIsMining(false);
-            setTimeRemaining(0);
+          const currentTime = new Date().getTime();
+          
+          if (boostedEndTime) {
+            // Use boosted end time if available
+            const endTime = parseInt(boostedEndTime, 10);
+            const remainingTime = endTime - currentTime;
+            
+            if (remainingTime <= 0) {
+              await AsyncStorage.removeItem('sessionStart');
+              await AsyncStorage.removeItem('boostedEndTime');
+              setIsMining(false);
+              setTimeRemaining(0);
+            } else {
+              setTotalEarned(parseFloat(totalEarnedValue) || 0);
+              setIsMining(true);
+              setTimeRemaining(remainingTime);
+            }
           } else {
-            setTotalEarned(parseFloat(totalEarnedValue) || 0);
-            setIsMining(true);
-            setTimeRemaining(MINING_DURATION_MS - elapsedTime);
+            // Fallback to original logic
+            const startTime = new Date(parseInt(sessionStart, 10));
+            const elapsedTime = currentTime - startTime;
+
+            if (elapsedTime >= MINING_DURATION_MS) {
+              await AsyncStorage.removeItem('sessionStart');
+              setIsMining(false);
+              setTimeRemaining(0);
+            } else {
+              setTotalEarned(parseFloat(totalEarnedValue) || 0);
+              setIsMining(true);
+              setTimeRemaining(MINING_DURATION_MS - elapsedTime);
+            }
           }
         } else {
           setTotalEarned(parseFloat(totalEarnedValue) || 0);
@@ -153,7 +221,7 @@ const MiningScreen = props => {
     if (isMining && timeRemaining > 0) {
       const miningIntervalId = setInterval(async () => {
         setTotalEarned(prev => {
-          const newTotalEarned = prev + EARNINGS_PER_SECOND;
+          const newTotalEarned = prev + SUPER_COINS_PER_SECOND;
           return newTotalEarned;
         });
 
@@ -163,6 +231,7 @@ const MiningScreen = props => {
             const roundedTotalEarned = Math.round(totalEarned);
             AsyncStorage.setItem('totalEarned', roundedTotalEarned.toString()); // Store updated earnings
             AsyncStorage.removeItem('sessionStart');
+            AsyncStorage.removeItem('boostedEndTime'); // Remove boosted time when mining completes
             setIsMining(false);
             setTimeRemaining(0);
             clearInterval(miningIntervalId);
@@ -195,9 +264,9 @@ const MiningScreen = props => {
             let currentTotalEarned = parseFloat(storedEarnings) || 0;
 
             const earnedFromPreviousSession =
-              (elapsedTime / 1000) * EARNINGS_PER_SECOND;
+              (elapsedTime / 1000) * SUPER_COINS_PER_SECOND;
 
-            // Update total earnings with the previous session earnings
+            // Update total mine with the previous session earnings
             currentTotalEarned += earnedFromPreviousSession;
 
             setTotalEarned(parseFloat(currentTotalEarned));
@@ -208,7 +277,7 @@ const MiningScreen = props => {
           } else {
             // If mining session has expired
             const earnedFromSession =
-              EARNINGS_PER_SECOND * (MINING_DURATION_MS / 1000);
+              SUPER_COINS_PER_SECOND * (MINING_DURATION_MS / 1000);
 
             setTotalEarned(prev => prev + earnedFromSession);
             await AsyncStorage.setItem(
@@ -317,16 +386,57 @@ const MiningScreen = props => {
     return () => clearInterval(giftIntervalId);
   }, [isGiftMining, giftTimeRemaining]);
 
+  const handleGift = async () => {
+    if (!isGiftMining) {
+      // Check if 3 hours have passed since last mystery box or app first launch
+      const canShowMysteryBox = await checkMysteryBoxAvailability();
+      
+      if (canShowMysteryBox) {
+        const randomAmount = await getRandomInt(10, 200);
+        setGiftAmt(randomAmount);
+        setShowMysteryBoxModal(true);
+      } else {
+        showToast.info(
+          'Mystery Box Not Ready',
+          'Mystery box will be available after 3 hours from your last claim or first app launch'
+        );
+      }
+    }
+  };
+
+  const checkMysteryBoxAvailability = async () => {
+    try {
+      const lastMysteryBoxTime = await AsyncStorage.getItem('lastMysteryBoxTime');
+      const firstLaunchTime = await AsyncStorage.getItem('firstLaunchTime');
+      const currentTime = new Date().getTime();
+
+      // Set first launch time if not exists
+      if (!firstLaunchTime) {
+        await AsyncStorage.setItem('firstLaunchTime', currentTime.toString());
+        return false; // Don't show on first launch
+      }
+
+      // Check against last mystery box claim time or first launch time
+      const referenceTime = lastMysteryBoxTime ? parseInt(lastMysteryBoxTime, 10) : parseInt(firstLaunchTime, 10);
+      const timePassed = currentTime - referenceTime;
+
+      return timePassed >= MYSTERY_BOX_DELAY_MS;
+    } catch (error) {
+      console.error('Error checking mystery box availability:', error);
+      return false;
+    }
+  };
+
+  const getRandomInt = async (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
   const openGift = async () => {
     if (!isGiftMining) {
       const randomAmount = await getRandomInt(10, 200);
       setGiftAmt(randomAmount);
       setShowMysteryBoxModal(true);
     }
-  };
-
-  const getRandomInt = async (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
   const claimReward = async () => {
@@ -336,7 +446,10 @@ const MiningScreen = props => {
       AsyncStorage.setItem('masterCoin', totalMasterCoin.toString());
       return totalMasterCoin;
     });
+    
+    // Update last mystery box claim time for 3-hour delay tracking
     const now = new Date().getTime();
+    await AsyncStorage.setItem('lastMysteryBoxTime', now.toString());
     await AsyncStorage.setItem('mysteryBoxCooldownStart', now.toString());
     setIsGiftMining(true);
     setGiftTimeRemaining(GIFT_DURATION_MS);
@@ -359,12 +472,12 @@ const MiningScreen = props => {
     setShowTimeBoostModal(false);
     // Implement ad watching logic here
     addMiningTime(30 * 60 * 1000); // 30 minutes in milliseconds
+    setIsTimeBoostAvailable(false); // Update red dot state
   };
 
   const handleSpendCoinsForTime = (coins, minutes) => {
     // Check if user has enough coins
     if (masterCoin >= coins) {
-      console.log(`Spend ${coins} coins for ${minutes} minutes boost`);
       setMasterCoin(prev => {
         const newAmount = prev - coins;
         AsyncStorage.setItem('masterCoin', newAmount.toString());
@@ -372,23 +485,37 @@ const MiningScreen = props => {
       });
       addMiningTime(minutes * 60 * 1000); // Convert minutes to milliseconds
       setShowTimeBoostModal(false);
+      showToast.success(
+        'Time Boost Applied!',
+        `+${minutes} minutes added to your mining time`
+      );
     } else {
-      console.log('Not enough coins');
-      // Could show an alert or toast message
+      showToast.error(
+        'Insufficient Balance',
+        `You need ${coins} coins to purchase this boost. Current balance: ${masterCoin}`
+      );
     }
   };
 
-  const addMiningTime = additionalTime => {
+  const addMiningTime = async additionalTime => {
     if (isMining) {
-      setTimeRemaining(prev =>
-        Math.min(prev + additionalTime, MAX_TIME_BOOST_MS),
-      );
+      const newTimeRemaining = Math.min(timeRemaining + additionalTime, MAX_TIME_BOOST_MS);
+      setTimeRemaining(newTimeRemaining);
+      
+      // Save the boosted end time to AsyncStorage
+      const currentTime = new Date().getTime();
+      const boostedEndTime = currentTime + newTimeRemaining;
+      await AsyncStorage.setItem('boostedEndTime', boostedEndTime.toString());
     } else {
       const newTime = Math.min(additionalTime, MAX_TIME_BOOST_MS);
       setTimeRemaining(newTime);
       setIsMining(true);
       const now = new Date().getTime();
-      AsyncStorage.setItem('sessionStart', now.toString());
+      await AsyncStorage.setItem('sessionStart', now.toString());
+      
+      // Save the boosted end time
+      const boostedEndTime = now + newTime;
+      await AsyncStorage.setItem('boostedEndTime', boostedEndTime.toString());
     }
   };
 
@@ -400,7 +527,7 @@ const MiningScreen = props => {
     if (currentGhs < maxGhs) {
       setCurrentGhs(prev => Math.min(prev + 10, maxGhs));
       setShowBoostGhsModal(false);
-      // Could implement boost logic here
+      setIsBoostGhsAvailable(false); // Update red dot state
       console.log('Boost applied');
     }
   };
@@ -453,8 +580,8 @@ const MiningScreen = props => {
                 style={{
                   overflow: 'hidden',
                   backgroundColor: Colors.white,
-                  height: verticalScale(30),
-                  width: verticalScale(30),
+                  height: verticalScale(40),
+                  width: verticalScale(40),
                   borderRadius: 15,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -503,7 +630,7 @@ const MiningScreen = props => {
                   }}
                   resizeMode="contain">
                   <Image
-                    style={{resizeMode: 'contain', height: 25, width: 25}}
+                    style={{resizeMode: 'contain', height: 25, width: 25, tintColor:Colors.white}}
                     resizeMode="center"
                     source={Images.TLogo}
                   />
@@ -529,7 +656,7 @@ const MiningScreen = props => {
                       fontSize: 19,
                       fontWeight: '600',
                     }}>
-                    {totalEarned.toFixed(4)} USDT
+                    {convertToUSDT(totalEarned)} USDT
                   </Text>
                   <Text
                     style={{
@@ -537,7 +664,7 @@ const MiningScreen = props => {
                       fontSize: 12,
                       fontWeight: '500',
                     }}>
-                    0.0056/min
+                    {getUSDTPerMinute()}/min
                   </Text>
                 </View>
                 <Image source={Images.Info} style={{height: 15, width: 15}} />
@@ -577,7 +704,7 @@ const MiningScreen = props => {
                         fontSize: 10,
                         fontWeight: '500',
                       }}>
-                      ~ 0.17 USDT
+                      ~ {convertToUSDT(masterCoin)} USDT
                     </Text>
                   </View>
                   <Image
@@ -587,7 +714,7 @@ const MiningScreen = props => {
                 </View>
                 <View
                   style={{
-                    backgroundColor: 'rgba(42, 63, 189, 0.35)',
+                    backgroundColor: Colors.white,
                     padding: 20,
                     borderRadius: 15,
                     flexDirection: 'row',
@@ -597,27 +724,26 @@ const MiningScreen = props => {
                   <View style={{flex: 1}}>
                     <Text
                       style={{
-                        color: Colors.white,
+                        color: Colors.primaryColor,
                         letterSpacing: 2,
                         fontSize: 10,
                         fontWeight: '500',
                       }}>
-                      LAVEL
+                      SPEED
                     </Text>
                     <Text
                       style={{
-                        color: Colors.white,
+                        color: Colors.primaryColor,
                         fontSize: 16,
                         fontWeight: '600',
                         marginVertical: 5,
                       }}>
-                      1 <Text style={{fontSize: 12}}>/10 Lavels</Text>
+                      {currentGhs} <Text style={{fontSize: 12}}>GH/S</Text>
                     </Text>
-                    <Text style={{color: Colors.main}}>-</Text>
                   </View>
                   <Image
                     source={Images.Info}
-                    style={{height: 15, width: 15, tintColor: Colors.white}}
+                    style={{height: 15, width: 15, tintColor: Colors.primaryColor}}
                   />
                 </View>
               </View>
@@ -837,28 +963,45 @@ const MiningScreen = props => {
                         padding: 20,
                         borderRadius: 15,
                         flexDirection: 'row',
+                        position: 'relative',
                       }}>
-                      <ImageBackground
-                        source={Images.Sixangle}
-                        style={{
-                          height: 60,
-                          width: 60,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        tintColor={item.color}
-                        resizeMode="contain">
-                        <Image
+                      <View style={{position: 'relative'}}>
+                        <ImageBackground
+                          source={Images.Sixangle}
                           style={{
-                            resizeMode: 'contain',
-                            height: 25,
-                            width: 25,
-                            tintColor: Colors.white,
+                            height: 60,
+                            width: 60,
+                            alignItems: 'center',
+                            justifyContent: 'center',
                           }}
-                          resizeMode="center"
-                          source={item.image}
-                        />
-                      </ImageBackground>
+                          tintColor={item.color}
+                          resizeMode="contain">
+                          <Image
+                            style={{
+                              resizeMode: 'contain',
+                              height: 25,
+                              width: 25,
+                              tintColor: Colors.white,
+                            }}
+                            resizeMode="center"
+                            source={item.image}
+                          />
+                        </ImageBackground>
+                        {/* Red dot indicator */}
+                        {((item.id === 0 && isTimeBoostAvailable) || (item.id === 1 && isBoostGhsAvailable)) && (
+                          <Image
+                            source={Images.RedDot}
+                            style={{
+                              resizeMode: 'center',
+                              height: verticalScale(12),
+                              width: verticalScale(12),
+                              position: 'absolute',
+                              top: 0,
+                              right: 0,
+                            }}
+                          />
+                        )}
+                      </View>
                       <View style={{marginLeft: 10, flex: 1}}>
                         <View
                           style={{
@@ -975,6 +1118,7 @@ const MiningScreen = props => {
         rewardAmount={giftAmt}
         onWatchAd={handleWatchAd}
         onOpenDirect={claimReward}
+        isMining={isMining}
       />
 
       <BoostGhsModal
@@ -984,6 +1128,7 @@ const MiningScreen = props => {
         maxGhs={maxGhs}
         hasReachedLimit={currentGhs >= maxGhs}
         onBoost={handleBoostConfirm}
+        isMining={isMining}
       />
 
       <TimeBoostModal
@@ -991,6 +1136,8 @@ const MiningScreen = props => {
         onClose={() => setShowTimeBoostModal(false)}
         onWatchAd={handleWatchAdForTime}
         onSpendCoins={handleSpendCoinsForTime}
+        userBalance={masterCoin}
+        isMining={isMining}
       />
     </View>
   );

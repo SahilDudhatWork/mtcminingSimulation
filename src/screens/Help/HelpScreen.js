@@ -5,6 +5,7 @@ import Header from '../../components/Header'
 import { horizontalScale, verticalScale } from '../../constants/helper'
 import { helpData } from './helpData'
 import { Images } from '../../assets/images'
+import CustomStatusBar from '../../components/CustomStatusBar'
 
 export default function HelpScreen() {
 
@@ -13,32 +14,47 @@ export default function HelpScreen() {
   const renderItem = ({ item, index }) => {
     return (
       <View style={styles.itemContainer}>
-        <Text style={styles.titleText1}>
-          {item.title}
-        </Text>
+        <CustomStatusBar dark backgroundColor={Colors.white} />
+        <Text style={styles.titleText1}>{item.title}</Text>
+
         {item?.questionList?.map((itm, indx) => {
+          const currentIndex = `${index}-${indx}`; // unique key for each Q
+
           return (
             <Pressable
+              key={currentIndex}
               style={styles.pressableContainer}
-              onPress={() => { setOpenIndex(openIndex === null ? itm.que : null) }}
+              onPress={() => {
+                setOpenIndex(openIndex === currentIndex ? null : currentIndex);
+              }}
             >
-              <View style={[styles.queContainer, { marginTop: openIndex === itm.que ? verticalScale(10) : 0 }]}>
+              <View
+                style={[
+                  styles.queContainer,
+                  { marginTop: openIndex === currentIndex ? verticalScale(10) : 0 },
+                ]}
+              >
                 <Text style={styles.queText}>{itm.que}</Text>
                 <Image
-                  style={styles.dropIcon}
+                  style={[
+                    styles.dropIcon,
+                    { transform: [{ rotate: openIndex === currentIndex ? '90deg' : '270deg' }] },
+                  ]}
                   source={Images.backIcon}
                 />
               </View>
-              {openIndex === itm.que ?
+
+              {openIndex === currentIndex ? (
                 <View style={styles.ansContainer}>
                   <Text style={styles.ansText}>{itm.ans}</Text>
-                </View> : null}
+                </View>
+              ) : null}
             </Pressable>
-          )
+          );
         })}
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <View style={styles.container}>

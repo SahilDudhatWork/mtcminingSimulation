@@ -11,6 +11,7 @@ import {
 import {verticalScale, horizontalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
 import { Images } from '../assets/images';
+import {showToast} from '../utils/toastUtils';
 
 const MysteryBoxModal = ({
   visible,
@@ -18,7 +19,24 @@ const MysteryBoxModal = ({
   rewardAmount = 'XXXXX',
   onWatchAd,
   onOpenDirect,
+  isMining = false,
 }) => {
+  const handleWatchAd = () => {
+    if (!isMining) {
+      showToast.show('Please first start mining', 'error');
+      return;
+    }
+    onWatchAd();
+  };
+
+  const handleOpenDirect = () => {
+    if (!isMining) {
+      showToast.show('Please first start mining', 'error');
+      return;
+    }
+    onOpenDirect();
+  };
+
   return (
     <Modal
       animationType="fade"
@@ -61,12 +79,12 @@ const MysteryBoxModal = ({
           {/* Buttons */}
           <View style={styles.buttonContainer}>
             {/* Watch AD Button */}
-            <TouchableOpacity style={styles.watchAdButton} onPress={onWatchAd}>
+            <TouchableOpacity style={styles.watchAdButton} onPress={handleWatchAd}>
               <Text style={styles.watchAdText}>Watch AD</Text>
             </TouchableOpacity>
 
             {/* Let's Open It Button */}
-            <TouchableOpacity style={styles.openButton} onPress={onOpenDirect}>
+            <TouchableOpacity style={styles.openButton} onPress={handleOpenDirect}>
               <Text style={styles.openButtonText}>Let's Open It</Text>
             </TouchableOpacity>
           </View>

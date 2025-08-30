@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -14,27 +14,129 @@ import {horizontalScale, verticalScale} from '../constants/helper';
 import {Images} from '../assets/images';
 import adManager from '../utils/adManager';
 import {showToast} from '../utils/toastUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
+const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins, userBalance = 0, isMining = false}) => {
   const screenHeight = Dimensions.get('window').height;
+  const [adCooldownEnd, setAdCooldownEnd] = useState(null);
+  const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
+  const [isAdDisabled, setIsAdDisabled] = useState(false);
 
-  const handleWatchAd = async () => {
+  // Load cooldown state on mount
+  useEffect(() => {
+    loadCooldownState();
+  }, []);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    let interval;
+    if (isAdDisabled && cooldownTimeLeft > 0) {
+      interval = setInterval(() => {
+        setCooldownTimeLeft(prev => {
+          if (prev <= 1000) {
+            setIsAdDisabled(false);
+            AsyncStorage.removeItem('timeBoostAdCooldown');
+            return 0;
+          }
+          return prev - 1000;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isAdDisabled, cooldownTimeLeft]);
+
+  const loadCooldownState = async () => {
+    try {
+      const cooldownEnd = await AsyncStorage.getItem('timeBoostAdCooldown');
+      if (cooldownEnd) {
+        const endTime = parseInt(cooldownEnd, 10);
+        const currentTime = new Date().getTime();
+        const timeLeft = endTime - currentTime;
+        
+        if (timeLeft > 0) {
+          setAdCooldownEnd(endTime);
+          setCooldownTimeLeft(timeLeft);
+          setIsAdDisabled(true);
+        } else {
+          await AsyncStorage.removeItem('timeBoostAdCooldown');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading cooldown state:', error);
+    }
+  };
+
+  const formatCooldownTime = (milliseconds) => {
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+    const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleWatchAd = async (onWatchAdCallback) => {
+    if (!isMining) {
+      showToast.show('Please first start mining', 'error');
+      return;
+    }
+    
+    if (isAdDisabled) return;
     try {
       const result = await adManager.showRewardedAd();
+
       if (result.success) {
         showToast.success(
           'Reward Earned!',
-          '+30 minutes added to your mining time',
+          '+30 minutes added to your mining time'
         );
-        onWatchAd();
+        // Set 2-hour cooldown
+        const cooldownDuration = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+        const cooldownEndTime = new Date().getTime() + cooldownDuration;
+        await AsyncStorage.setItem('timeBoostAdCooldown', cooldownEndTime.toString());
+        
+        setAdCooldownEnd(cooldownEndTime);
+        setCooldownTimeLeft(cooldownDuration);
+        setIsAdDisabled(true);
+        
+        if (typeof onWatchAdCallback === 'function') {
+          onWatchAdCallback();
+        }
       } else {
-        showToast.info('Ad Cancelled', 'Watch the complete ad to earn rewards');
+        showToast.info(
+          'Ad Cancelled',
+          'Watch the complete ad to earn rewards'
+        );
       }
     } catch (error) {
       console.error('Error showing rewarded ad:', error);
-      showToast.error('Ad Error', 'Unable to load ad. Please try again.');
+      showToast.error(
+        'Ad Error',
+        'Unable to load ad. Please try again later.'
+      );
     }
   };
+
+  const handleSpendCoins = (cost, minutes) => {
+    if (!isMining) {
+      showToast.show('Please first start mining', 'error');
+      return;
+    }
+    
+    if (userBalance < cost) {
+      showToast.error(
+        'Insufficient Balance',
+        `You need ${cost} coins to purchase this boost. Current balance: ${userBalance}`
+      );
+      return;
+    }
+    
+    showToast.success(
+      'Time Boost Applied!',
+      `+${minutes} minutes added to your mining time`
+    );
+    
+    onSpendCoins(cost, minutes);
+  };
+
 
   return (
     <Modal
@@ -59,43 +161,49 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
           <Text style={styles.subtitle}>
             Boost your mining time to earn more rewards!
           </Text>
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}> 
             {/* Time Options */}
             <View style={styles.optionsContainer}>
               <Text style={styles.optionsTitle}>Choose time boost:</Text>
 
               {/* 30 Minutes - Watch Ad */}
               <TouchableOpacity
-                style={styles.optionCard}
-                onPress={handleWatchAd}>
+                style={[styles.optionCard, isAdDisabled && styles.disabledCard]}
+                onPress={() => handleWatchAd(onWatchAd)}
+                disabled={isAdDisabled}>
                 <View style={styles.optionLeft}>
                   <View
                     style={[
                       styles.optionIcon,
-                      {backgroundColor: Colors.secondaryColor + '20'},
+                      {backgroundColor: isAdDisabled ? Colors.grey_300 : Colors.secondaryColor + '20'},
                     ]}>
                     <Image
                       source={Images.presentIcon}
                       style={[
                         styles.optionIconImage,
-                        {tintColor: Colors.secondaryColor},
+                        {tintColor: isAdDisabled ? Colors.grey_500 : Colors.secondaryColor},
                       ]}
                     />
                   </View>
                   <View>
-                    <Text style={styles.optionTitle}>+30 Minutes</Text>
-                    <Text style={styles.optionDesc}>Watch a short ad</Text>
+                    <Text style={[styles.optionTitle, isAdDisabled && styles.disabledText]}>+30 Minutes</Text>
+                    <Text style={[styles.optionDesc, isAdDisabled && styles.disabledText]}>
+                      {isAdDisabled ? `Available in ${formatCooldownTime(cooldownTimeLeft)}` : 'Watch a short ad'}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.optionRight}>
-                  <Text style={styles.freeText}>FREE</Text>
+                  <Text style={[styles.freeText, isAdDisabled && styles.disabledFreeText]}>
+                    {isAdDisabled ? 'COOLDOWN' : 'FREE'}
+                  </Text>
                 </View>
               </TouchableOpacity>
 
-              {/* 1 Hour - 50 Coins */}
+              {/* 1 Hour - 250 Coins */}
               <TouchableOpacity
-                style={styles.optionCard}
-                onPress={() => onSpendCoins(50, 60)}>
+                style={[styles.optionCard, userBalance < 250 && styles.disabledCard]}
+                onPress={() => handleSpendCoins(250, 60)}
+                disabled={userBalance < 250}>
                 <View style={styles.optionLeft}>
                   <View
                     style={[
@@ -118,15 +226,16 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
                 <View style={styles.optionRight}>
                   <View style={styles.coinContainer}>
                     <Image source={Images.starIcon} style={styles.coinIcon} />
-                    <Text style={styles.coinText}>50</Text>
+                    <Text style={styles.coinText}>250</Text>
                   </View>
                 </View>
               </TouchableOpacity>
 
-              {/* 2 Hours - 90 Coins */}
+              {/* 2 Hours - 400 Coins */}
               <TouchableOpacity
-                style={styles.optionCard}
-                onPress={() => onSpendCoins(90, 120)}>
+                style={[styles.optionCard, userBalance < 400 && styles.disabledCard]}
+                onPress={() => handleSpendCoins(400, 120)}
+                disabled={userBalance < 400}>
                 <View style={styles.optionLeft}>
                   <View
                     style={[styles.optionIcon, {backgroundColor: '#FF6B6B20'}]}>
@@ -146,7 +255,7 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins}) => {
                 <View style={styles.optionRight}>
                   <View style={styles.coinContainer}>
                     <Image source={Images.starIcon} style={styles.coinIcon} />
-                    <Text style={styles.coinText}>90</Text>
+                    <Text style={styles.coinText}>400</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -359,6 +468,17 @@ const styles = StyleSheet.create({
     fontSize: verticalScale(12),
     color: Colors.grey_500,
     flex: 1,
+  },
+  disabledCard: {
+    opacity: 0.6,
+    backgroundColor: Colors.grey_100,
+  },
+  disabledText: {
+    color: Colors.grey_500,
+  },
+  disabledFreeText: {
+    color: Colors.grey_500,
+    backgroundColor: Colors.grey_200,
   },
 });
 

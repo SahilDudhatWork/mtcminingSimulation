@@ -1,9 +1,9 @@
 import mobileAds, {
   InterstitialAd,
   RewardedAd,
-  RewardedAdEventType,
   TestIds,
   AdEventType,
+  RewardedAdEventType,
 } from 'react-native-google-mobile-ads';
 
 class AdManager {
@@ -12,12 +12,13 @@ class AdManager {
     this.rewardedAd = null;
     this.isTestMode = __DEV__; // Use test ads in development
 
-    // Test ad unit IDs - replace with your actual ad unit IDs for production
     this.adUnitIds = {
       interstitial: this.isTestMode
         ? TestIds.INTERSTITIAL
-        : 'YOUR_INTERSTITIAL_AD_UNIT_ID',
-      rewarded: this.isTestMode ? TestIds.REWARDED : 'YOUR_REWARDED_AD_UNIT_ID',
+        : 'ca-app-pub-3940256099942544/1033173712',
+      rewarded: this.isTestMode
+        ? TestIds.REWARDED
+        : 'ca-app-pub-3940256099942544/5224354917',
     };
 
     this.initializeAds();
@@ -37,7 +38,7 @@ class AdManager {
   loadInterstitialAd() {
     try {
       this.interstitialAd = InterstitialAd.createForAdRequest(
-        this.adUnitIds.interstitial,
+        this.adUnitIds.interstitial
       );
 
       this.interstitialAd.addAdEventListener(AdEventType.LOADED, () => {
@@ -46,13 +47,11 @@ class AdManager {
 
       this.interstitialAd.addAdEventListener(AdEventType.ERROR, error => {
         console.error('Interstitial ad failed to load:', error);
-        // Reload the ad after a delay
         setTimeout(() => this.loadInterstitialAd(), 5000);
       });
 
       this.interstitialAd.addAdEventListener(AdEventType.CLOSED, () => {
         console.log('Interstitial ad closed');
-        // Reload the ad for next time
         this.loadInterstitialAd();
       });
 
@@ -66,20 +65,22 @@ class AdManager {
     try {
       this.rewardedAd = RewardedAd.createForAdRequest(this.adUnitIds.rewarded);
 
-      this.rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
-        console.log('Rewarded ad loaded');
+      this.rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, reward => {
+        console.log('Rewarded ad loaded with reward:', reward);
       });
 
-      this.rewardedAd.addAdEventListener(RewardedAdEventType.ERROR, error => {
+      this.rewardedAd.addAdEventListener(AdEventType.ERROR, error => {
         console.error('Rewarded ad failed to load:', error);
-        // Reload the ad after a delay
         setTimeout(() => this.loadRewardedAd(), 5000);
       });
 
-      this.rewardedAd.addAdEventListener(RewardedAdEventType.CLOSED, () => {
+      this.rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
         console.log('Rewarded ad closed');
-        // Reload the ad for next time
-        this.loadRewardedAd();
+        this.loadRewardedAd(); // reload for next time
+      });
+
+      this.rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, reward => {
+        console.log('User earned reward:', reward);
       });
 
       this.rewardedAd.load();
@@ -95,7 +96,6 @@ class AdManager {
         return true;
       } else {
         console.log('Interstitial ad not loaded yet');
-        // Try to load the ad
         this.loadInterstitialAd();
         return false;
       }
@@ -108,42 +108,44 @@ class AdManager {
   async showRewardedAd() {
     return new Promise(resolve => {
       try {
-        if (this.rewardedAd && this.rewardedAd.loaded) {
-          // Set up reward listener
-          const unsubscribeEarned = this.rewardedAd.addAdEventListener(
-            RewardedAdEventType.EARNED_REWARD,
-            reward => {
-              console.log('User earned reward:', reward);
-              resolve({success: true, reward});
-              unsubscribeEarned();
-            },
-          );
-
-          // Set up close listener
-          const unsubscribeClosed = this.rewardedAd.addAdEventListener(
-            RewardedAdEventType.CLOSED,
-            () => {
-              console.log('Rewarded ad closed without reward');
-              resolve({success: false, reward: null});
-              unsubscribeClosed();
-            },
-          );
-
-          this.rewardedAd.show();
-        } else {
+        if (!this.rewardedAd || !this.rewardedAd.loaded) {
           console.log('Rewarded ad not loaded yet');
-          // Try to load the ad
           this.loadRewardedAd();
-          resolve({success: false, reward: null});
+          resolve({ success: false, reward: null });
+          return;
         }
+
+        let earned = false;
+
+        // Listen for reward
+        const rewardListener = this.rewardedAd.addAdEventListener(
+          RewardedAdEventType.EARNED_REWARD,
+          reward => {
+            console.log('User earned reward:', reward);
+            earned = true;
+            resolve({ success: true, reward });
+          }
+        );
+
+        // Listen for ad closed
+        const closedListener = this.rewardedAd.addAdEventListener(
+          AdEventType.CLOSED,
+          () => {
+            if (!earned) resolve({ success: false, reward: null });
+            // Remove listeners
+            rewardListener();
+            closedListener();
+          }
+        );
+
+        this.rewardedAd.show();
       } catch (error) {
         console.error('Error showing rewarded ad:', error);
-        resolve({success: false, reward: null});
+        resolve({ success: false, reward: null });
       }
     });
   }
 
-  // Check if ads are loaded and ready
   isInterstitialReady() {
     return this.interstitialAd && this.interstitialAd.loaded;
   }
@@ -153,7 +155,7 @@ class AdManager {
   }
 }
 
-// Create a singleton instance
+// Singleton instance
 const adManager = new AdManager();
 
 export default adManager;

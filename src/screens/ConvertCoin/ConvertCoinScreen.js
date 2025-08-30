@@ -21,7 +21,7 @@ export default function ConvertCoinScreen(props) {
   const navigation = useNavigation();
   const [masterCoin, setMasterCoin] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
-  const [conversionRate] = useState(0.0006); // 1 Super Coin = 0.0006 USDT
+  const [conversionRate] = useState(0.00006); // 1 Super Coin = 0.0006 USDT
   const [minimumCoins] = useState(2500);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -83,7 +83,7 @@ export default function ConvertCoinScreen(props) {
 
   const confirmConversion = async () => {
     try {
-      // Add to total earned
+      // Add to total mine
       const newTotalEarned = totalEarned + convertableAmount;
       setTotalEarned(newTotalEarned);
       await AsyncStorage.setItem('totalEarned', newTotalEarned.toString());
@@ -227,10 +227,10 @@ export default function ConvertCoinScreen(props) {
         </View>
 
         {/* Quick Stats */}
-        <View style={styles.statsContainer}>
+        {/* <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{totalEarned.toFixed(4)}</Text>
-            <Text style={styles.statLabel}>Total Earned</Text>
+            <Text style={styles.statLabel}>Total Mine</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
@@ -242,7 +242,7 @@ export default function ConvertCoinScreen(props) {
             <Text style={styles.statValue}>{conversionRate}</Text>
             <Text style={styles.statLabel}>Current Rate</Text>
           </View>
-        </View>
+        </View> */}
 
         {/* History Section */}
         <View style={styles.historySection}>
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   balanceHeader: {
-    flexDirection: 'row',
+    // flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: verticalScale(20),
@@ -363,6 +363,7 @@ const styles = StyleSheet.create({
     fontSize: verticalScale(18),
     fontWeight: '600',
     color: Colors.black,
+    marginBottom: verticalScale(8),
   },
   rateContainer: {
     backgroundColor: Colors.bgColor,

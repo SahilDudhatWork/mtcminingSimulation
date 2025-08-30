@@ -104,7 +104,7 @@ const Bottom = ({state, descriptors, navigation}) => {
                         label === 'Rewards'
                           ? isFocused
                             ? Images.filledrewardsIcon
-                            : Images.rewardsIcon
+                            : Images.filledrewardsIcon
                           : label === 'Rafers'
                           ? Images.raferIcon
                           : Images.pickaxeIcon
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flexDirection: 'row',
     position: 'absolute',
-    bottom: 0,
+    bottom: -10,
     backgroundColor: Colors.semiGray,
     borderTopRightRadius: verticalScale(25),
     borderTopLeftRadius: verticalScale(25),

@@ -163,7 +163,7 @@ const RewardScreen = () => {
             </View>
             <View style={styles.balanceDivider} />
             <View style={styles.balanceItem}>
-              <Text style={styles.balanceLabel}>TOTAL EARNED</Text>
+              <Text style={styles.balanceLabel}>TOTAL MINE</Text>
               <Text style={styles.balanceValue}>{totalEarned.toFixed(4)}</Text>
               <Text style={styles.balanceSubtext}>USDT</Text>
             </View>

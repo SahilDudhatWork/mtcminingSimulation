@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Modal,
   StyleSheet,
@@ -13,6 +13,7 @@ import {Colors} from '../constants/colors';
 import {Images} from '../assets/images';
 import adManager from '../utils/adManager';
 import {showToast} from '../utils/toastUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BoostGhsModal = ({
   visible,
@@ -21,11 +22,71 @@ const BoostGhsModal = ({
   maxGhs = 100,
   hasReachedLimit = false,
   onBoost,
+  isMining = false,
 }) => {
   const isMaxReached = currentGhs >= maxGhs || hasReachedLimit;
+  const [adCooldownEnd, setAdCooldownEnd] = useState(null);
+  const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
+  const [isAdDisabled, setIsAdDisabled] = useState(false);
+
+  // Load cooldown state on mount
+  useEffect(() => {
+    loadCooldownState();
+  }, []);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    let interval;
+    if (isAdDisabled && cooldownTimeLeft > 0) {
+      interval = setInterval(() => {
+        setCooldownTimeLeft(prev => {
+          if (prev <= 1000) {
+            setIsAdDisabled(false);
+            AsyncStorage.removeItem('boostGhsAdCooldown');
+            return 0;
+          }
+          return prev - 1000;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isAdDisabled, cooldownTimeLeft]);
+
+  const loadCooldownState = async () => {
+    try {
+      const cooldownEnd = await AsyncStorage.getItem('boostGhsAdCooldown');
+      if (cooldownEnd) {
+        const endTime = parseInt(cooldownEnd, 10);
+        const currentTime = new Date().getTime();
+        const timeLeft = endTime - currentTime;
+        
+        if (timeLeft > 0) {
+          setAdCooldownEnd(endTime);
+          setCooldownTimeLeft(timeLeft);
+          setIsAdDisabled(true);
+        } else {
+          await AsyncStorage.removeItem('boostGhsAdCooldown');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading cooldown state:', error);
+    }
+  };
+
+  const formatCooldownTime = (milliseconds) => {
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+    const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   const handleBoost = async () => {
-    if (isMaxReached) return;
+    if (!isMining) {
+      showToast.show('Please first start mining', 'error');
+      return;
+    }
+    
+    if (isMaxReached || isAdDisabled) return;
 
     try {
       const result = await adManager.showRewardedAd();
@@ -34,6 +95,16 @@ const BoostGhsModal = ({
           'Boost Activated!',
           'Your mining speed has been increased',
         );
+        
+        // Set 1-hour cooldown
+        const cooldownDuration = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
+        const cooldownEndTime = new Date().getTime() + cooldownDuration;
+        await AsyncStorage.setItem('boostGhsAdCooldown', cooldownEndTime.toString());
+        
+        setAdCooldownEnd(cooldownEndTime);
+        setCooldownTimeLeft(cooldownDuration);
+        setIsAdDisabled(true);
+        
         onBoost();
       } else {
         showToast.info(
@@ -96,27 +167,30 @@ const BoostGhsModal = ({
             style={[
               styles.boostButton,
               {
-                backgroundColor: isMaxReached
+                backgroundColor: (isMaxReached || isAdDisabled)
                   ? Colors.grey_400
                   : Colors.secondaryColor,
               },
             ]}
             onPress={handleBoost}
-            disabled={isMaxReached}>
+            disabled={isMaxReached || isAdDisabled}>
             <Text
               style={[
                 styles.boostButtonText,
                 {
-                  color: isMaxReached ? Colors.grey_500 : Colors.white,
+                  color: (isMaxReached || isAdDisabled) ? Colors.grey_500 : Colors.white,
                 },
               ]}>
-              Let's Do It
+              {isAdDisabled ? `Available in ${formatCooldownTime(cooldownTimeLeft)}` : 'Let\'s Do It'}
             </Text>
           </TouchableOpacity>
 
           {/* Footer Note */}
           {isMaxReached && (
             <Text style={styles.footerNote}>* You have reached the limit.</Text>
+          )}
+          {isAdDisabled && !isMaxReached && (
+            <Text style={styles.footerNote}>* Cooldown active. Try again later.</Text>
           )}
         </View>
       </View>

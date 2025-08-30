@@ -110,8 +110,6 @@ export default function LoginScreen({navigation}) {
                     onChangeText={handleChange('password')}
                     onBlur={handleBlur('password')}
                     secureTextEntry={!showPassword}
-                    rightIcon={showPassword ? 'eye-off' : 'eye'}
-                    onRightIconPress={() => setShowPassword(!showPassword)}
                     errorTitle={
                       errors.password && touched.password ? errors.password : ''
                     }

@@ -343,7 +343,7 @@ export default function HomeScreen(props) {
         {/* Header Section */}
         <View style={styles.headerSection}>
           <View style={styles.titleContainer}>
-            <Image style={styles.headerIcon} source={selectedGame.icon} />
+            <Image style={[styles.headerIcon]} source={Images.presentIcon} />
             <Text style={styles.title}>Play & Earn</Text>
           </View>
           <Text style={styles.subtitle}>
