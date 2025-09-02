@@ -82,6 +82,12 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    
+    configurations.all {
+        resolutionStrategy {
+            force 'com.facebook.android:audience-network-sdk:6.20.0'
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')

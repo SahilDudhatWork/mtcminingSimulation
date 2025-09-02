@@ -11,7 +11,7 @@ import {
 import {verticalScale, horizontalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
 import {Images} from '../assets/images';
-import adManager from '../utils/adManager';
+import enhancedAdManager from '../utils/enhancedAdManager';
 import {showToast} from '../utils/toastUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -89,15 +89,15 @@ const BoostGhsModal = ({
     if (isMaxReached || isAdDisabled) return;
 
     try {
-      const result = await adManager.showRewardedAd();
+      const result = await enhancedAdManager.showRewardedAd();
       if (result.success) {
         showToast.success(
           'Boost Activated!',
           'Your mining speed has been increased',
         );
         
-        // Set 1-hour cooldown
-        const cooldownDuration = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
+        // Set 5-minute cooldown
+        const cooldownDuration = 2 * 60 * 1000; // 5 minutes in milliseconds
         const cooldownEndTime = new Date().getTime() + cooldownDuration;
         await AsyncStorage.setItem('boostGhsAdCooldown', cooldownEndTime.toString());
         
@@ -163,27 +163,36 @@ const BoostGhsModal = ({
           </View>
 
           {/* Let's Do It Button */}
-          <TouchableOpacity
-            style={[
-              styles.boostButton,
-              {
-                backgroundColor: (isMaxReached || isAdDisabled)
-                  ? Colors.grey_400
-                  : Colors.secondaryColor,
-              },
-            ]}
-            onPress={handleBoost}
-            disabled={isMaxReached || isAdDisabled}>
-            <Text
+          <View style={styles.buttonContainer}>
+            {/* Watch AD Button */}
+            {!isAdDisabled && (
+            <TouchableOpacity style={styles.watchAdButton} onPress={handleBoost}>
+              <Text style={styles.watchAdText}>Watch AD</Text>
+            </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
               style={[
-                styles.boostButtonText,
+                styles.boostButton,
                 {
-                  color: (isMaxReached || isAdDisabled) ? Colors.grey_500 : Colors.white,
+                  backgroundColor: (isMaxReached || isAdDisabled)
+                    ? Colors.grey_400
+                    : Colors.secondaryColor,
                 },
-              ]}>
-              {isAdDisabled ? `Available in ${formatCooldownTime(cooldownTimeLeft)}` : 'Let\'s Do It'}
-            </Text>
-          </TouchableOpacity>
+              ]}
+              onPress={handleBoost}
+              disabled={isMaxReached || isAdDisabled}>
+              <Text
+                style={[
+                  styles.boostButtonText,
+                  {
+                    color: (isMaxReached || isAdDisabled) ? Colors.grey_500 : Colors.white,
+                  },
+                ]}>
+                {isAdDisabled ? `Available in ${formatCooldownTime(cooldownTimeLeft)}` : 'Let\'s Do It'}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Footer Note */}
           {isMaxReached && (
@@ -358,6 +367,25 @@ const styles = StyleSheet.create({
     fontSize: verticalScale(18),
     color: Colors.black,
     textAlign: 'center',
+  },
+  buttonContainer: {
+    width: '100%',
+    // marginBottom: verticalScale(15),
+  },
+  watchAdButton: {
+    backgroundColor: Colors.black,
+    paddingVertical: verticalScale(8),
+    paddingHorizontal: horizontalScale(10),
+    borderRadius: verticalScale(25),
+    marginBottom: verticalScale(-13),
+    alignSelf: 'flex-end',
+    marginRight: 10,
+    zIndex: 1,
+  },
+  watchAdText: {
+    color: Colors.white,
+    fontSize: verticalScale(8),
+    fontWeight: '600',
   },
   boostButton: {
     paddingVertical: verticalScale(15),

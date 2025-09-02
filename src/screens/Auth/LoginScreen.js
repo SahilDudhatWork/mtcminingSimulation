@@ -36,7 +36,7 @@ export default function LoginScreen({navigation}) {
 
       if (result.success) {
         showToast.success('Success', 'Login successful!');
-        navigation.navigate('BottomTab');
+        navigation.replace('BottomTab');
       } else {
         showToast.error('Error', result.message || 'Login failed.');
       }

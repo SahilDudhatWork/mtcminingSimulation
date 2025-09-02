@@ -5,11 +5,20 @@ import { Images } from '../assets/images'
 import { Colors } from '../constants/colors'
 import { useNavigation } from '@react-navigation/native'
 
-export default function Header({ ishelp }) {
+export default function Header({ ishelp, onBackPress }) {
     const navigation = useNavigation()
+    
+    const handleBackPress = () => {
+        if (onBackPress) {
+            onBackPress();
+        } else {
+            navigation.goBack();
+        }
+    };
+    
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.btnContainer} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.btnContainer} onPress={handleBackPress}>
                 <Image
                     style={styles.iconStyle}
                     source={Images.backIcon}

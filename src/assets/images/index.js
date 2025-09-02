@@ -2,6 +2,7 @@ export const Images = {
     Tick: require('../images/check.png'),
     mainLogo: require('../images/launch_screen.png'),
     handShake: require('../images/handshake.png'),
+    handIconShake: require('../images/hand-shake.png'),
     onboardScreen1: require('../images/onboardScreen1.png'),
     onboardScreen2: require('../images/onboardScreen2.png'),
     onboardScreen3: require('../images/onboardScreen3.png'),
@@ -35,4 +36,6 @@ export const Images = {
     closeIcon: require('../images/close.png'),
     eye: require('../images/eye.png'),
     eyeOff: require('../images/hidden.png'),
+    logout: require('../images/logout.png'),
+    trash: require('../images/trash.png'),
 }

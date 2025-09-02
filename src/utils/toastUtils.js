@@ -1,57 +1,30 @@
-import Toast from 'react-native-toast-message';
+import {ToastAndroid} from 'react-native';
 
 /**
  * Utility functions for showing toast messages throughout the app
- * Replaces Alert.alert with non-blocking toast notifications
+ * Uses native Android ToastAndroid for better performance
  */
 
 export const showToast = {
   success: (title, message = '') => {
-    Toast.show({
-      type: 'success',
-      text1: title,
-      text2: message,
-      position: 'top',
-      visibilityTime: 3000,
-      autoHide: true,
-      topOffset: 60,
-    });
+    const displayText = message ? `${title}: ${message}` : title;
+    ToastAndroid.show(displayText, ToastAndroid.LONG);
   },
 
   error: (title, message = '') => {
-    Toast.show({
-      type: 'error',
-      text1: title,
-      text2: message,
-      position: 'top',
-      visibilityTime: 4000,
-      autoHide: true,
-      topOffset: 60,
-    });
+    const displayText = message ? `${title}: ${message}` : title;
+    ToastAndroid.show(displayText, ToastAndroid.LONG);
   },
 
   info: (title, message = '') => {
-    Toast.show({
-      type: 'info',
-      text1: title,
-      text2: message,
-      position: 'top',
-      visibilityTime: 3000,
-      autoHide: true,
-      topOffset: 60,
-    });
+    const displayText = message ? `${title}: ${message}` : title;
+    ToastAndroid.show(displayText, ToastAndroid.SHORT);
   },
 
   // For simple text-only messages
   show: (text, type = 'info') => {
-    Toast.show({
-      type,
-      text1: text,
-      position: 'top',
-      visibilityTime: 3000,
-      autoHide: true,
-      topOffset: 60,
-    });
+    const duration = type === 'error' ? ToastAndroid.LONG : ToastAndroid.SHORT;
+    ToastAndroid.show(text, duration);
   },
 };
 

@@ -18,7 +18,7 @@ import {useNavigation} from '@react-navigation/native';
 import Popup from '../../components/Popup';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import adManager from '../../utils/adManager';
+import enhancedAdManager from '../../utils/enhancedAdManager';
 import {showToast} from '../../utils/toastUtils';
 
 export default function HomeScreen(props) {
@@ -62,8 +62,8 @@ export default function HomeScreen(props) {
       id: 'daily',
       title: 'Daily Bonus',
       description: 'Claim your daily reward',
-      icon: Images.presentIcon,
-      // color: Colors.secondaryColor,
+      icon: Images.giftIcon,
+      color: Colors.primaryColor,
       minReward: 50,
       maxReward: 500,
     },
@@ -226,14 +226,14 @@ export default function HomeScreen(props) {
     // Show interstitial ad after opening 4 cards in Flip & Win
     if (selectedGameMode === 'flip' && flippedCount >= MAX_FLIPS) {
       setTimeout(() => {
-        adManager.showInterstitialAd();
+        enhancedAdManager.showInterstitialAd();
       }, 500); // Small delay to ensure modal is closed
     }
 
     // Show interstitial ad after Daily Bonus collection
     if (selectedGameMode === 'daily') {
       setTimeout(() => {
-        adManager.showInterstitialAd();
+        enhancedAdManager.showInterstitialAd();
       }, 500); // Small delay to ensure modal is closed
     }
   };
@@ -555,7 +555,7 @@ export default function HomeScreen(props) {
                               backgroundColor: collected
                                 ? Colors.grey_400
                                 : isToday && canClaimDaily
-                                ? '#97EA4B'
+                                ? Colors.primaryColor
                                 : Colors.grey_300,
                             },
                           ]}>
@@ -563,11 +563,11 @@ export default function HomeScreen(props) {
                             style={{
                               color: collected
                                 ? Colors.white
-                                : Colors.semiBlack,
+                                : isToday && canClaimDaily ? Colors.white : Colors.semiBlack,
                               fontWeight: '700',
                               fontSize: verticalScale(10),
                             }}>
-                            DAY{i + 1}
+                            DAY {i + 1}
                           </Text>
                         </View>
                         {collected && (

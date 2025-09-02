@@ -48,6 +48,14 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>FacebookAppID</key>
+	<string>YOUR_FACEBOOK_APP_ID</string>
+	<key>AppLovinSdkKey</key>
+	<string>YOUR_APPLOVIN_SDK_KEY</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>

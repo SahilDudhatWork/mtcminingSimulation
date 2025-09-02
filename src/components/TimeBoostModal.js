@@ -12,7 +12,7 @@ import {
 import {Colors} from '../constants/colors';
 import {horizontalScale, verticalScale} from '../constants/helper';
 import {Images} from '../assets/images';
-import adManager from '../utils/adManager';
+import enhancedAdManager from '../utils/enhancedAdManager';
 import {showToast} from '../utils/toastUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -81,7 +81,7 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins, userBalance 
     
     if (isAdDisabled) return;
     try {
-      const result = await adManager.showRewardedAd();
+      const result = await enhancedAdManager.showRewardedAd();
 
       if (result.success) {
         showToast.success(

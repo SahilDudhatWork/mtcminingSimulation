@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   Clipboard,
   Share,
+  ActivityIndicator,
 } from 'react-native';
 import {Colors} from '../../constants/colors';
 import {horizontalScale, verticalScale} from '../../constants/helper';
@@ -17,40 +18,88 @@ import {Images} from '../../assets/images';
 import Header from '../../components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {showToast} from '../../utils/toastUtils';
+import {useAuth} from '../../context/AuthContext';
+import {useNavigation} from '@react-navigation/native';
+import axios from 'axios';
 
 export default function RaferScreen() {
+  const {user, apiResponse} = useAuth();
+  const navigation = useNavigation();
   const [userData, setUserData] = useState({
     refer_code: 'TH175620698967',
     username: 'User123',
   });
   const [totalInvites, setTotalInvites] = useState(0);
   const [masterCoin, setMasterCoin] = useState(0);
-  const [invitedUsers, setInvitedUsers] = useState([
-    {id: 1, name: 'Alice Johnson', joinDate: '2024-01-15', earned: 100},
-    {id: 2, name: 'Bob Smith', joinDate: '2024-01-18', earned: 100},
-    {id: 3, name: 'Charlie Brown', joinDate: '2024-01-20', earned: 100},
-  ]);
+  const [invitedUsers, setInvitedUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadUserData();
+    fetchReferredUsers();
+  }, [user]);
+
+  useEffect(() => {
     setTotalInvites(invitedUsers.length);
-  }, []);
+  }, [invitedUsers]);
 
   const loadUserData = async () => {
     try {
       const totalMasterCoin = await AsyncStorage.getItem('masterCoin');
-      const userDataString = await AsyncStorage.getItem('userData');
-
+      
       if (totalMasterCoin) {
         setMasterCoin(parseFloat(totalMasterCoin) || 0);
       }
 
-      if (userDataString) {
-        const data = JSON.parse(userDataString);
-        setUserData(data);
+      // Use data from AuthContext if available
+      if (user) {
+        setUserData({
+          refer_code: user.refer_code || 'N/A',
+          username: user.name || 'User',
+          id: user.id,
+        });
+      } else {
+        // Fallback to AsyncStorage
+        const userDataString = await AsyncStorage.getItem('userData');
+        if (userDataString) {
+          const data = JSON.parse(userDataString);
+          setUserData(data);
+        }
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+    }
+  };
+
+  const fetchReferredUsers = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `https://peradox.in/api/mtc/getReferredUser?user_id=${user.id}`
+      );
+      console.log(response.data.data)
+      if (response.data?.status === 'success' && response.data.data.referredUsers) {
+        const referredUsers = response.data.data.referredUsers.map((referredUser, index) => ({
+          id: referredUser.id || index + 1,
+          name: referredUser.name || 'Unknown User',
+          joinDate: referredUser.created_at 
+            ? new Date(referredUser.created_at).toISOString().split('T')[0]
+            : 'Unknown',
+          earned: 100, // Fixed reward per referral
+          email: referredUser.email || 'N/A',
+        }));
+        setInvitedUsers(referredUsers);
+      } else {
+        setInvitedUsers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching referred users:', error);
+      showToast.error('Error', 'Failed to load referred users');
+      setInvitedUsers([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,6 +123,11 @@ export default function RaferScreen() {
     }
   };
 
+  const handleBackPress = () => {
+    // Navigate to the main mining screen instead of going back in stack
+    navigation.navigate('MiningScreen');
+  };
+
   const renderInvitedUser = ({item}) => (
     <View style={styles.userItem}>
       <View style={styles.userAvatar}>
@@ -92,7 +146,7 @@ export default function RaferScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Referral Program" ishelp={true} />
+      <Header title="Referral Program" ishelp={true} onBackPress={handleBackPress} />
       <ScrollView
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}>
@@ -114,7 +168,7 @@ export default function RaferScreen() {
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>{masterCoin}</Text>
-            <Text style={styles.statLabel}>Coins Earned</Text>
+            <Text style={styles.statLabel}>Super Coins</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>100</Text>
@@ -184,12 +238,17 @@ export default function RaferScreen() {
         </View>
 
         {/* Invited Users Section */}
-        {invitedUsers.length > 0 && (
-          <View style={styles.invitedUsersSection}>
-            <Text style={styles.sectionTitle}>
-              Your Invites ({totalInvites})
-            </Text>
-            <View style={styles.usersContainer}>
+        <View style={styles.invitedUsersSection}>
+          <Text style={styles.sectionTitle}>
+            Your Invites ({totalInvites})
+          </Text>
+          <View style={styles.usersContainer}>
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={Colors.secondaryColor} />
+                <Text style={styles.loadingText}>Loading referred users...</Text>
+              </View>
+            ) : invitedUsers.length > 0 ? (
               <FlatList
                 data={invitedUsers}
                 renderItem={renderInvitedUser}
@@ -197,9 +256,17 @@ export default function RaferScreen() {
                 scrollEnabled={false}
                 showsVerticalScrollIndicator={false}
               />
-            </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Image source={Images.multipleUsersIcon} style={styles.emptyIcon} />
+                <Text style={styles.emptyTitle}>No Referrals Yet</Text>
+                <Text style={styles.emptyDescription}>
+                  Start inviting friends to see them here!
+                </Text>
+              </View>
+            )}
           </View>
-        )}
+        </View>
 
         {/* Terms Section */}
         <View style={styles.termsSection}>
@@ -452,5 +519,36 @@ const styles = StyleSheet.create({
     fontSize: verticalScale(12),
     color: Colors.grey_500,
     lineHeight: 18,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: verticalScale(40),
+  },
+  loadingText: {
+    fontSize: verticalScale(14),
+    color: Colors.grey_500,
+    marginTop: verticalScale(10),
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: verticalScale(40),
+  },
+  emptyIcon: {
+    width: verticalScale(60),
+    height: verticalScale(60),
+    tintColor: Colors.grey_300,
+    marginBottom: verticalScale(15),
+    resizeMode: 'contain',
+  },
+  emptyTitle: {
+    fontSize: verticalScale(16),
+    fontWeight: '600',
+    color: Colors.grey_500,
+    marginBottom: verticalScale(8),
+  },
+  emptyDescription: {
+    fontSize: verticalScale(12),
+    color: Colors.grey_400,
+    textAlign: 'center',
   },
 });

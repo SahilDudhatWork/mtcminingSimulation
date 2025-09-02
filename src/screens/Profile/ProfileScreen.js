@@ -18,16 +18,22 @@ import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useAuth} from '../../context/AuthContext';
 import CustomStatusBar from '../../components/CustomStatusBar';
+import LogoutModal from '../../components/LogoutModal';
+import DeleteAccountModal from '../../components/DeleteAccountModal';
+import axios from 'axios';
 
 export default function ProfileScreen(props) {
   const navigation = useNavigation();
-  const {user, apiResponse} = useAuth();
+  const {user, apiResponse, logout} = useAuth();
   const [userData, setUserData] = useState({
     username: 'Guest User',
     refer_code: 'N/A',
   });
   const [masterCoin, setMasterCoin] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     // Load user data from auth context
@@ -80,23 +86,90 @@ export default function ProfileScreen(props) {
       backgroundColor: Colors.lightLine,
       // iconTint: Colors.white,
     },
-    {
-      id: 3,
-      title: 'Mining Level',
-      value: 'Level 1',
-      icon: Images.pickaxeIcon,
-      backgroundColor: Colors.lightGreen,
-      iconTint: Colors.darkGreen,
-    },
-    {
-      id: 4,
-      title: 'Referrals',
-      value: '0 Friends',
-      icon: Images.multipleUsersIcon,
-      backgroundColor: '#FF6B6B20',
-      iconTint: '#FF6B6B',
-    },
+    // {
+    //   id: 3,
+    //   title: 'Mining Level',
+    //   value: 'Level 1',
+    //   icon: Images.pickaxeIcon,
+    //   backgroundColor: Colors.lightGreen,
+    //   iconTint: Colors.darkGreen,
+    // },
+    // {
+    //   id: 4,
+    //   title: 'Referrals',
+    //   value: '0 Friends',
+    //   icon: Images.multipleUsersIcon,
+    //   backgroundColor: '#FF6B6B20',
+    //   iconTint: '#FF6B6B',
+    // },
   ];
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    try {
+      setShowLogoutModal(false);
+      await logout();
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'LoginScreen'}],
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Failed to logout. Please try again.');
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (!user?.id) {
+      Alert.alert('Error', 'User ID not found');
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await axios.delete(
+        `https://peradox.in/api/mtc/deleteUser/${user.id}`,
+      );
+
+      if (response.data?.status === 'success') {
+        setShowDeleteModal(false);
+        setIsDeleting(false);
+        Alert.alert(
+          'Account Deleted',
+          'Your account has been successfully deleted.',
+          [
+            {
+              text: 'OK',
+              onPress: async () => {
+                await AsyncStorage.removeItem('userSession');
+                navigation.reset({
+                  index: 0,
+                  routes: [{name: 'LoginScreen'}],
+                });
+              },
+            },
+          ],
+        );
+      } else {
+        setIsDeleting(false);
+        Alert.alert('Error', response.data?.message || 'Failed to delete account');
+      }
+    } catch (error) {
+      console.error('Delete account error:', error);
+      setIsDeleting(false);
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Failed to delete account. Please try again.',
+      );
+    }
+  };
 
   const menuItems = [
     {
@@ -112,45 +185,37 @@ export default function ProfileScreen(props) {
       id: 2,
       title: 'Refer Friends',
       description: 'Invite your friends and get rewards!',
-      icon: Images.handShakeIcon,
+      icon: Images.raferIcon,
       iconBg: Colors.primaryColor + '20',
       iconTint: Colors.primaryColor,
       onPress: () => props.navigation.navigate('Rafers'),
     },
-    // {
-    //   id: 3,
-    //   title: 'Mining History',
-    //   description: 'View your mining activity',
-    //   icon: Images.pickaxeIcon,
-    //   iconBg: Colors.lightGreen,
-    //   iconTint: Colors.darkGreen,
-    //   onPress: () =>
-    //     Alert.alert(
-    //       'Coming Soon',
-    //       'Mining history feature will be available soon!',
-    //     ),
-    // },
-    // {
-    //   id: 4,
-    //   title: 'Withdrawal',
-    //   description: 'Withdraw your earnings',
-    //   icon: Images.convertCoinIcon,
-    //   iconBg: '#FF6B6B20',
-    //   iconTint: '#FF6B6B',
-    //   onPress: () =>
-    //     Alert.alert(
-    //       'Coming Soon',
-    //       'Withdrawal feature will be available soon!',
-    //     ),
-    // },
     {
-      id: 5,
+      id: 3,
       title: 'Help & Support',
       description: 'Get help and contact support',
       icon: Images.Question,
       iconBg: Colors.grey_300,
-      iconTint: Colors.grey_500,
+      iconTint: Colors.primaryColor,
       onPress: () => props.navigation.navigate('HelpScreen'),
+    },
+    {
+      id: 4,
+      title: 'Logout',
+      description: 'Sign out of your account',
+      icon: Images.logout,
+      iconBg: '#FF9500' + '20',
+      iconTint: '#FF9500',
+      onPress: handleLogout,
+    },
+    {
+      id: 5,
+      title: 'Delete Account',
+      description: 'Permanently delete your account',
+      icon: Images.trash,
+      iconBg: '#FF3B30' + '20',
+      // iconTint: '#FF3B30',
+      onPress: handleDeleteAccount,
     },
   ];
 
@@ -227,7 +292,7 @@ export default function ProfileScreen(props) {
         </View>
 
         {/* Quick Actions */}
-        <View style={styles.quickActionsContainer}>
+        {/* <View style={styles.quickActionsContainer}>
           <TouchableOpacity
             style={[
               styles.quickAction,
@@ -257,7 +322,7 @@ export default function ProfileScreen(props) {
             <Image source={Images.pickaxeIcon} style={styles.quickActionIcon} />
             <Text style={styles.quickActionText}>Mine</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Menu Items */}
         <View style={styles.menuContainer}>
@@ -283,13 +348,27 @@ export default function ProfileScreen(props) {
             <Text style={styles.infoValue}>{userData.refer_code}</Text>
           </View>
           <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>User ID</Text>
+            <Text style={styles.infoValue}>{userData.id || 'N/A'}</Text>
+          </View>
+          {/* <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Registration Type</Text>
+            <Text style={styles.infoValue}>
+              {userData.socialType === 'email' ? 'Email' : userData.socialType || 'N/A'}
+            </Text>
+          </View> */}
+          {/* <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Mining Points</Text>
+            <Text style={styles.infoValue}>{userData.mine || 0}</Text>
+          </View> */}
+          {/* <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Join Date</Text>
             <Text style={styles.infoValue}>
               {userData.createdAt !== 'N/A'
                 ? new Date(userData.createdAt).toLocaleDateString()
                 : 'N/A'}
             </Text>
-          </View>
+          </View> */}
         </View>
 
         {/* Version Info */}
@@ -297,6 +376,21 @@ export default function ProfileScreen(props) {
           <Text style={styles.versionText}>MTC Mining Simulation v1.0.0</Text>
         </View>
       </ScrollView>
+
+      {/* Logout Modal */}
+      <LogoutModal
+        visible={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+      />
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDeleteAccount}
+        isLoading={isDeleting}
+      />
     </SafeAreaView>
   );
 }
