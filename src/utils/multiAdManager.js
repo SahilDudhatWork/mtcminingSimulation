@@ -15,7 +15,7 @@ import {
   MaxRewardedAd,
   MaxAdView,
 } from 'react-native-applovin-max';
-import axios from 'axios';
+import adConfigService from '../services/adConfigService';
 
 const AD_NETWORKS = {
   GOOGLE: 'google',
@@ -49,66 +49,36 @@ class MultiAdManager {
     if (this.isInitialized) return;
 
     try {
-      // Fetch ad configuration from backend
-      await this.fetchAdConfig();
+      // Fetch ad configuration from backend using adConfigService
+      this.adConfig = await adConfigService.fetchAdConfig();
+      this.currentNetwork = this.adConfig.activeNetwork || AD_NETWORKS.GOOGLE;
       
-      // Initialize Google Ads (already working)
-      await this.initializeGoogleAds();
+      console.log('Ad config loaded:', this.adConfig);
+      console.log('Active network:', this.currentNetwork);
       
-      // Initialize Facebook Ads
-      await this.initializeFacebookAds();
-      
-      // Initialize AppLovin
-      await this.initializeAppLovinAds();
+      // Only initialize the active network based on backend response
+      if (this.currentNetwork === AD_NETWORKS.GOOGLE && this.adConfig.networks.google?.enabled) {
+        await this.initializeGoogleAds();
+      } else if (this.currentNetwork === AD_NETWORKS.FACEBOOK && this.adConfig.networks.facebook?.enabled) {
+        await this.initializeFacebookAds();
+      } else if (this.currentNetwork === AD_NETWORKS.APPLOVIN && this.adConfig.networks.applovin?.enabled) {
+        await this.initializeAppLovinAds();
+      } else {
+        // No valid network configuration available
+        console.log('No valid ad network configuration available from API');
+        this.isInitialized = false;
+        return;
+      }
       
       this.isInitialized = true;
-      console.log('All ad networks initialized successfully');
+      console.log(`Ad network initialized: ${this.currentNetwork}`);
     } catch (error) {
       console.error('Error initializing ad networks:', error);
+      console.log('Ad initialization failed - no ads will be shown');
+      this.isInitialized = false;
     }
   }
 
-  // Fetch ad configuration from backend
-  async fetchAdConfig() {
-    try {
-      const response = await axios.get('https://peradox.in/api/mtc/getAdConfig');
-      
-      if (response.data && response.data.status === 'success') {
-        this.adConfig = response.data.data;
-        this.currentNetwork = this.adConfig.activeNetwork || AD_NETWORKS.GOOGLE;
-        
-        console.log('Ad config loaded:', this.adConfig);
-        console.log('Active network:', this.currentNetwork);
-      } else {
-        // Fallback to default config
-        this.setDefaultConfig();
-      }
-    } catch (error) {
-      console.error('Error fetching ad config:', error);
-      this.setDefaultConfig();
-    }
-  }
-
-  // Set default configuration if backend fails
-  setDefaultConfig() {
-    this.adConfig = {
-      activeNetwork: AD_NETWORKS.GOOGLE,
-      google: {
-        interstitialId: this.isTestMode ? TestIds.INTERSTITIAL : 'ca-app-pub-3940256099942544/1033173712',
-        rewardedId: this.isTestMode ? TestIds.REWARDED : 'ca-app-pub-3940256099942544/5224354917',
-      },
-      facebook: {
-        interstitialId: 'YOUR_FB_INTERSTITIAL_ID',
-        rewardedId: 'YOUR_FB_REWARDED_ID',
-      },
-      applovin: {
-        sdkKey: 'YOUR_APPLOVIN_SDK_KEY',
-        interstitialId: 'YOUR_APPLOVIN_INTERSTITIAL_ID',
-        rewardedId: 'YOUR_APPLOVIN_REWARDED_ID',
-      },
-    };
-    this.currentNetwork = AD_NETWORKS.GOOGLE;
-  }
 
   // Initialize Google Ads
   async initializeGoogleAds() {
@@ -152,8 +122,12 @@ class MultiAdManager {
   // Google Ads Methods
   loadGoogleInterstitial() {
     try {
-      const adUnitId = this.adConfig?.google?.interstitialId || 
-        (this.isTestMode ? TestIds.INTERSTITIAL : 'ca-app-pub-3940256099942544/1033173712');
+      const adUnitId = this.adConfig?.networks?.google?.interstitialId;
+      
+      if (!adUnitId) {
+        console.log('No Google interstitial ad unit ID from API');
+        return;
+      }
       
       this.googleInterstitial = InterstitialAd.createForAdRequest(adUnitId);
       
@@ -178,8 +152,12 @@ class MultiAdManager {
 
   loadGoogleRewarded() {
     try {
-      const adUnitId = this.adConfig?.google?.rewardedId || 
-        (this.isTestMode ? TestIds.REWARDED : 'ca-app-pub-3940256099942544/5224354917');
+      const adUnitId = this.adConfig?.networks?.google?.rewardedId;
+      
+      if (!adUnitId) {
+        console.log('No Google rewarded ad unit ID from API');
+        return;
+      }
       
       this.googleRewarded = RewardedAd.createForAdRequest(adUnitId);
       
@@ -205,7 +183,12 @@ class MultiAdManager {
   // Facebook Ads Methods
   loadFacebookInterstitial() {
     try {
-      const adUnitId = this.adConfig?.facebook?.interstitialId || 'YOUR_FB_INTERSTITIAL_ID';
+      const adUnitId = this.adConfig?.networks?.facebook?.interstitialId;
+      
+      if (!adUnitId) {
+        console.log('No Facebook interstitial ad unit ID from API');
+        return;
+      }
       this.facebookInterstitial = new FBInterstitialAd(adUnitId);
       
       this.facebookInterstitial.loadAd();
@@ -217,7 +200,12 @@ class MultiAdManager {
 
   loadFacebookRewarded() {
     try {
-      const adUnitId = this.adConfig?.facebook?.rewardedId || 'YOUR_FB_REWARDED_ID';
+      const adUnitId = this.adConfig?.networks?.facebook?.rewardedId;
+      
+      if (!adUnitId) {
+        console.log('No Facebook rewarded ad unit ID from API');
+        return;
+      }
       this.facebookRewarded = new FBRewardedAd(adUnitId);
       
       this.facebookRewarded.loadAd();
@@ -230,7 +218,12 @@ class MultiAdManager {
   // AppLovin Ads Methods
   loadAppLovinInterstitial() {
     try {
-      const adUnitId = this.adConfig?.applovin?.interstitialId || 'YOUR_APPLOVIN_INTERSTITIAL_ID';
+      const adUnitId = this.adConfig?.networks?.applovin?.interstitialId;
+      
+      if (!adUnitId) {
+        console.log('No AppLovin interstitial ad unit ID from API');
+        return;
+      }
       this.appLovinInterstitial = new MaxInterstitialAd(adUnitId);
       
       this.appLovinInterstitial.loadAd();
@@ -242,7 +235,12 @@ class MultiAdManager {
 
   loadAppLovinRewarded() {
     try {
-      const adUnitId = this.adConfig?.applovin?.rewardedId || 'YOUR_APPLOVIN_REWARDED_ID';
+      const adUnitId = this.adConfig?.networks?.applovin?.rewardedId;
+      
+      if (!adUnitId) {
+        console.log('No AppLovin rewarded ad unit ID from API');
+        return;
+      }
       this.appLovinRewarded = new MaxRewardedAd(adUnitId);
       
       this.appLovinRewarded.loadAd();
@@ -253,7 +251,11 @@ class MultiAdManager {
   }
 
   // Universal show interstitial method
-  async showInterstitialAd() {
+  async showInterstitial() {
+    if (!this.isInitialized) {
+      console.log('Ad manager not initialized - no ads available');
+      return false;
+    }
     try {
       switch (this.currentNetwork) {
         case AD_NETWORKS.GOOGLE:
@@ -263,7 +265,8 @@ class MultiAdManager {
         case AD_NETWORKS.APPLOVIN:
           return await this.showAppLovinInterstitial();
         default:
-          return await this.showGoogleInterstitial();
+          console.log('No valid ad network configured');
+          return false;
       }
     } catch (error) {
       console.error('Error showing interstitial ad:', error);
@@ -274,6 +277,11 @@ class MultiAdManager {
   // Universal show rewarded method
   async showRewardedAd() {
     try {
+      if (!this.isInitialized) {
+        console.log('Ad manager not initialized - no ads available');
+        return { success: false, reward: null };
+      }
+
       switch (this.currentNetwork) {
         case AD_NETWORKS.GOOGLE:
           return await this.showGoogleRewarded();
@@ -282,7 +290,8 @@ class MultiAdManager {
         case AD_NETWORKS.APPLOVIN:
           return await this.showAppLovinRewarded();
         default:
-          return await this.showGoogleRewarded();
+          console.log('No valid ad network configured');
+          return { success: false, reward: null };
       }
     } catch (error) {
       console.error('Error showing rewarded ad:', error);

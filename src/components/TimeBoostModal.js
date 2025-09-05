@@ -12,9 +12,9 @@ import {
 import {Colors} from '../constants/colors';
 import {horizontalScale, verticalScale} from '../constants/helper';
 import {Images} from '../assets/images';
-import enhancedAdManager from '../utils/enhancedAdManager';
 import {showToast} from '../utils/toastUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import multiAdManager from '../utils/multiAdManager';
 
 const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins, userBalance = 0, isMining = false}) => {
   const screenHeight = Dimensions.get('window').height;
@@ -81,7 +81,7 @@ const TimeBoostModal = ({visible, onClose, onWatchAd, onSpendCoins, userBalance 
     
     if (isAdDisabled) return;
     try {
-      const result = await enhancedAdManager.showRewardedAd();
+      const result = await multiAdManager.showRewardedAd();
 
       if (result.success) {
         showToast.success(

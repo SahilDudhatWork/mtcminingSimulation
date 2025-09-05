@@ -19,7 +19,10 @@ class AdConfigService {
       }
 
       console.log('Fetching fresh ad config from backend...');
-      const response = await axios.get('https://peradox.in/api/mtc/getAdConfig');
+      // const response = await axios.get('https://peradox.in/api/mtc/getAdConfig');
+       const response = await axios.post('https://peradox.in/api/usdtsmiulationad', {
+        packgname: "com.usdt.mining.virtual.simulator"
+      });
       
       if (response.data && response.data.status === 'success') {
         const config = response.data.data;

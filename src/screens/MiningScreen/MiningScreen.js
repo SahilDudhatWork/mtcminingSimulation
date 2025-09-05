@@ -144,8 +144,12 @@ const MiningScreen = props => {
   useEffect(() => {
     const focusListener = navigation.addListener('focus', async () => {
       const totalMasterCoin = await AsyncStorage.getItem('masterCoin');
+      const totalEarned = await AsyncStorage.getItem('totalEarned');
       if (totalMasterCoin) {
         setMasterCoin(parseFloat(totalMasterCoin) || 0);
+      }
+       if (totalEarned) {
+        setTotalEarned(parseFloat(totalEarned) || 0);
       }
     });
 

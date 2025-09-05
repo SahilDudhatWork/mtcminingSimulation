@@ -84,9 +84,12 @@ export default function ConvertCoinScreen(props) {
   const confirmConversion = async () => {
     try {
       // Add to total mine
-      const newTotalEarned = totalEarned + convertableAmount;
+      console.log('Convertable Amount:', convertableAmount);
+      const newTotalEarned = totalEarned + masterCoin;
+      console.log('New Total Earned:', newTotalEarned);
       setTotalEarned(newTotalEarned);
       await AsyncStorage.setItem('totalEarned', newTotalEarned.toString());
+
 
       // Reset master coins
       setMasterCoin(0);
@@ -245,7 +248,7 @@ export default function ConvertCoinScreen(props) {
         </View> */}
 
         {/* History Section */}
-        <View style={styles.historySection}>
+        {/* <View style={styles.historySection}>
           <Text style={styles.historyTitle}>Conversion History</Text>
           {history.length > 0 ? (
             <FlatList
@@ -264,7 +267,7 @@ export default function ConvertCoinScreen(props) {
               </Text>
             </View>
           )}
-        </View>
+        </View> */}
       </ScrollView>
 
       {/* Confirmation Modal */}

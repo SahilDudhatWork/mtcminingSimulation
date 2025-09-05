@@ -11,9 +11,9 @@ import {
 import {verticalScale, horizontalScale} from '../constants/helper';
 import {Colors} from '../constants/colors';
 import {Images} from '../assets/images';
-import enhancedAdManager from '../utils/enhancedAdManager';
 import {showToast} from '../utils/toastUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import multiAdManager from '../utils/multiAdManager';
 
 const BoostGhsModal = ({
   visible,
@@ -89,7 +89,7 @@ const BoostGhsModal = ({
     if (isMaxReached || isAdDisabled) return;
 
     try {
-      const result = await enhancedAdManager.showRewardedAd();
+      const result = await multiAdManager.showRewardedAd();
       if (result.success) {
         showToast.success(
           'Boost Activated!',

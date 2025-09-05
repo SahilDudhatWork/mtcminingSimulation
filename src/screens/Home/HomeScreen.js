@@ -18,8 +18,8 @@ import {useNavigation} from '@react-navigation/native';
 import Popup from '../../components/Popup';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomStatusBar from '../../components/CustomStatusBar';
-import enhancedAdManager from '../../utils/enhancedAdManager';
 import {showToast} from '../../utils/toastUtils';
+import multiAdManager from '../../utils/multiAdManager';
 
 export default function HomeScreen(props) {
   const navigation = useNavigation();
@@ -226,14 +226,14 @@ export default function HomeScreen(props) {
     // Show interstitial ad after opening 4 cards in Flip & Win
     if (selectedGameMode === 'flip' && flippedCount >= MAX_FLIPS) {
       setTimeout(() => {
-        enhancedAdManager.showInterstitialAd();
+        multiAdManager.showInterstitialAd();
       }, 500); // Small delay to ensure modal is closed
     }
 
     // Show interstitial ad after Daily Bonus collection
     if (selectedGameMode === 'daily') {
       setTimeout(() => {
-        enhancedAdManager.showInterstitialAd();
+        multiAdManager.showInterstitialAd();
       }, 500); // Small delay to ensure modal is closed
     }
   };
