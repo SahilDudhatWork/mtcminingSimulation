@@ -26,6 +26,7 @@ import {useNavigation} from '@react-navigation/native';
 import {useAuth} from '../../context/AuthContext';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import {showToast} from '../../utils/toastUtils';
+import analyticsService from '../../services/analyticsService';
 
 const MiningScreen = props => {
   const navigation = useNavigation();
@@ -240,6 +241,13 @@ const MiningScreen = props => {
             setIsMining(false);
             setTimeRemaining(0);
             clearInterval(miningIntervalId);
+            
+            // Log mining completed analytics
+            analyticsService.logMiningCompleted(
+              MINING_DURATION_MS / 1000, // duration in seconds
+              1, // coins earned (1 Super Coin per session)
+              convertToUSDT(1) // USDT equivalent
+            );
           }
           return newTimeRemaining;
         });
@@ -356,6 +364,10 @@ const MiningScreen = props => {
         setIsMining(true);
         // Reset the timer for the new session
         setTimeRemaining(MINING_DURATION_MS);
+        
+        // Log mining started analytics
+        await analyticsService.logMiningStarted('default');
+        await analyticsService.logScreenView('MiningScreen');
       }
     } catch (error) {
       console.error(error);
@@ -458,6 +470,12 @@ const MiningScreen = props => {
     await AsyncStorage.setItem('mysteryBoxCooldownStart', now.toString());
     setIsGiftMining(true);
     setGiftTimeRemaining(GIFT_DURATION_MS);
+    
+    // Log mystery box reward analytics
+    await analyticsService.logCustomEvent('mystery_box_claimed', {
+      reward_amount: giftAmt,
+      reward_type: 'super_coins'
+    });
   };
 
   const handleWatchAd = () => {
@@ -542,6 +560,9 @@ const MiningScreen = props => {
         message: `Join MTC Mining with my referral code: ${userData.refer_code} and start earning crypto today!`,
         title: 'Join MTC Mining',
       });
+      
+      // Log referral share analytics
+      await analyticsService.logReferralShared(userData.refer_code);
     } catch (error) {
       showToast.error('Error', 'Failed to share referral code');
     }

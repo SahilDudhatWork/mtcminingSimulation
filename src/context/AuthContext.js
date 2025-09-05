@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import analyticsService from '../services/analyticsService';
 
 const AuthContext = createContext({});
 
@@ -69,6 +70,16 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
         setApiResponse(res.data);
         setIsLoggedIn(true);
+        
+        // Log login analytics
+        await analyticsService.logLogin('email');
+        await analyticsService.setUserProperties(userData.id.toString(), {
+          user_name: userData.name,
+          user_email: userData.email,
+          is_verified: userData.is_verified ? 'true' : 'false',
+          social_type: userData.social_type || 'email'
+        });
+        
         await completeOnboarding();
         return { success: true };
       } else {
@@ -101,6 +112,17 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
         setApiResponse(res.data);
         setIsLoggedIn(true);
+        
+        // Log signup analytics
+        await analyticsService.logSignUp('email');
+        await analyticsService.setUserProperties(userData.id.toString(), {
+          user_name: userData.name,
+          user_email: userData.email,
+          is_verified: userData.is_verified ? 'true' : 'false',
+          social_type: userData.social_type || 'email',
+          refer_code: refer_code || 'none'
+        });
+        
         await completeOnboarding();
         return { success: true };
       } else {
@@ -184,6 +206,35 @@ export const AuthProvider = ({ children }) => {
       console.error('Onboarding error:', error);
     }
   };
+  const updateUserData = async (updates) => {
+    try {
+      if (!user) return;
+      
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      
+      // Update stored session data
+      const storedSession = await AsyncStorage.getItem('userSession');
+      if (storedSession) {
+        const sessionData = JSON.parse(storedSession);
+        sessionData.apiResponse.data.user = updatedUser;
+        await AsyncStorage.setItem('userSession', JSON.stringify(sessionData));
+        setApiResponse(sessionData.apiResponse);
+      }
+      
+      // Update individual storage items if they exist in updates
+      if (updates.coin !== undefined) {
+        await AsyncStorage.setItem('masterCoin', updates.coin.toString());
+      }
+      if (updates.mine !== undefined) {
+        await AsyncStorage.setItem('totalEarned', updates.mine.toString());
+      }
+      
+    } catch (error) {
+      console.error('Update user data error:', error);
+    }
+  };
+
   const getInitialRoute = () => {
       if (isLoading) {
         return 'SplashScreen';
@@ -212,6 +263,7 @@ export const AuthProvider = ({ children }) => {
         signup,
         logout,
         completeOnboarding,
+        updateUserData,
         getInitialRoute,
       }}>
       {children}

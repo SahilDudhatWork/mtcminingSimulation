@@ -16,9 +16,12 @@ import Header from '../../components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import {showToast} from '../../utils/toastUtils';
+import analyticsService from '../../services/analyticsService';
+import {useAuth} from '../../context/AuthContext';
 
 export default function ConvertCoinScreen(props) {
   const navigation = useNavigation();
+  const {updateUserData} = useAuth();
   const [masterCoin, setMasterCoin] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
   const [conversionRate] = useState(0.00006); // 1 Super Coin = 0.0006 USDT
@@ -51,6 +54,9 @@ export default function ConvertCoinScreen(props) {
 
   useEffect(() => {
     const focusListener = navigation.addListener('focus', async () => {
+      // Log screen view analytics
+      await analyticsService.logScreenView('ConvertCoinScreen');
+      
       const totalMasterCoin = await AsyncStorage.getItem('masterCoin');
       const totalEarnedValue = await AsyncStorage.getItem('totalEarned');
       if (totalMasterCoin) {
@@ -90,10 +96,18 @@ export default function ConvertCoinScreen(props) {
       setTotalEarned(newTotalEarned);
       await AsyncStorage.setItem('totalEarned', newTotalEarned.toString());
 
+      // Update user data in context
+      await updateUserData({
+        coin: 0,
+        mine: newTotalEarned
+      });
 
       // Reset master coins
       setMasterCoin(0);
       await AsyncStorage.setItem('masterCoin', '0');
+
+      // Log coin conversion analytics
+      await analyticsService.logCoinConversion(masterCoin, convertableAmount);
 
       // Add to history
       const newHistoryItem = {

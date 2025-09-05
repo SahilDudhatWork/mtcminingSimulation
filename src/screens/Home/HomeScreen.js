@@ -20,6 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import {showToast} from '../../utils/toastUtils';
 import multiAdManager from '../../utils/multiAdManager';
+import analyticsService from '../../services/analyticsService';
 
 export default function HomeScreen(props) {
   const navigation = useNavigation();
@@ -71,6 +72,9 @@ export default function HomeScreen(props) {
 
   useEffect(() => {
     const focusListener = navigation.addListener('focus', async () => {
+      // Log screen view analytics
+      await analyticsService.logScreenView('HomeScreen');
+      
       const totalMasterCoin = await AsyncStorage.getItem('masterCoin');
       if (totalMasterCoin) {
         setMasterCoin(parseFloat(totalMasterCoin) || 0);
@@ -222,6 +226,13 @@ export default function HomeScreen(props) {
       AsyncStorage.setItem('masterCoin', totalMasterCoin.toString());
       return totalMasterCoin;
     });
+
+    // Log analytics for reward claims
+    if (selectedGameMode === 'flip') {
+      await analyticsService.logFlipRewardClaimed(giftAmt, 'success');
+    } else if (selectedGameMode === 'daily') {
+      await analyticsService.logDailyRewardClaimed(giftAmt);
+    }
 
     // Show interstitial ad after opening 4 cards in Flip & Win
     if (selectedGameMode === 'flip' && flippedCount >= MAX_FLIPS) {
