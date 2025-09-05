@@ -229,6 +229,7 @@ const MiningScreen = props => {
           const newTimeRemaining = prev - 1000;
           if (newTimeRemaining <= 0) {
             const roundedTotalEarned = Math.round(totalEarned);
+            console.log('Mining session completed. Total Earned:', roundedTotalEarned.toString());
             AsyncStorage.setItem('totalEarned', roundedTotalEarned.toString()); // Store updated earnings
             AsyncStorage.removeItem('sessionStart');
             AsyncStorage.removeItem('boostedEndTime'); // Remove boosted time when mining completes
@@ -648,7 +649,7 @@ const MiningScreen = props => {
                       fontSize: 10,
                       fontWeight: '500',
                     }}>
-                    CURRENT BANALCE
+                    CURRENT BALANCE
                   </Text>
                   <Text
                     style={{

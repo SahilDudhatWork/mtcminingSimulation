@@ -56,10 +56,15 @@ export const AuthProvider = ({ children }) => {
           apiResponse: res.data,
           loginTime: new Date().toISOString()
         };
-        
+        let totalMasterCoin = userData?.coin || 0;
+        let totalEarned = userData?.mine || 0;
+        let dailyDayIndex = userData?.daily_reward || 0;
         // Save session data and user data
         await AsyncStorage.setItem('userSession', JSON.stringify(sessionData));
         await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      await AsyncStorage.setItem('masterCoin', totalMasterCoin.toString());
+      await AsyncStorage.setItem('totalEarned', totalEarned.toString());
+        await AsyncStorage.setItem('dailyDayIndex', dailyDayIndex.toString());
         
         setUser(userData);
         setApiResponse(res.data);
@@ -109,11 +114,63 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('userData');
-      await AsyncStorage.removeItem('userSession');
-      setUser(null);
-      setApiResponse(null);
-      setIsLoggedIn(false);
+      const session = await AsyncStorage.getItem('userSession');
+      const sessionUserData = await AsyncStorage.getItem('userData');
+      const userData = session ? JSON.parse(session) : null;
+      const userDataParse = sessionUserData ? JSON.parse(sessionUserData) : null;
+
+      if (!userData || !userData.apiResponse) {
+        console.log('No valid session found');
+        return;
+      }
+      console.log('Logging out userDataParse:', userDataParse);
+      const user = userData.apiResponse.data.user;
+      console.log('Logging out user:', user);
+      let mine = 0;
+      let coin = 0;
+      let daily_reward = 0;
+      const storedEarnings = await AsyncStorage.getItem('totalEarned');
+      if (storedEarnings) {
+        mine = parseFloat(storedEarnings);
+      }
+      const totalMasterCoin = await AsyncStorage.getItem('masterCoin');
+      if (totalMasterCoin) {
+        coin = parseFloat(totalMasterCoin);
+      }
+
+      const storedDay = await AsyncStorage.getItem('dailyDayIndex');
+      if(storedDay){
+       daily_reward = parseInt(storedDay, 10)
+      }
+      const body = {
+        user_id: user.id,
+        is_active: 1,
+        coin: coin,
+        mine: mine,
+        daily_reward: daily_reward,
+      };
+      console.log('Logout API body:', body);
+
+      const response = await axios.post(
+        'https://peradox.in/api/mtc/saveData',
+        body,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      console.log('Logout API response:', response.data);
+      if (response.data.status === 'success') {
+        // Clear user data and session
+        await AsyncStorage.removeItem('userData');
+        await AsyncStorage.removeItem('userSession');
+        await AsyncStorage.removeItem('masterCoin');
+        await AsyncStorage.removeItem('dailyDayIndex');
+        await AsyncStorage.removeItem('totalEarned');
+        setUser(null);
+        setApiResponse(null);
+        setIsLoggedIn(false);
+        console.log('User logged out successfully');
+      } else {
+        console.log('API Failed:', response.data.message);
+      }
     } catch (error) {
       console.error('Logout error:', error);
     }

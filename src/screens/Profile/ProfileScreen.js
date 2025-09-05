@@ -12,7 +12,7 @@ import {
 import React, {useState, useEffect} from 'react';
 import Header from '../../components/Header';
 import {Images} from '../../assets/images';
-import {horizontalScale, verticalScale} from '../../constants/helper';
+import {horizontalScale, SUPER_COIN_TO_USDT, verticalScale} from '../../constants/helper';
 import {Colors} from '../../constants/colors';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -68,12 +68,15 @@ export default function ProfileScreen(props) {
       focusListener();
     };
   }, [navigation]);
+  const convertToUSDT = (superCoins) => {
+    return (superCoins * SUPER_COIN_TO_USDT).toFixed(8); // 8 decimal places for precision
+  };
 
   const profileStats = [
     {
       id: 1,
       title: 'Total Balance',
-      value: `${totalEarned.toFixed(4)} USDT`,
+      value: `${convertToUSDT(totalEarned)} USDT`,
       icon: Images.TLogo,
       backgroundColor: Colors.secondaryColor,
       iconTint: Colors.white,
