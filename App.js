@@ -18,7 +18,7 @@ export default function App() {
 
     // Initialize OneSignal notifications
     // Replace 'YOUR_ONESIGNAL_APP_ID' with your actual OneSignal App ID
-    notificationService.initialize('f2567dbd-15b2-4e69-b9e9-95fb9ba32733');
+    notificationService.initialize('f7e64952-2dc0-4e11-9487-088657609018');
 
     // Log app opened event
     analyticsService.logAppOpened();

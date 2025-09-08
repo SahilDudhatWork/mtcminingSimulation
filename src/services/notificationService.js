@@ -1,4 +1,4 @@
-import OneSignal from 'react-native-onesignal';
+import {OneSignal} from 'react-native-onesignal';
 import {Alert} from 'react-native';
 
 class NotificationService {
@@ -13,7 +13,7 @@ class NotificationService {
 
     try {
       // Initialize OneSignal
-      OneSignal.setAppId(appId);
+      OneSignal.initialize(appId);
 
       // Set up notification handlers
       this.setupNotificationHandlers();
@@ -31,13 +31,13 @@ class NotificationService {
   // Request notification permissions
   async requestPermissions() {
     try {
-      const deviceState = await OneSignal.getDeviceState();
-      console.log('Device state:', deviceState);
+      // Request permission for notifications
+      const hasPermission = await OneSignal.Notifications.hasPermission();
+      console.log('Has notification permission:', hasPermission);
       
-      if (!deviceState.hasNotificationPermission) {
-        OneSignal.promptForPushNotificationsWithUserResponse((response) => {
-          console.log('Prompt response:', response);
-        });
+      if (!hasPermission) {
+        const permission = await OneSignal.Notifications.requestPermission(true);
+        console.log('Permission request result:', permission);
       }
     } catch (error) {
       console.error('Error requesting permissions:', error);
@@ -47,38 +47,40 @@ class NotificationService {
   // Set up notification event handlers
   setupNotificationHandlers() {
     // Handle notification received while app is in foreground
-    OneSignal.setNotificationWillShowInForegroundHandler((notificationReceivedEvent) => {
-      console.log('OneSignal: notification will show in foreground:', notificationReceivedEvent);
-      let notification = notificationReceivedEvent.getNotification();
+    OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
+      console.log('OneSignal: notification will show in foreground:', event);
+      const notification = event.getNotification();
       console.log('notification: ', notification);
       
       // Complete with null means don't show a notification
       // Complete with notification means show the notification
-      notificationReceivedEvent.complete(notification);
+      event.getNotification().display();
     });
 
-    // Handle notification opened
-    OneSignal.setNotificationOpenedHandler((notification) => {
-      console.log('OneSignal: notification opened:', notification);
-      this.handleNotificationOpened(notification);
+    // Handle notification opened/clicked
+    OneSignal.Notifications.addEventListener('click', (event) => {
+      console.log('OneSignal: notification clicked:', event);
+      this.handleNotificationOpened(event);
     });
 
     // Handle subscription changes
-    OneSignal.addSubscriptionObserver((event) => {
+    OneSignal.User.pushSubscription.addEventListener('change', (event) => {
       console.log('OneSignal: subscription changed: ', event);
-      this.userId = event.to.userId;
+      if (event.current.id) {
+        this.userId = event.current.id;
+      }
     });
 
     // Handle permission changes
-    OneSignal.addPermissionObserver((event) => {
-      console.log('OneSignal: permission changed:', event);
+    OneSignal.Notifications.addEventListener('permissionChange', (granted) => {
+      console.log('OneSignal: permission changed:', granted);
     });
   }
 
   // Handle when notification is opened/clicked
-  handleNotificationOpened(openResult) {
+  handleNotificationOpened(event) {
     try {
-      const { notification } = openResult;
+      const notification = event.result.notification;
       const data = notification.additionalData;
       
       console.log('Notification opened with data:', data);
@@ -134,8 +136,8 @@ class NotificationService {
   // Get user ID for targeting notifications
   async getUserId() {
     try {
-      const deviceState = await OneSignal.getDeviceState();
-      return deviceState.userId;
+      const onesignalId = OneSignal.User.onesignalId;
+      return onesignalId;
     } catch (error) {
       console.error('Error getting user ID:', error);
       return null;
@@ -145,9 +147,8 @@ class NotificationService {
   // Set external user ID (for targeting specific users)
   setExternalUserId(externalId) {
     try {
-      OneSignal.setExternalUserId(externalId, (results) => {
-        console.log('External user ID set:', results);
-      });
+      OneSignal.login(externalId);
+      console.log('External user ID set:', externalId);
     } catch (error) {
       console.error('Error setting external user ID:', error);
     }
@@ -156,7 +157,7 @@ class NotificationService {
   // Add tags for user segmentation
   sendTags(tags) {
     try {
-      OneSignal.sendTags(tags);
+      OneSignal.User.addTags(tags);
       console.log('Tags sent:', tags);
     } catch (error) {
       console.error('Error sending tags:', error);
@@ -206,11 +207,14 @@ class NotificationService {
   // Get notification permission status
   async getPermissionStatus() {
     try {
-      const deviceState = await OneSignal.getDeviceState();
+      const hasPermission = await OneSignal.Notifications.hasPermission();
+      const isSubscribed = OneSignal.User.pushSubscription.optedIn;
+      const userId = OneSignal.User.onesignalId;
+      
       return {
-        hasPermission: deviceState.hasNotificationPermission,
-        isSubscribed: deviceState.isSubscribed,
-        userId: deviceState.userId,
+        hasPermission,
+        isSubscribed,
+        userId,
       };
     } catch (error) {
       console.error('Error getting permission status:', error);
@@ -225,7 +229,7 @@ class NotificationService {
   // Disable notifications
   disableNotifications() {
     try {
-      OneSignal.disablePush(true);
+      OneSignal.User.pushSubscription.optOut();
       console.log('Notifications disabled');
     } catch (error) {
       console.error('Error disabling notifications:', error);
@@ -235,7 +239,7 @@ class NotificationService {
   // Enable notifications
   enableNotifications() {
     try {
-      OneSignal.disablePush(false);
+      OneSignal.User.pushSubscription.optIn();
       console.log('Notifications enabled');
     } catch (error) {
       console.error('Error enabling notifications:', error);
