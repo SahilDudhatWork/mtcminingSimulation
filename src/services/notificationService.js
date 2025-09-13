@@ -31,16 +31,37 @@ class NotificationService {
   // Request notification permissions
   async requestPermissions() {
     try {
-      // Request permission for notifications
       const hasPermission = await OneSignal.Notifications.hasPermission();
       console.log('Has notification permission:', hasPermission);
-      
       if (!hasPermission) {
         const permission = await OneSignal.Notifications.requestPermission(true);
         console.log('Permission request result:', permission);
+        return permission;
       }
+      return hasPermission;
     } catch (error) {
       console.error('Error requesting permissions:', error);
+      return false;
+    }
+  }
+
+  async getPermissionStatus() {
+    try {
+      const hasPermission = await OneSignal.Notifications.hasPermission();
+      const permissionState = await OneSignal.Notifications.getPermissionAsync();
+      
+      return {
+        hasPermission,
+        permissionState,
+        canRequest: permissionState !== 'denied'
+      };
+    } catch (error) {
+      console.error('Error getting permission status:', error);
+      return {
+        hasPermission: false,
+        permissionState: 'unknown',
+        canRequest: true
+      };
     }
   }
 

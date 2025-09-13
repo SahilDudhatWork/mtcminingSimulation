@@ -237,14 +237,15 @@ export default function HomeScreen(props) {
     // Show interstitial ad after opening 4 cards in Flip & Win
     if (selectedGameMode === 'flip' && flippedCount >= MAX_FLIPS) {
       setTimeout(() => {
-        multiAdManager.showInterstitialAd();
+        console.log('Showing interstitial ad after Flip & Win session');
+        multiAdManager.showInterstitial();
       }, 500); // Small delay to ensure modal is closed
     }
 
     // Show interstitial ad after Daily Bonus collection
     if (selectedGameMode === 'daily') {
       setTimeout(() => {
-        multiAdManager.showInterstitialAd();
+        multiAdManager.showInterstitial();
       }, 500); // Small delay to ensure modal is closed
     }
   };
