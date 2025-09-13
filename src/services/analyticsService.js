@@ -7,7 +7,7 @@ class AnalyticsService {
 
   async initialize() {
     try {
-      // Enable analytics collection
+      // Enable analytics collection 
       await analytics().setAnalyticsCollectionEnabled(true);
       this.isInitialized = true;
       console.log('Firebase Analytics initialized successfully');
@@ -106,7 +106,8 @@ class AnalyticsService {
   async logScreenView(screenName, screenClass = null) {
     if (!this.isInitialized) return;
     try {
-      await analytics().logScreenView({
+      // Use logEvent instead of deprecated logScreenView
+      await analytics().logEvent('screen_view', {
         screen_name: screenName,
         screen_class: screenClass || screenName
       });
